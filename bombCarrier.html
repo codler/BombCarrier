@@ -1,0 +1,224 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>BombCarrier</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+		</style>
+	</head>
+
+	<body>
+		<script type="text/javascript" src="js/Three.js"></script>
+		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
+		<script type="text/javascript" src="js/Stats.js"></script>
+
+		<script type="text/javascript">
+/**
+ * @author Gustav Hjortsparre and Han Lin Yap
+ * @license http://creativecommons.org/licenses/by-sa/3.0/
+ * @package BombCarrier
+ * @version 1.0 - 2011-09-20
+ */
+var container, stats;
+
+var camera, scene, renderer;
+
+var group;
+var time = 0;
+
+var mouseX = 0, mouseY = 0;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+
+var keyup, keydown, keyleft, keyright;
+
+var spriteChar;
+
+init();
+animate();
+
+function init() {
+
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+
+	camera = new THREE.Camera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.z = 500;
+
+	scene = new THREE.Scene();
+
+	// create sprites
+	var amount = 7*7;
+	var radius = 500;
+	var mapA = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
+	var mapB = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
+	var char1 = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+	
+	var tileW = 116;
+	var tileH = 59;
+
+	group = new THREE.Object3D();
+
+	var level1 = [
+		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
+		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
+		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
+		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
+		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
+		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
+		[mapA, mapA, mapA, mapA, mapA, mapA, mapA]
+	];
+	var level = level1;
+
+	for( var a = 0; a < amount; a++ ) {
+		var map = level[Math.floor(a/7)][a%7];
+		var sprite = new THREE.Sprite( { map: map, useScreenCoordinates: false } );
+
+
+		sprite.position.set( a%7 * tileW - 300,
+		                     Math.floor(a/7) * tileH - 200,
+		                     7 - Math.floor(a/7) );
+
+		//sprite.position.normalize();
+		//sprite.position.multiplyScalar( radius );
+
+		group.addChild( sprite );
+	}
+
+	scene.addChild( group );
+
+	// add character 1
+	spriteChar = new THREE.Sprite( { map: char1, useScreenCoordinates: false } );
+
+	spriteChar.position.set( 0 * tileW - 300,
+		                     0 * tileH - 200 + 40,
+		                     7 - 0 );
+
+	spriteChar.scale.set(1,1.5,1);
+    scene.addChild( spriteChar );
+
+	// add 2d-sprites
+	/*
+	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
+	sprite.position.set( 100, 100, 0 );
+	sprite.opacity = 0.25;
+	scene.addChild( sprite );
+
+	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
+	sprite.position.set( 150, 150, 2 );
+	sprite.opacity = 0.5;
+	scene.addChild( sprite );
+
+	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
+	sprite.position.set( 200, 200, 3 );
+	sprite.opacity = 1;
+	scene.addChild( sprite );
+	*/
+	// renderer
+
+	renderer = new THREE.WebGLRenderer();
+	renderer.setClearColorHex( 0x000000, 1 );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+	container.appendChild( renderer.domElement );
+
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+
+	// Key listener
+	document.addEventListener("keydown", onKeyDown, false);
+	document.addEventListener("keyup", onKeyUp, false);
+}
+
+
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	render();
+	stats.update();
+
+}
+
+function render() {
+	/*
+	for ( var c = 0; c < group.children.length; c++ ) {
+
+		var sprite = group.children[ c ];
+		var scale = Math.sin( time + sprite.position.x * 0.01 ) * 0.3 + 1.0;
+
+		sprite.rotation += 0.1 * ( c / group.children.length );
+		sprite.scale.set( scale, scale, 1.0 );
+		sprite.opacity = Math.sin( time + sprite.position.x * 0.01 ) * 0.4 + 0.6;
+	}
+
+	group.rotation.x = time * 0.5;
+	group.rotation.y = time * 0.75;
+	group.rotation.z = time * 1.0;
+
+	time += 0.02;
+	*/
+
+	if (keyup) {
+		spriteChar.position.y++;
+	} else if (keydown) {
+		spriteChar.position.y--;
+	} else if (keyright) {
+		spriteChar.position.x--;
+	} else if (keyleft) {
+		spriteChar.position.x++;
+	}
+
+	renderer.render( scene, camera );
+
+}
+
+function log( text ) {
+
+	var e = document.getElementById("log");
+	e.innerHTML = text + "<br/>" + e.innerHTML;
+
+}
+
+function onKeyDown(a) {
+    var b = a.keyCode;
+    if (b == 38 || b == 87)
+        keyup = true;
+    else if (b == 40 || b == 83)
+        keydown = true;
+    else if (b == 37 || b == 65)
+        keyright = true;
+    else if (b == 39 || b == 68)
+        keyleft = true;
+    else if (b == 32)
+        rs = true;
+    else if (a.keyCode == 13)
+        cameraTime = 0
+}
+function onKeyUp(a) {
+    a = a.keyCode;
+    if (a == 38 || a == 87)
+        keyup = false;
+    else if (a == 40 || a == 83)
+        keydown = false;
+    else if (a == 37 || a == 65)
+        keyright = false;
+    else if (a == 39 || a == 68)
+        keyleft = false;
+    else if (a == 32)
+        rs = false
+}
+		</script>
+	</body>
+</html>
