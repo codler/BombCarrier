@@ -16,52 +16,140 @@
 
 	<body>
 		<script type="text/javascript" src="js/Three.js"></script>
+		<script type="text/javascript" src="js/Detector.js"></script>
 		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
 		<script type="text/javascript" src="js/Stats.js"></script>
+
+		<script type="text/javascript" src="fonts/helvetiker_regular.typeface.js"></script>
+
+		<!--<script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>-->
 
 		<script type="text/javascript">
 /**
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 1.0 - 2011-09-20
+ * @version 0.2 - 2011-09-22
  */
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+// == Begin Constants ==
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+
+var DEBUG = true;
+
+// == End Constants ==
 var container, stats;
 
 var camera, scene, renderer;
+var projector;
+var loader;
 
 var group;
 var time = 0;
 
-var mouseX = 0, mouseY = 0;
+var mouse = { x: 0, y: 0 };
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 
-var keyup, keydown, keyleft, keyright;
+var keyMap = {
+	38 : 'up1',
+	87 : 'up2',
+	40 : 'down1',
+	83 : 'down2',
+	37 : 'right1',
+	65 : 'right2',
+	39 : 'left1',
+	68 : 'left2'
+};
 
-var spriteChar;
+var keyPressed = {
+	up1 : false,
+	down1 : false,
+	right1 : false,
+	left1 : false,	
+	up2 : false,
+	down2 : false,
+	right2 : false,
+	left2 : false
+};
 
+var history = {};
+
+var spriteChar, spriteChar2;
+var spriteCharCollision, spriteChar2Collision;
+
+var debugElement;
+
+init_core();
 init();
 animate();
 
-function init() {
+
+// Initialize core - canvas, camera, scene, debuginfo
+function init_core() {
 
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
 
-	camera = new THREE.Camera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+	projector = new THREE.Projector();
+
+	camera = new THREE.Camera( 
+		60, 							// FOV, field of view
+		SCREEN_WIDTH / SCREEN_HEIGHT, 	// Aspect ratio
+		1, 								// Near
+		10000 							// Far
+	);
 	camera.position.z = 500;
+
+	loader = new THREE.Loader(true);
 
 	scene = new THREE.Scene();
 
+	// renderer
+	renderer = new THREE.WebGLRenderer();
+	renderer.setClearColorHex( 0x000000, 1 );
+	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+	container.appendChild( renderer.domElement );
+
+	// Event listener
+	document.addEventListener( 'keydown', onKeyDown, false );
+	document.addEventListener( 'keyup', onKeyUp, false );
+
+	container.onmousemove = onDocumentMouseMove;
+
+	// Debug box
+	if (DEBUG) {
+		debugElement = document.createElement( 'div' );
+		debugElement.style.position = 'absolute';
+		debugElement.style.top = '0px';
+		debugElement.style.zIndex = 101;
+		debugElement.style.backgroundColor = '#cccccc';
+		debugElement.style.opacity = 0.5;
+		debugElement.style.marginLeft = '80px';
+		container.appendChild( debugElement );	
+	}
+
+	// Stats - FPS viewer
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+}
+
+function init() {
 	// create sprites
 	var amount = 7*7;
 	var radius = 500;
 	var mapA = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
 	var mapB = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
 	var char1 = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
-	
+
 	var tileW = 116;
 	var tileH = 59;
 
@@ -100,10 +188,89 @@ function init() {
 
 	spriteChar.position.set( 0 * tileW - 300,
 		                     0 * tileH - 200 + 40,
-		                     7 - 0 );
+		                     7 - 0 +1);
 
 	spriteChar.scale.set(1,1.5,1);
-    scene.addChild( spriteChar );
+	scene.addChild( spriteChar );
+
+	history['char'] = [];
+	//THREE.Collisions.colliders.push(spriteChar);
+	
+	spriteChar.boundingMesh = new THREE.Mesh( 
+		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
+		new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+	spriteChar.boundingMesh.position.set( 0 * tileW - 300,
+		                     0 * tileH - 200 + 40,
+		                     7 - 0 +1);
+
+	//THREE.Collisions.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar.boundingMesh) );
+		spriteChar2Collision = new THREE.CollisionSystem();
+
+spriteChar2Collision.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar.boundingMesh) )
+
+	scene.addChild( spriteChar.boundingMesh );
+
+	// add character 2
+	spriteChar2 = new THREE.Sprite( { map: char1, useScreenCoordinates: false } );
+
+	//spriteChar2.position.set( 100, 0, 7 );
+
+	spriteChar2.position.set( 0 * tileW - 300,
+		                     0 * tileH - 200 + 140,
+		                     7 - 0 );
+
+	spriteChar2.scale.set(1,1.5,1);
+	scene.addChild( spriteChar2 );
+	history['char2'] = [];
+	spriteChar2.boundingMesh = new THREE.Mesh( 
+		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
+		new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+
+	//spriteChar2.boundingMesh.position.set( 100, 0 , 0);
+	
+	spriteChar2.boundingMesh.position.set( 0 * tileW - 300,
+		                     0 * tileH - 200 + 140,
+		                     7 - 0 );
+		                     
+
+	//THREE.Collisions.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar2.boundingMesh) );
+	spriteCharCollision = new THREE.CollisionSystem();
+	spriteCharCollision.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar2.boundingMesh) );
+
+	scene.addChild( spriteChar2.boundingMesh );
+
+
+	// Inline text
+	var text3d = new THREE.TextGeometry( 'testar text', {
+
+					size: 80,
+					height: 20,
+					curveSegments: 2,
+					font: "helvetiker"
+
+				});
+
+				text3d.computeBoundingBox();
+				var centerOffset = -0.5 * ( text3d.boundingBox.x[ 1 ] - text3d.boundingBox.x[ 0 ] );
+
+                var textMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: false } );
+                text = new THREE.Mesh( text3d, textMaterial );
+
+                text.doubleSided = false;
+
+                text.position.set( 0, 100, 0 );
+
+				text.overdraw = true;
+
+				parent = new THREE.Object3D();
+                parent.addChild( text );
+
+				scene.addObject( parent );
+
+
+	//THREE.Collisions.colliders.push(spriteChar2);
 
 	// add 2d-sprites
 	/*
@@ -122,23 +289,7 @@ function init() {
 	sprite.opacity = 1;
 	scene.addChild( sprite );
 	*/
-	// renderer
-
-	renderer = new THREE.WebGLRenderer();
-	renderer.setClearColorHex( 0x000000, 1 );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-
-	container.appendChild( renderer.domElement );
-
-	stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.top = '0px';
-	stats.domElement.style.zIndex = 100;
-	container.appendChild( stats.domElement );
-
-	// Key listener
-	document.addEventListener("keydown", onKeyDown, false);
-	document.addEventListener("keyup", onKeyUp, false);
+	
 }
 
 
@@ -150,6 +301,7 @@ function animate() {
 	stats.update();
 
 }
+
 
 function render() {
 	/*
@@ -170,17 +322,73 @@ function render() {
 	time += 0.02;
 	*/
 
-	if (keyup) {
-		spriteChar.position.y++;
-	} else if (keydown) {
-		spriteChar.position.y--;
-	} else if (keyright) {
-		spriteChar.position.x--;
-	} else if (keyleft) {
-		spriteChar.position.x++;
+	
+	if (DEBUG) {
+		var s = [
+			//'Mouse - X:' + mouse.x.toFixed(2) + ' Y:' + mouse.y.toFixed(2),
+			'Mouse - ' + JSON.stringify(mouse),
+			'camera - ' + JSON.stringify(camera.position),
+			'Spritechar1 - ' + JSON.stringify(spriteChar.position),
+			'Spritechar2 - ' + JSON.stringify(spriteChar2.position),
+			'distance - ' + JSON.stringify(spriteChar.position.clone().subSelf(spriteChar2.position))
+		];
+		debugElement.innerHTML = s.join('<br/>');
 	}
 
-	renderer.render( scene, camera );
+history['char'].push(spriteChar.position.clone());
+		if (history['char'].length > 5) {
+			history['char'].shift();
+		}
+
+history['char2'].push(spriteChar2.position.clone());
+		if (history['char2'].length > 5) {
+			history['char2'].shift();
+		}
+
+		if (keyPressed.up1) { spriteChar.boundingMesh.position.y = spriteChar.position.y += 2; } 
+		if (keyPressed.down1) { spriteChar.boundingMesh.position.y = spriteChar.position.y -= 2; }
+		if (keyPressed.right1) { spriteChar.boundingMesh.position.x = spriteChar.position.x -= 2; }
+		if (keyPressed.left1) { spriteChar.boundingMesh.position.x = spriteChar.position.x += 2; }
+
+		if (keyPressed.up2) { spriteChar2.boundingMesh.position.y = spriteChar2.position.y += 2; } 
+		if (keyPressed.down2) { spriteChar2.boundingMesh.position.y = spriteChar2.position.y -= 2; }
+		if (keyPressed.right2) { spriteChar2.boundingMesh.position.x = spriteChar2.position.x -= 2; }
+		if (keyPressed.left2) { spriteChar2.boundingMesh.position.x = spriteChar2.position.x += 2; }
+
+	var ray = new THREE.Ray( spriteChar.position, new THREE.Vector3(0,0,0) );
+
+		spriteChar2.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
+
+
+	//var c = THREE.Collisions.rayCastAll(ray);
+	//if (c.length > 0) {
+	var c = spriteCharCollision.rayCastNearest(ray);
+	if (c) {
+			c.mesh.materials[0].color = new THREE.Color(0x550000);
+
+		spriteChar.position = history['char'].pop();
+		console.log(history['char'].length);
+	    //console.log(c);
+	}
+
+
+	var ray2 = new THREE.Ray( spriteChar2.position, new THREE.Vector3(0,0,0) );
+
+		spriteChar.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
+
+
+	//var c = THREE.Collisions.rayCastAll(ray);
+	//if (c.length > 0) {
+	var c2 = spriteChar2Collision.rayCastNearest(ray2);
+	if (c2) {
+			c2.mesh.materials[0].color = new THREE.Color(0x550000);
+
+		spriteChar2.position = history['char2'].pop();
+		console.log(history['char2'].length);
+	    //console.log(c);
+	}
+		
+		renderer.render( scene, camera );
 
 }
 
@@ -191,33 +399,26 @@ function log( text ) {
 
 }
 
+function onDocumentMouseMove( event ) {
+
+	event.preventDefault();	
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+};
+
 function onKeyDown(a) {
-    var b = a.keyCode;
-    if (b == 38 || b == 87)
-        keyup = true;
-    else if (b == 40 || b == 83)
-        keydown = true;
-    else if (b == 37 || b == 65)
-        keyright = true;
-    else if (b == 39 || b == 68)
-        keyleft = true;
-    else if (b == 32)
-        rs = true;
-    else if (a.keyCode == 13)
-        cameraTime = 0
+    var a = a.keyCode;
+
+    if (a in keyMap) {
+    	keyPressed[keyMap[a]] = true;
+    }
 }
 function onKeyUp(a) {
     a = a.keyCode;
-    if (a == 38 || a == 87)
-        keyup = false;
-    else if (a == 40 || a == 83)
-        keydown = false;
-    else if (a == 37 || a == 65)
-        keyright = false;
-    else if (a == 39 || a == 68)
-        keyleft = false;
-    else if (a == 32)
-        rs = false
+    if (a in keyMap) {
+    	keyPressed[keyMap[a]] = false;
+    }
 }
 		</script>
 	</body>
