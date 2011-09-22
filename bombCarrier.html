@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-		<title>BombCarrier</title>
+		<title>BombCarrier v0.3</title>
 		<meta charset="utf-8">
 		<style type="text/css">
 			body {
@@ -22,14 +22,14 @@
 
 		<script type="text/javascript" src="fonts/helvetiker_regular.typeface.js"></script>
 
-		<!--<script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>-->
+		<script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>
 
 		<script type="text/javascript">
 /**
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.2 - 2011-09-22
+ * @version 0.3 - 2011-09-22
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -54,7 +54,7 @@ var mouse = { x: 0, y: 0 };
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
-
+/*
 var keyMap = {
 	38 : 'up1',
 	87 : 'up2',
@@ -78,15 +78,12 @@ var keyPressed = {
 };
 
 var history = {};
-
-var spriteChar, spriteChar2;
-var spriteCharCollision, spriteChar2Collision;
+*/
+var player1, player2;
 
 var debugElement;
 
-init_core();
-init();
-animate();
+
 
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -142,6 +139,154 @@ function init_core() {
 	container.appendChild( stats.domElement );
 }
 
+
+
+
+
+/*
+Player class
+
+map : texture
+position : Vector3
+*/
+var PlayerClass = function(texture, position) {
+	this.history = []; // Players previous positions
+	this.sprite = new THREE.Sprite( { 
+		map: texture || this.defaultTexture,
+		useScreenCoordinates: false 
+	} );
+
+	// Collision area
+	this.sprite.boundingMesh = new THREE.Mesh(
+		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
+		new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+
+	this.setPosition(position || new THREE.Vector3(0,0,0));
+	this.setKeyPressed({up:false,right:false,down:false,left:false});
+
+	this.collision = new THREE.CollisionSystem();
+	
+	
+};
+//PlayerClass.prototype.constructor = PlayerClass;
+
+// Variable
+PlayerClass.prototype.defaultTexture = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+
+/*
+texture : texture
+*/
+PlayerClass.prototype.setTexture = function(texture) {
+	this.sprite.map = texture;
+};
+
+/*
+position : Vector3
+*/
+PlayerClass.prototype.setPosition = function(position) {
+	this.sprite.position = position;
+	this.sprite.boundingMesh.position = position;
+};
+/*
+x : float
+*/
+PlayerClass.prototype.setPositionX = function(x) {
+	this.sprite.position.x = x;
+	this.sprite.boundingMesh.position.x = x;
+};
+/*
+y : float
+*/
+PlayerClass.prototype.setPositionY = function(y) {
+	this.sprite.position.y = y;
+	this.sprite.boundingMesh.position.y = y;
+};
+/*
+z : float
+*/
+PlayerClass.prototype.setPositionZ = function(z) {
+	this.sprite.position.z = z;
+	this.sprite.boundingMesh.position.z = z;
+};
+
+/*
+scale : Vector3
+*/
+PlayerClass.prototype.setScale = function(scale) {
+	this.sprite.scale = scale;
+};
+
+/*
+scene : Vector3
+*/
+PlayerClass.prototype.setScene = function(scene) {
+	this.scene = scene;
+	this.scene.addChild(this.sprite);
+	this.scene.addChild(this.sprite.boundingMesh);
+};
+
+/*
+collision : Object3d | Mesh
+*/
+PlayerClass.prototype.addCollision = function(collision) {
+	this.collision.colliders.push( THREE.CollisionUtils.MeshOBB( collision.boundingMesh || collision ) );
+};
+
+/*
+Store position
+*/
+PlayerClass.prototype.saveState = function() {
+	this.history.push(this.sprite.position.clone());
+	if (this.history.length > 5) {
+		this.history.shift();
+	}
+};
+
+/*
+keys : { up, right, down, left }
+*/
+PlayerClass.prototype.setKeyPressed = function(keys) {
+	this.keyPressed = keys;
+};
+/*
+keys : { up, right, down, left }
+*/
+PlayerClass.prototype.setKeyCode = function(keys) {
+	this.keyCode = keys;
+};
+
+PlayerClass.prototype.move = function() {
+	if (this.keyPressed.up) {
+		this.setPositionY(this.sprite.position.y + 2);
+	}
+	if (this.keyPressed.down) {
+		this.setPositionY(this.sprite.position.y - 2);
+	}
+	if (this.keyPressed.right) {
+		this.setPositionX(this.sprite.position.x - 2);
+	}
+	if (this.keyPressed.left) {
+		this.setPositionX(this.sprite.position.x + 2);
+	}
+};
+
+PlayerClass.prototype.checkCollision = function() {
+	var ray = new THREE.Ray( this.sprite.position, new THREE.Vector3(0,0,0) );
+	var c = this.collision.rayCastNearest(ray);
+	if (c) {
+		c.mesh.materials[0].color = new THREE.Color(0x550000);
+
+		this.setPosition(this.history.pop());
+	}
+};
+
+//jQuery(function ($) {
+	init_core();
+	init();
+	animate();
+//});
+
 function init() {
 	// create sprites
 	var amount = 7*7;
@@ -183,63 +328,7 @@ function init() {
 
 	scene.addChild( group );
 
-	// add character 1
-	spriteChar = new THREE.Sprite( { map: char1, useScreenCoordinates: false } );
-
-	spriteChar.position.set( 0 * tileW - 300,
-		                     0 * tileH - 200 + 40,
-		                     7 - 0 +1);
-
-	spriteChar.scale.set(1,1.5,1);
-	scene.addChild( spriteChar );
-
-	history['char'] = [];
-	//THREE.Collisions.colliders.push(spriteChar);
 	
-	spriteChar.boundingMesh = new THREE.Mesh( 
-		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
-		new THREE.MeshLambertMaterial( { color: 0xffffff } )
-	);
-	spriteChar.boundingMesh.position.set( 0 * tileW - 300,
-		                     0 * tileH - 200 + 40,
-		                     7 - 0 +1);
-
-	//THREE.Collisions.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar.boundingMesh) );
-		spriteChar2Collision = new THREE.CollisionSystem();
-
-spriteChar2Collision.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar.boundingMesh) )
-
-	scene.addChild( spriteChar.boundingMesh );
-
-	// add character 2
-	spriteChar2 = new THREE.Sprite( { map: char1, useScreenCoordinates: false } );
-
-	//spriteChar2.position.set( 100, 0, 7 );
-
-	spriteChar2.position.set( 0 * tileW - 300,
-		                     0 * tileH - 200 + 140,
-		                     7 - 0 );
-
-	spriteChar2.scale.set(1,1.5,1);
-	scene.addChild( spriteChar2 );
-	history['char2'] = [];
-	spriteChar2.boundingMesh = new THREE.Mesh( 
-		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
-		new THREE.MeshLambertMaterial( { color: 0xffffff } )
-	);
-
-	//spriteChar2.boundingMesh.position.set( 100, 0 , 0);
-	
-	spriteChar2.boundingMesh.position.set( 0 * tileW - 300,
-		                     0 * tileH - 200 + 140,
-		                     7 - 0 );
-		                     
-
-	//THREE.Collisions.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar2.boundingMesh) );
-	spriteCharCollision = new THREE.CollisionSystem();
-	spriteCharCollision.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar2.boundingMesh) );
-
-	scene.addChild( spriteChar2.boundingMesh );
 
 
 	// Inline text
@@ -289,8 +378,42 @@ spriteChar2Collision.colliders.push( THREE.CollisionUtils.MeshOBB(spriteChar.bou
 	sprite.opacity = 1;
 	scene.addChild( sprite );
 	*/
-	
+
+	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
+		0 * tileW - 200,
+		0 * tileH - 200 + 30,
+		7 - 0 + 2
+	) );
+	player1.setScene(scene);
+	player1.setScale(new THREE.Vector3(1,1.5,1));
+
+	player1.setKeyCode({
+		87 : 'up',
+		83 : 'down',
+		65 : 'right',
+		68 : 'left'
+	});
+
+	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
+		0 * tileW - 100,
+		0 * tileH - 200 + 30,
+		7 - 0 + 2
+	) );
+	player2.setScene(scene);
+	player2.setScale(new THREE.Vector3(1,1.5,1));
+
+	player2.setKeyCode({
+		38 : 'up',
+		40 : 'down',
+		37 : 'right',
+		39 : 'left'
+	});
+
+	player1.addCollision(player2.sprite);
+	player2.addCollision(player1.sprite);
+
 }
+
 
 
 function animate() {
@@ -328,67 +451,25 @@ function render() {
 			//'Mouse - X:' + mouse.x.toFixed(2) + ' Y:' + mouse.y.toFixed(2),
 			'Mouse - ' + JSON.stringify(mouse),
 			'camera - ' + JSON.stringify(camera.position),
-			'Spritechar1 - ' + JSON.stringify(spriteChar.position),
-			'Spritechar2 - ' + JSON.stringify(spriteChar2.position),
-			'distance - ' + JSON.stringify(spriteChar.position.clone().subSelf(spriteChar2.position))
+			'Spritechar1 - ' + JSON.stringify(player1.sprite.position),
+			'Spritechar2 - ' + JSON.stringify(player2.sprite.position),
+			'distance - ' + JSON.stringify(player1.sprite.position.clone().subSelf(player2.sprite.position))
 		];
 		debugElement.innerHTML = s.join('<br/>');
-	}
+	}	
 
-history['char'].push(spriteChar.position.clone());
-		if (history['char'].length > 5) {
-			history['char'].shift();
-		}
+	player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
+	player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 
-history['char2'].push(spriteChar2.position.clone());
-		if (history['char2'].length > 5) {
-			history['char2'].shift();
-		}
+	player1.saveState();
+	player1.move();
+	player1.checkCollision();
 
-		if (keyPressed.up1) { spriteChar.boundingMesh.position.y = spriteChar.position.y += 2; } 
-		if (keyPressed.down1) { spriteChar.boundingMesh.position.y = spriteChar.position.y -= 2; }
-		if (keyPressed.right1) { spriteChar.boundingMesh.position.x = spriteChar.position.x -= 2; }
-		if (keyPressed.left1) { spriteChar.boundingMesh.position.x = spriteChar.position.x += 2; }
+	player2.saveState();
+	player2.move();
+	player2.checkCollision();
 
-		if (keyPressed.up2) { spriteChar2.boundingMesh.position.y = spriteChar2.position.y += 2; } 
-		if (keyPressed.down2) { spriteChar2.boundingMesh.position.y = spriteChar2.position.y -= 2; }
-		if (keyPressed.right2) { spriteChar2.boundingMesh.position.x = spriteChar2.position.x -= 2; }
-		if (keyPressed.left2) { spriteChar2.boundingMesh.position.x = spriteChar2.position.x += 2; }
-
-	var ray = new THREE.Ray( spriteChar.position, new THREE.Vector3(0,0,0) );
-
-		spriteChar2.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
-
-
-	//var c = THREE.Collisions.rayCastAll(ray);
-	//if (c.length > 0) {
-	var c = spriteCharCollision.rayCastNearest(ray);
-	if (c) {
-			c.mesh.materials[0].color = new THREE.Color(0x550000);
-
-		spriteChar.position = history['char'].pop();
-		console.log(history['char'].length);
-	    //console.log(c);
-	}
-
-
-	var ray2 = new THREE.Ray( spriteChar2.position, new THREE.Vector3(0,0,0) );
-
-		spriteChar.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
-
-
-	//var c = THREE.Collisions.rayCastAll(ray);
-	//if (c.length > 0) {
-	var c2 = spriteChar2Collision.rayCastNearest(ray2);
-	if (c2) {
-			c2.mesh.materials[0].color = new THREE.Color(0x550000);
-
-		spriteChar2.position = history['char2'].pop();
-		console.log(history['char2'].length);
-	    //console.log(c);
-	}
-		
-		renderer.render( scene, camera );
+	renderer.render( scene, camera );
 
 }
 
@@ -409,15 +490,30 @@ function onDocumentMouseMove( event ) {
 
 function onKeyDown(a) {
     var a = a.keyCode;
-
+    /*
     if (a in keyMap) {
     	keyPressed[keyMap[a]] = true;
+    }*/
+
+    if (a in player1.keyCode) {
+    	player1.keyPressed[player1.keyCode[a]] = true;
+    }
+    if (a in player2.keyCode) {
+    	player2.keyPressed[player2.keyCode[a]] = true;
     }
 }
 function onKeyUp(a) {
     a = a.keyCode;
+    /*
     if (a in keyMap) {
     	keyPressed[keyMap[a]] = false;
+    }*/
+
+    if (a in player1.keyCode) {
+    	player1.keyPressed[player1.keyCode[a]] = false;
+    }
+    if (a in player2.keyCode) {
+    	player2.keyPressed[player2.keyCode[a]] = false;
     }
 }
 		</script>
