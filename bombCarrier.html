@@ -83,7 +83,8 @@ var player1, player2;
 
 var debugElement;
 
-
+var tileW = 116;
+var tileH = 59;
 
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -100,7 +101,7 @@ function init_core() {
 		1, 								// Near
 		10000 							// Far
 	);
-	camera.position.z = 500;
+	camera.position.z = 1000;
 
 	loader = new THREE.Loader(true);
 
@@ -156,10 +157,17 @@ var PlayerClass = function(texture, position) {
 		useScreenCoordinates: false 
 	} );
 
+	this.width = 80;
+	this.height = 100;
+
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
-		new THREE.CubeGeometry(40, 40, 40, 1, 1, 1) ,
-		new THREE.MeshLambertMaterial( { color: 0xffffff } )
+		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
+		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+	this.sprite.boundingMesh2 = new THREE.Mesh(
+		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
+		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
@@ -185,22 +193,25 @@ PlayerClass.prototype.setTexture = function(texture) {
 position : Vector3
 */
 PlayerClass.prototype.setPosition = function(position) {
-	this.sprite.position = position;
-	this.sprite.boundingMesh.position = position;
+	this.setPositionX(position.x);
+	this.setPositionY(position.y);
+	this.setPositionZ(position.z);
 };
 /*
 x : float
 */
 PlayerClass.prototype.setPositionX = function(x) {
 	this.sprite.position.x = x;
-	this.sprite.boundingMesh.position.x = x;
+	this.sprite.boundingMesh.position.x = x - this.width / 2;
+	this.sprite.boundingMesh2.position.x = x + this.width / 2;
 };
 /*
 y : float
 */
 PlayerClass.prototype.setPositionY = function(y) {
 	this.sprite.position.y = y;
-	this.sprite.boundingMesh.position.y = y;
+	this.sprite.boundingMesh.position.y = y - this.height / 2;
+	this.sprite.boundingMesh2.position.y = y - this.height / 2;
 };
 /*
 z : float
@@ -208,6 +219,7 @@ z : float
 PlayerClass.prototype.setPositionZ = function(z) {
 	this.sprite.position.z = z;
 	this.sprite.boundingMesh.position.z = z;
+	this.sprite.boundingMesh2.position.z = z;
 };
 
 /*
@@ -224,6 +236,7 @@ PlayerClass.prototype.setScene = function(scene) {
 	this.scene = scene;
 	this.scene.addChild(this.sprite);
 	this.scene.addChild(this.sprite.boundingMesh);
+	this.scene.addChild(this.sprite.boundingMesh2);
 };
 
 /*
@@ -271,15 +284,30 @@ PlayerClass.prototype.move = function() {
 	}
 };
 
+PlayerClass.prototype.checkZIndex = function() {
+	var z = 6 - (this.sprite.position.y - 200 - 10 )/ tileH;
+	this.setPositionZ(z);
+};
+
 PlayerClass.prototype.checkCollision = function() {
-	var ray = new THREE.Ray( this.sprite.position, new THREE.Vector3(0,0,0) );
+	var pop = false;
+	var $this = this;
+	var callback = function() {
+		if (!pop) pop = $this.history.pop();
+		$this.setPosition(pop);
+	};
+	this.checkCollisionItem(this.sprite.boundingMesh, callback);
+	this.checkCollisionItem(this.sprite.boundingMesh2, callback);
+};
+
+PlayerClass.prototype.checkCollisionItem = function(item, callback) {
+	var ray = new THREE.Ray( item.position, new THREE.Vector3(0,0,0) );
 	var c = this.collision.rayCastNearest(ray);
 	if (c) {
-		c.mesh.materials[0].color = new THREE.Color(0x550000);
-
-		this.setPosition(this.history.pop());
+		callback();
 	}
 };
+
 
 //jQuery(function ($) {
 	init_core();
@@ -287,42 +315,110 @@ PlayerClass.prototype.checkCollision = function() {
 	animate();
 //});
 
+
 function init() {
 	// create sprites
-	var amount = 7*7;
-	var radius = 500;
+	var amount = 15*13;
+	//var radius = 500;
 	var mapA = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
 	var mapB = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
+	var mapC = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
 	var char1 = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
-	var tileW = 116;
-	var tileH = 59;
+
+
+
+	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
+		0 * tileW - 200 + 0,
+		0 * tileH - 200 + 280,
+		15 - 0 + 2
+	) );
+	player1.setScene(scene);
+	player1.setScale(new THREE.Vector3(1,1.5,1));
+
+	player1.setKeyCode({
+		87 : 'up',
+		83 : 'down',
+		65 : 'right',
+		68 : 'left'
+	});
+
+	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
+		0 * tileW - 100 + 90,
+		0 * tileH - 200 + 160,
+		15 - 0 + 2
+	) );
+	player2.setScene(scene);
+	player2.setScale(new THREE.Vector3(1,1.5,1));
+
+	player2.setKeyCode({
+		38 : 'up',
+		40 : 'down',
+		37 : 'right',
+		39 : 'left'
+	});
+
+	player1.addCollision(player2.sprite);
+	player2.addCollision(player1.sprite);
+
+
+
+
 
 	group = new THREE.Object3D();
 
 	var level1 = [
-		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
-		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
-		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
-		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
-		[mapA, mapA, mapA, mapA, mapA, mapA, mapA],
-		[mapA, mapB, mapA, mapB, mapA, mapB, mapA],
-		[mapA, mapA, mapA, mapA, mapA, mapA, mapA]
+		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+
+		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC]
 	];
 	var level = level1;
 
 	for( var a = 0; a < amount; a++ ) {
-		var map = level[Math.floor(a/7)][a%7];
+		var map = level[Math.floor(a/15)][a%15];
 		var sprite = new THREE.Sprite( { map: map, useScreenCoordinates: false } );
 
+		if (sprite.map == mapB || sprite.map == mapC) {
+			// Collision area
+			sprite.boundingMesh = new THREE.Mesh(
+				new THREE.CubeGeometry(100, 90, 20, 1, 1, 1) 
+				//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+			);
 
-		sprite.position.set( a%7 * tileW - 300,
-		                     Math.floor(a/7) * tileH - 200,
-		                     7 - Math.floor(a/7) );
+			sprite.boundingMesh.position.set( a%15 * tileW - 800,
+		                     Math.floor(a/15) * tileH - 400 ,
+		                     15 - Math.floor(a/15) );
+
+			group.addChild( sprite.boundingMesh );
+			player1.addCollision(sprite);
+			player2.addCollision(sprite);
+		}
+
+		sprite.position.set( a%15 * tileW - 800,
+		                     Math.floor(a/15) * tileH - 400,
+		                     15 - Math.floor(a/15) );
 
 		//sprite.position.normalize();
 		//sprite.position.multiplyScalar( radius );
-
+		
+		
 		group.addChild( sprite );
 	}
 
@@ -379,38 +475,7 @@ function init() {
 	scene.addChild( sprite );
 	*/
 
-	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
-		0 * tileW - 200,
-		0 * tileH - 200 + 30,
-		7 - 0 + 2
-	) );
-	player1.setScene(scene);
-	player1.setScale(new THREE.Vector3(1,1.5,1));
-
-	player1.setKeyCode({
-		87 : 'up',
-		83 : 'down',
-		65 : 'right',
-		68 : 'left'
-	});
-
-	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
-		0 * tileW - 100,
-		0 * tileH - 200 + 30,
-		7 - 0 + 2
-	) );
-	player2.setScene(scene);
-	player2.setScale(new THREE.Vector3(1,1.5,1));
-
-	player2.setKeyCode({
-		38 : 'up',
-		40 : 'down',
-		37 : 'right',
-		39 : 'left'
-	});
-
-	player1.addCollision(player2.sprite);
-	player2.addCollision(player1.sprite);
+	
 
 }
 
@@ -458,16 +523,18 @@ function render() {
 		debugElement.innerHTML = s.join('<br/>');
 	}	
 
-	player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
-	player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
+	//player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
+	//player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 
 	player1.saveState();
 	player1.move();
 	player1.checkCollision();
+	player1.checkZIndex();
 
 	player2.saveState();
 	player2.move();
 	player2.checkCollision();
+	player2.checkZIndex();
 
 	renderer.render( scene, camera );
 
