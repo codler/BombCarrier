@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-		<title>BombCarrier v0.3</title>
+		<title>BombCarrier v0.4</title>
 		<meta charset="utf-8">
 		<style type="text/css">
 			body {
@@ -29,7 +29,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.3 - 2011-09-22
+ * @version 0.4 - 2011-09-26
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -85,6 +85,9 @@ var debugElement;
 
 var tileW = 116;
 var tileH = 59;
+
+
+var delta, time, oldTime;
 
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -163,11 +166,21 @@ var PlayerClass = function(texture, position) {
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
 		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
-		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
 	this.sprite.boundingMesh2 = new THREE.Mesh(
 		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
-		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+
+	this.sprite.boundingMesh3 = new THREE.Mesh(
+		new THREE.CubeGeometry(this.width / 2, 10, 20, 1, 1, 1) 
+		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+	);
+
+	this.sprite.boundingMesh4 = new THREE.Mesh(
+		new THREE.CubeGeometry(this.width / 2, 10, 20, 1, 1, 1) 
+		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
@@ -202,8 +215,11 @@ x : float
 */
 PlayerClass.prototype.setPositionX = function(x) {
 	this.sprite.position.x = x;
-	this.sprite.boundingMesh.position.x = x - this.width / 2;
-	this.sprite.boundingMesh2.position.x = x + this.width / 2;
+	this.sprite.boundingMesh.position.x = x - this.width / 2 + 30;
+	this.sprite.boundingMesh2.position.x = x + this.width / 2 - 30;
+
+	this.sprite.boundingMesh3.position.x = x ;
+	this.sprite.boundingMesh4.position.x = x ;
 };
 /*
 y : float
@@ -212,6 +228,9 @@ PlayerClass.prototype.setPositionY = function(y) {
 	this.sprite.position.y = y;
 	this.sprite.boundingMesh.position.y = y - this.height / 2;
 	this.sprite.boundingMesh2.position.y = y - this.height / 2;
+
+	this.sprite.boundingMesh3.position.y = y - this.width + 40;
+	this.sprite.boundingMesh4.position.y = y - this.width + 20;
 };
 /*
 z : float
@@ -220,6 +239,8 @@ PlayerClass.prototype.setPositionZ = function(z) {
 	this.sprite.position.z = z;
 	this.sprite.boundingMesh.position.z = z;
 	this.sprite.boundingMesh2.position.z = z;
+	this.sprite.boundingMesh3.position.z = z;
+	this.sprite.boundingMesh4.position.z = z;
 };
 
 /*
@@ -237,6 +258,8 @@ PlayerClass.prototype.setScene = function(scene) {
 	this.scene.addChild(this.sprite);
 	this.scene.addChild(this.sprite.boundingMesh);
 	this.scene.addChild(this.sprite.boundingMesh2);
+	this.scene.addChild(this.sprite.boundingMesh3);
+	this.scene.addChild(this.sprite.boundingMesh4);
 };
 
 /*
@@ -269,18 +292,20 @@ PlayerClass.prototype.setKeyCode = function(keys) {
 	this.keyCode = keys;
 };
 
-PlayerClass.prototype.move = function() {
+PlayerClass.prototype.move = function(speed) {
+
+
 	if (this.keyPressed.up) {
-		this.setPositionY(this.sprite.position.y + 2);
+		this.setPositionY(this.sprite.position.y + speed);
 	}
 	if (this.keyPressed.down) {
-		this.setPositionY(this.sprite.position.y - 2);
+		this.setPositionY(this.sprite.position.y - speed);
 	}
 	if (this.keyPressed.right) {
-		this.setPositionX(this.sprite.position.x - 2);
+		this.setPositionX(this.sprite.position.x - speed);
 	}
 	if (this.keyPressed.left) {
-		this.setPositionX(this.sprite.position.x + 2);
+		this.setPositionX(this.sprite.position.x + speed);
 	}
 };
 
@@ -292,19 +317,27 @@ PlayerClass.prototype.checkZIndex = function() {
 PlayerClass.prototype.checkCollision = function() {
 	var pop = false;
 	var $this = this;
-	var callback = function() {
+	var callback = function(side) {
 		if (!pop) pop = $this.history.pop();
-		$this.setPosition(pop);
+		if (side == 'l' || side == 'r') {
+			$this.setPositionX(pop.x);
+		} else if (side == 'n' || side == 's') {
+			$this.setPositionY(pop.y);
+		} else {
+			$this.setPosition(pop);
+		}
 	};
-	this.checkCollisionItem(this.sprite.boundingMesh, callback);
-	this.checkCollisionItem(this.sprite.boundingMesh2, callback);
+	this.checkCollisionItem(this.sprite.boundingMesh, callback, 'l');
+	this.checkCollisionItem(this.sprite.boundingMesh2, callback, 'r');
+	this.checkCollisionItem(this.sprite.boundingMesh3, callback, 'n');
+	this.checkCollisionItem(this.sprite.boundingMesh4, callback, 's');
 };
 
-PlayerClass.prototype.checkCollisionItem = function(item, callback) {
+PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	var ray = new THREE.Ray( item.position, new THREE.Vector3(0,0,0) );
 	var c = this.collision.rayCastNearest(ray);
 	if (c) {
-		callback();
+		callback(side);
 	}
 };
 
@@ -398,13 +431,13 @@ function init() {
 		if (sprite.map == mapB || sprite.map == mapC) {
 			// Collision area
 			sprite.boundingMesh = new THREE.Mesh(
-				new THREE.CubeGeometry(100, 90, 20, 1, 1, 1) 
-				//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+				new THREE.CubeGeometry(120, 80, 20, 1, 1, 1) 
+				,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 			);
 
 			sprite.boundingMesh.position.set( a%15 * tileW - 800,
 		                     Math.floor(a/15) * tileH - 400 ,
-		                     15 - Math.floor(a/15) );
+		                     15 - Math.floor(a/15));
 
 			group.addChild( sprite.boundingMesh );
 			player1.addCollision(sprite);
@@ -413,7 +446,7 @@ function init() {
 
 		sprite.position.set( a%15 * tileW - 800,
 		                     Math.floor(a/15) * tileH - 400,
-		                     15 - Math.floor(a/15) );
+		                     15 - Math.floor(a/15));
 
 		//sprite.position.normalize();
 		//sprite.position.multiplyScalar( radius );
@@ -526,13 +559,19 @@ function render() {
 	//player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 	//player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 
+	if ( ! oldTime ) oldTime = new Date().getTime();
+
+	time = new Date().getTime();
+	delta = 0.1 * ( time - oldTime );
+	oldTime = time;
+
 	player1.saveState();
-	player1.move();
+	player1.move(delta);
 	player1.checkCollision();
 	player1.checkZIndex();
 
 	player2.saveState();
-	player2.move();
+	player2.move(delta);
 	player2.checkCollision();
 	player2.checkZIndex();
 
