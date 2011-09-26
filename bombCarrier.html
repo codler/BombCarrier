@@ -23,13 +23,14 @@
 		<script type="text/javascript" src="fonts/helvetiker_regular.typeface.js"></script>
 
 		<script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>
+		<script src="js/jquery.fittext.js"></script>
 
 		<script type="text/javascript">
 /**
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4 - 2011-09-26
+ * @version 0.4.1 - 2011-09-27
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -120,6 +121,13 @@ function init_core() {
 	// Event listener
 	document.addEventListener( 'keydown', onKeyDown, false );
 	document.addEventListener( 'keyup', onKeyUp, false );
+	window.addEventListener('resize', function() {
+		SCREEN_WIDTH = window.innerWidth;
+		SCREEN_HEIGHT = window.innerHeight;
+		renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+		camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+		camera.updateProjectionMatrix();
+	}, false);
 
 	container.onmousemove = onDocumentMouseMove;
 
@@ -133,6 +141,29 @@ function init_core() {
 		debugElement.style.opacity = 0.5;
 		debugElement.style.marginLeft = '80px';
 		container.appendChild( debugElement );	
+
+		var e = document.createElement( 'div' );
+		e.style.position = 'absolute';
+		e.style.top = '0px';
+		e.style.left = '0px';
+		e.style.zIndex = 101;
+		e.style.backgroundColor = '#cccccc';
+		e.style.opacity = 0.5;
+		e.style.width = '100%';
+		e.style.height = '100%';
+		e.style.textAlign = 'center';
+		//e.style.fontSize = '5px';
+
+		var a = $('<h1>').text('Play').width('100%');
+		$(function () {
+			
+		$(e).fitText(2.5).click(function () {
+			$(this).remove();
+		});
+		});
+		e.appendChild(a[0]);
+
+		container.appendChild( e );	
 	}
 
 	// Stats - FPS viewer
