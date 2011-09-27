@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
 	<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<title>BombCarrier v0.4</title>
 		<meta charset="utf-8">
 		<style type="text/css">
@@ -158,16 +159,24 @@ function init_core() {
 			'width' : '100%',
 			'height' : '100%',
 			'text-align' : 'center',
-			'font-family' : "'Holtwood One SC', serif"
-
+			'font-family' : "'Holtwood One SC', serif",
 		});
 
-		var bomb_title = $('<h1>').text('Bomb').width('100%');
-		var carrier_title = $('<h2>').text('Carrier').width('100%');
-		var a = $('<h1>').html(' Play').width('100%');
+		var bomb_title = $('<h1>').html('B<span style="color:#000">o</span>mb').width('100%').css({
+			'color' : '#fff',
+			'line-height' : 1,
+			'padding' : 0,
+			'margin' : 0
+		});
+		var carrier_title = $('<h1>').text('Carrier').width('100%').css({
+			'padding' : 0,
+			'line-height' : 1,
+			'margin' : 0,
+		});
+		var a = $('<h1>').html('<br/>Play').width('100%');
 			
 		$(bomb_title).fitText(0.08);	
-		$(carrier_title).fitText(0.1);
+		$(carrier_title).fitText(0.13);
 		$(a).fitText(0.2).click(function() {
 			$(e).remove();
 		});
