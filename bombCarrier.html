@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-	<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
-		<title>BombCarrier v0.4</title>
 		<meta charset="utf-8">
+		<title>BombCarrier v0.4.2</title>
+		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
 			body {
 				background:#fff;
@@ -25,14 +25,14 @@
 		<script type="text/javascript" src="fonts/helvetiker_regular.typeface.js"></script>
 
 		<script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>
-		<script src="js/jquery.fittext.js"></script>
+		<script type="text/javascript" src="js/jquery.fittext.js"></script>
 
 		<script type="text/javascript">
 /**
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.1 - 2011-09-27
+ * @version 0.4.2 - 2011-09-27
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -93,123 +93,12 @@ var tileH = 59;
 var delta, time, oldTime;
 
 
-// Initialize core - canvas, camera, scene, debuginfo
-function init_core() {
-
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
-
-	projector = new THREE.Projector();
-
-	camera = new THREE.Camera( 
-		60, 							// FOV, field of view
-		SCREEN_WIDTH / SCREEN_HEIGHT, 	// Aspect ratio
-		1, 								// Near
-		10000 							// Far
-	);
-	camera.position.z = 1000;
-
-	loader = new THREE.Loader(true);
-
-	scene = new THREE.Scene();
-
-	// renderer
-	renderer = new THREE.WebGLRenderer();
-	renderer.setClearColorHex( 0x000000, 1 );
-	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-
-	container.appendChild( renderer.domElement );
-
-	// Event listener
-	document.addEventListener( 'keydown', onKeyDown, false );
-	document.addEventListener( 'keyup', onKeyUp, false );
-	window.addEventListener('resize', function() {
-		SCREEN_WIDTH = window.innerWidth;
-		SCREEN_HEIGHT = window.innerHeight;
-		renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-		camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-		camera.updateProjectionMatrix();
-	}, false);
-
-	container.onmousemove = onDocumentMouseMove;
-
-	// Debug box
-	if (DEBUG) {
-
-		debugElement = $('<div>').css({
-			'position' : 'absolute',
-			'top' : 0,
-			'z-index' : 101,
-			'background-color' : '#ccc',
-			'opacity' : 0.5,
-			'margin-left' : 80
-		});
-		container.appendChild( debugElement[0] );
-		
-		
-		
-		var e = $('<div>').css({
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'opacity' : 1,
-			'width' : '100%',
-			'height' : '100%',
-			'text-align' : 'center',
-			'font-family' : "'Holtwood One SC', serif",
-		});
-
-		var bomb_title = $('<h1>').html('B<span style="color:#000">o</span>mb').width('100%').css({
-			'color' : '#fff',
-			'line-height' : 1,
-			'padding' : 0,
-			'margin' : 0
-		});
-		var carrier_title = $('<h1>').text('Carrier').width('100%').css({
-			'padding' : 0,
-			'line-height' : 1,
-			'margin' : 0,
-		});
-		var a = $('<h1>').html('<br/>Play').width('100%');
-			
-		$(bomb_title).fitText(0.08);	
-		$(carrier_title).fitText(0.13);
-		$(a).fitText(0.2).click(function() {
-			$(e).remove();
-		});
-
-		$(a).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(a).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		e.append(bomb_title);
-		e.append(carrier_title);
-		e.append(a);
-
-		container.appendChild( e[0] );	
-
-	}
-
-
-
-	// Stats - FPS viewer
-	stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.top = '0px';
-	stats.domElement.style.zIndex = 100;
-	container.appendChild( stats.domElement );
-}
+var texture = {
+	'map-a'	: 'textures/Dirt Block.png',
+	'map-b' : 'textures/Stone Block Tall.png',
+	'map-c' : 'textures/Water Block.png',
+	'char-1' : 'textures/Character Princess Girl.png'
+};
 
 
 
@@ -221,7 +110,7 @@ Player class
 map : texture
 position : Vector3
 */
-var PlayerClass = function(texture, position) {
+var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -451,18 +340,141 @@ TileSystem.prototype.setScene = function(scene) {
 	this.scene = scene;
 };
 
-jQuery(function ($) {
-	init_core();
+
+
+
+
+
+// Initialize core - canvas, camera, scene, debuginfo
+function init_core() {
+
+	container = $('<div>');
+	$('body').append( container );
+
+	projector = new THREE.Projector();
+
+	camera = new THREE.Camera( 
+		60, 							// FOV, field of view
+		SCREEN_WIDTH / SCREEN_HEIGHT, 	// Aspect ratio
+		1, 								// Near
+		10000 							// Far
+	);
+	camera.position.z = 1000;
+
+	loader = new THREE.Loader( true );
+
+	scene = new THREE.Scene();
+
+	// renderer
+	renderer = new THREE.WebGLRenderer();
+	renderer.setClearColorHex( 0x000000, 1 );
+	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+	container.append( renderer.domElement );
+
+	// Event listener
+	$(document).keydown( onKeyDown );
+	$(document).keyup( onKeyUp );
+	$(window).resize(function() {
+		SCREEN_WIDTH = window.innerWidth;
+		SCREEN_HEIGHT = window.innerHeight;
+		renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+		camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+		camera.updateProjectionMatrix();
+	});
+
+	container.mousemove( onDocumentMouseMove );
+
+	// Debug box
+	if (DEBUG) {
+
+		debugElement = $('<div>').css({
+			'background-color' : '#ccc',
+			'margin-left' : 80,
+			'opacity' : 0.5,
+			'position' : 'absolute',
+			'top' : 0,
+			'z-index' : 1001
+		});
+		container.append( debugElement );
+
+	}
+
+	// Stats - FPS viewer
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	stats.domElement.style.zIndex = 1000;
+	container.append( stats.domElement );
+}
+
+function intro_scene() {
+		var intro_scene = $('<div>').css({
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'font-family' : "'Holtwood One SC', serif",
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'text-align' : 'center',
+			'width' : '100%',
+			'height' : '100%'
+		});
+
+		var bomb_title = $('<h1>')
+			.html('B<span style="color:#000">o</span>mb')
+			.css({
+				'color' : '#fff',
+				'line-height' : 1,
+				'padding' : 0,
+				'margin' : 0,
+				'width' : '100%'
+			});
+
+		var carrier_title = $('<h1>')
+			.text('Carrier')
+			.css({
+				'padding' : 0,
+				'line-height' : 1,
+				'margin' : 0,
+				'width' : '100%'
+			});
+
+		var meny = $('<h1>').html('<br/>Play').width('100%');
+			
+		$(bomb_title).fitText( 0.08 );	
+		$(carrier_title).fitText( 0.13 );
+		$(meny).fitText( 0.2 )
+			// Start game
+			.click(function() {
+				play_scene();
+				intro_scene.remove();
+			});
+
+		$(meny).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(meny).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+		intro_scene.append( bomb_title );
+		intro_scene.append( carrier_title );
+		intro_scene.append( meny );
+
+		container.append( intro_scene );	
+}
+
+function play_scene() {
 	init();
 	animate();
-});
-
-var texture = {
-	'map-a'	: 'textures/Dirt Block.png',
-	'map-b' : 'textures/Stone Block Tall.png',
-	'map-c' : 'textures/Water Block.png',
-	'char-1' : 'textures/Character Princess Girl.png'
-};
+}
 
 
 function init() {
@@ -738,6 +750,11 @@ function onKeyUp(a) {
     	player2.keyPressed[player2.keyCode[a]] = false;
     }
 }
+
+jQuery(function ($) {
+	init_core();
+	intro_scene();
+});
 		</script>
 	</body>
 </html>
