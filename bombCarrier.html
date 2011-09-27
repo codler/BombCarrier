@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
+	<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<title>BombCarrier v0.4</title>
 		<meta charset="utf-8">
 		<style type="text/css">
@@ -133,38 +134,65 @@ function init_core() {
 
 	// Debug box
 	if (DEBUG) {
-		debugElement = document.createElement( 'div' );
-		debugElement.style.position = 'absolute';
-		debugElement.style.top = '0px';
-		debugElement.style.zIndex = 101;
-		debugElement.style.backgroundColor = '#cccccc';
-		debugElement.style.opacity = 0.5;
-		debugElement.style.marginLeft = '80px';
-		container.appendChild( debugElement );	
 
-		var e = document.createElement( 'div' );
-		e.style.position = 'absolute';
-		e.style.top = '0px';
-		e.style.left = '0px';
-		e.style.zIndex = 101;
-		e.style.backgroundColor = '#cccccc';
-		e.style.opacity = 0.5;
-		e.style.width = '100%';
-		e.style.height = '100%';
-		e.style.textAlign = 'center';
-		//e.style.fontSize = '5px';
+		debugElement = $('<div>').css({
+			'position' : 'absolute',
+			'top' : 0,
+			'z-index' : 101,
+			'background-color' : '#ccc',
+			'opacity' : 0.5,
+			'margin-left' : 80
+		});
+		container.appendChild( debugElement[0] );
+		
+		
+		
+		var e = $('<div>').css({
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'opacity' : 1,
+			'width' : '100%',
+			'height' : '100%',
+			'text-align' : 'center',
+			'font-family' : "'Holtwood One SC', serif"
 
-		var a = $('<h1>').text('Play').width('100%');
-		$(function () {
+		});
+
+		var bomb_title = $('<h1>').text('Bomb').width('100%');
+		var carrier_title = $('<h2>').text('Carrier').width('100%');
+		var a = $('<h1>').html(' Play').width('100%');
 			
-		$(e).fitText(2.5).click(function () {
-			$(this).remove();
+		$(bomb_title).fitText(0.08);	
+		$(carrier_title).fitText(0.1);
+		$(a).fitText(0.2).click(function() {
+			$(e).remove();
 		});
-		});
-		e.appendChild(a[0]);
 
-		container.appendChild( e );	
+		$(a).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(a).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+		e.append(bomb_title);
+		e.append(carrier_title);
+		e.append(a);
+
+		container.appendChild( e[0] );	
+
 	}
+
+
 
 	// Stats - FPS viewer
 	stats = new Stats();
@@ -373,11 +401,11 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 };
 
 
-//jQuery(function ($) {
+jQuery(function ($) {
 	init_core();
 	init();
 	animate();
-//});
+});
 
 
 function init() {
@@ -463,7 +491,7 @@ function init() {
 			// Collision area
 			sprite.boundingMesh = new THREE.Mesh(
 				new THREE.CubeGeometry(120, 80, 20, 1, 1, 1) 
-				,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+			//	,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 			);
 
 			sprite.boundingMesh.position.set( a%15 * tileW - 800,
@@ -584,7 +612,7 @@ function render() {
 			'Spritechar2 - ' + JSON.stringify(player2.sprite.position),
 			'distance - ' + JSON.stringify(player1.sprite.position.clone().subSelf(player2.sprite.position))
 		];
-		debugElement.innerHTML = s.join('<br/>');
+		debugElement.html (s.join('<br/>'));
 	}	
 
 	//player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
