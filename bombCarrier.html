@@ -410,11 +410,59 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 };
 
 
+var TileSystem = function(x, y) {
+	this.x = x;
+	this.y = y;
+};
+
+TileSystem.prototype.tileInfo = {
+	0 : 'map-a',
+	1 : 'map-b',
+	2 : 'map-c'
+};
+
+TileSystem.prototype.loadMap = function() {
+	var level1 = [
+		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+		
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+
+		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+
+		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC]
+	];	
+
+};
+
+TileSystem.prototype.setScene = function(scene) {
+	this.scene = scene;
+};
+
 jQuery(function ($) {
 	init_core();
 	init();
 	animate();
 });
+
+var texture = {
+	'map-a'	: 'textures/Dirt Block.png',
+	'map-b' : 'textures/Stone Block Tall.png',
+	'map-c' : 'textures/Water Block.png',
+	'char-1' : 'textures/Character Princess Girl.png'
+};
 
 
 function init() {
