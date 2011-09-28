@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.12</title>
+		<title>BombCarrier v0.4.13</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
@@ -32,7 +32,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.12 - 2011-09-27
+ * @version 0.4.13 - 2011-09-29
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -122,22 +122,8 @@ var PlayerClass = function( texture, position ) {
 
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
-		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
-		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
-	);
-	this.sprite.boundingMesh2 = new THREE.Mesh(
-		new THREE.CubeGeometry(10, this.height / 2, 20, 1, 1, 1) 
-		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
-	);
-
-	this.sprite.boundingMesh3 = new THREE.Mesh(
-		new THREE.CubeGeometry(this.width / 2, 10, 20, 1, 1, 1) 
-		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
-	);
-
-	this.sprite.boundingMesh4 = new THREE.Mesh(
-		new THREE.CubeGeometry(this.width / 2, 10, 20, 1, 1, 1) 
-		,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+		new THREE.CubeGeometry(40, 40, 100, 1, 1, 1) 
+		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
@@ -172,22 +158,14 @@ x : float
 */
 PlayerClass.prototype.setPositionX = function(x) {
 	this.sprite.position.x = x;
-	this.sprite.boundingMesh.position.x = x - this.width / 2 + 30;
-	this.sprite.boundingMesh2.position.x = x + this.width / 2 - 30;
-
-	this.sprite.boundingMesh3.position.x = x ;
-	this.sprite.boundingMesh4.position.x = x ;
+	this.sprite.boundingMesh.position.x = x;
 };
 /*
 y : float
 */
 PlayerClass.prototype.setPositionY = function(y) {
 	this.sprite.position.y = y;
-	this.sprite.boundingMesh.position.y = y - this.height / 2;
-	this.sprite.boundingMesh2.position.y = y - this.height / 2;
-
-	this.sprite.boundingMesh3.position.y = y - this.width + 40;
-	this.sprite.boundingMesh4.position.y = y - this.width + 20;
+	this.sprite.boundingMesh.position.y = y - 40;
 };
 /*
 z : float
@@ -195,9 +173,6 @@ z : float
 PlayerClass.prototype.setPositionZ = function(z) {
 	this.sprite.position.z = z;
 	this.sprite.boundingMesh.position.z = z;
-	this.sprite.boundingMesh2.position.z = z;
-	this.sprite.boundingMesh3.position.z = z;
-	this.sprite.boundingMesh4.position.z = z;
 };
 
 /*
@@ -214,9 +189,6 @@ PlayerClass.prototype.setScene = function(scene) {
 	this.scene = scene;
 	this.scene.addChild(this.sprite);
 	this.scene.addChild(this.sprite.boundingMesh);
-	this.scene.addChild(this.sprite.boundingMesh2);
-	this.scene.addChild(this.sprite.boundingMesh3);
-	this.scene.addChild(this.sprite.boundingMesh4);
 };
 
 /*
@@ -259,16 +231,16 @@ PlayerClass.prototype.move = function(speed) {
 		this.setPositionY(this.sprite.position.y - speed);
 	}
 	if (this.keyPressed.right) {
-		this.setPositionX(this.sprite.position.x - speed);
+		this.setPositionX(this.sprite.position.x + speed);
 	}
 	if (this.keyPressed.left) {
-		this.setPositionX(this.sprite.position.x + speed);
+		this.setPositionX(this.sprite.position.x - speed);
 	}
 };
 
 PlayerClass.prototype.checkZIndex = function() {
-	var z = 6 - (this.sprite.position.y - 200 - 10 )/ tileH;
-	this.setPositionZ(z);
+	var z = -2 - (this.sprite.position.y - 200 - 10 )/ tileH * 2;
+	this.setPositionZ(z - (z - Math.floor(z)) / 2 + (z - Math.floor(z)) / 4);
 };
 
 PlayerClass.prototype.checkCollision = function() {
@@ -284,16 +256,40 @@ PlayerClass.prototype.checkCollision = function() {
 			$this.setPosition(pop);
 		}
 	};
-	this.checkCollisionItem(this.sprite.boundingMesh, callback, 'l');
-	this.checkCollisionItem(this.sprite.boundingMesh2, callback, 'r');
-	this.checkCollisionItem(this.sprite.boundingMesh3, callback, 'n');
-	this.checkCollisionItem(this.sprite.boundingMesh4, callback, 's');
+	if (this.keyPressed.up) {
+		this.checkCollisionItem(this.sprite.boundingMesh, callback, 'n');
+	}
+	if (this.keyPressed.down) {
+		this.checkCollisionItem(this.sprite.boundingMesh, callback, 's');
+	}
+	if (this.keyPressed.right) {
+		this.checkCollisionItem(this.sprite.boundingMesh, callback, 'r');
+	}
+	if (this.keyPressed.left) {
+		this.checkCollisionItem(this.sprite.boundingMesh, callback, 'l');
+	}
 };
 
 PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
-	var ray = new THREE.Ray( item.position, new THREE.Vector3(0,0,0) );
+	var direction;
+	var position = item.position.clone();
+	if (side == 'l') {
+		direction = new THREE.Vector3(0,-1,0);
+		position.addSelf(new THREE.Vector3(-20, 20 - 2, 0));
+	} else if (side == 'r') {
+		direction = new THREE.Vector3(0,-1,0);
+		position.addSelf(new THREE.Vector3(20, 20 - 2, 0));
+	} else if (side == 'n') {
+		direction = new THREE.Vector3(1,0,0);
+		position.addSelf(new THREE.Vector3(-20 + 2, 20, 0));
+	} else if (side == 's') {
+		direction = new THREE.Vector3(-1,0,0);
+		position.addSelf(new THREE.Vector3(20 - 2, -20, 0));
+	}
+
+	var ray = new THREE.Ray( position, direction );
 	var c = this.collision.rayCastNearest(ray);
-	if (c) {
+	if (c && c.distance < 40 - 5) {
 		callback(side);
 	}
 };
@@ -501,7 +497,7 @@ function init() {
 	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
 		0 * tileW - 200 + 0,
 		0 * tileH - 200 + 280,
-		15 - 0 + 2
+		15 + 2
 	) );
 	player1.setScene(scene);
 	player1.setScale(new THREE.Vector3(1,1.5,1));
@@ -509,14 +505,14 @@ function init() {
 	player1.setKeyCode({
 		87 : 'up',
 		83 : 'down',
-		65 : 'right',
-		68 : 'left'
+		68 : 'right',
+		65 : 'left'
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
 		0 * tileW - 100 + 90,
 		0 * tileH - 200 + 160,
-		15 - 0 + 2
+		15 + 2
 	) );
 	player2.setScene(scene);
 	player2.setScale(new THREE.Vector3(1,1.5,1));
@@ -524,12 +520,12 @@ function init() {
 	player2.setKeyCode({
 		38 : 'up',
 		40 : 'down',
-		37 : 'right',
-		39 : 'left'
+		39 : 'right',
+		37 : 'left'
 	});
 
-	player1.addCollision(player2.sprite);
-	player2.addCollision(player1.sprite);
+	//player1.addCollision(player2.sprite);
+	//player2.addCollision(player1.sprite);
 
 
 
@@ -562,19 +558,23 @@ function init() {
 	var level = level1;
 
 	for( var a = 0; a < amount; a++ ) {
+
+		var z = 15 - Math.floor(a/15) * 2;
+
 		var map = level[Math.floor(a/15)][a%15];
 		var sprite = new THREE.Sprite( { map: map, useScreenCoordinates: false } );
 
 		if (sprite.map == mapB || sprite.map == mapC) {
+			z++;
 			// Collision area
 			sprite.boundingMesh = new THREE.Mesh(
-				new THREE.CubeGeometry(120, 80, 20, 1, 1, 1) 
-			//	,new THREE.MeshLambertMaterial( { color: 0xffffff } )
+				new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+				//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
 			);
 
 			sprite.boundingMesh.position.set( a%15 * tileW - 800,
-		                     Math.floor(a/15) * tileH - 400 ,
-		                     15 - Math.floor(a/15));
+		                     Math.floor(a/15) * tileH - 400 + 10,
+		                     z - 20);
 
 			group.addChild( sprite.boundingMesh );
 			player1.addCollision(sprite);
@@ -583,7 +583,7 @@ function init() {
 
 		sprite.position.set( a%15 * tileW - 800,
 		                     Math.floor(a/15) * tileH - 400,
-		                     15 - Math.floor(a/15));
+		                     z);
 
 		//sprite.position.normalize();
 		//sprite.position.multiplyScalar( radius );
@@ -598,7 +598,7 @@ function init() {
 
 
 	// Inline text
-	var text3d = new THREE.TextGeometry( 'testar text', {
+	/*var text3d = new THREE.TextGeometry( 'testar text', {
 
 					size: 80,
 					height: 20,
@@ -622,7 +622,7 @@ function init() {
 				parent = new THREE.Object3D();
                 parent.addChild( text );
 
-				scene.addObject( parent );
+				scene.addObject( parent );*/
 
 
 	//THREE.Collisions.colliders.push(spriteChar2);
@@ -690,6 +690,21 @@ function render() {
 			'Spritechar2 - ' + JSON.stringify(player2.sprite.position),
 			'distance - ' + JSON.stringify(player1.sprite.position.clone().subSelf(player2.sprite.position))
 		];
+
+		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		projector.unprojectVector( vector, camera );
+
+		var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+		var c = player1.collision.rayCastNearest( ray );
+
+		if ( c ) {
+
+			s.push('Mouse collision distance - ' + c.distance.toFixed(2));
+			s.push('Mouse collision item position (z+20)- ' + JSON.stringify(c.mesh.position));
+
+		}
+
 		debugElement.html (s.join('<br/>'));
 	}	
 
