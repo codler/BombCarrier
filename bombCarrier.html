@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.13</title>
+		<title>BombCarrier v0.4.15</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
@@ -32,7 +32,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.14 - 2011-09-29
+ * @version 0.4.15 - 2011-09-30
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -302,10 +302,18 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	}
 };
 
-
+// x,y offset
+// -800,-400
 var TileSystem = function(x, y) {
 	this.x = x;
 	this.y = y;
+	this.tiles = new THREE.Object3D();
+	this.players = [];
+};
+
+TileSystem.prototype.tileSize = {
+	'width': 116,
+	'height' : 59
 };
 
 TileSystem.prototype.tileInfo = {
@@ -315,34 +323,123 @@ TileSystem.prototype.tileInfo = {
 };
 
 TileSystem.prototype.loadMap = function() {
-	var level1 = [
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
 
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
+	var times = function (s, i) {
+		return (new Array(i+1)).join(s);
+	};
+	var repeat = function(s, i){
+		var t = [];
+		while(i--) t.push(s);
+		return t;
+	};
 
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
+	var l = [];
+	l.push( times('2 ', 15).trim() );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
+	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( times('2 ', 15).trim() );
+	l = l.join('\n');
 
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC]
-	];	
 
+	l = l.split('\n').reverse().map(function(x) { return x.split(' ')});
+	/*
+	var l = [];
+	l.push( repeat(3, 15) );
+	l.push( [3].concat( repeat(0, 13) ).concat(3) );
+	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
+	l.push( [3].concat( repeat(0, 13) ).concat(3) );
+	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
+	l.push( [3].concat( repeat(0, 13) ).concat(3) );
+	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
+	l.push( [3].concat( repeat(0, 13) ).concat(3) );
+	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
+	l.push( [3].concat( repeat(0, 13) ).concat(3) );
+	l.push( repeat(3, 15) );
+*/
+
+	var level = l;
+	this.sizeWidth = level[0].length;
+	this.sizeHeight = level.length;
+
+	for (var x = 0; x < this.sizeWidth; x++) {
+		for (var y = 0; y < this.sizeHeight; y++) {
+			// Times 2 means one TileSizeY equals 2z
+			var z = this.sizeWidth - y * 2;
+			var tileType = level[y][x];
+			var tileTexture = this.tileInfo[ tileType ];
+
+			var sprite = new THREE.Sprite( { 
+				map: texture[tileTexture], 
+				useScreenCoordinates: false 
+			} );
+
+			
+
+			// Collision on tileType 1,2
+			if (tileType == 1 || tileType == 2) {
+				z++;
+				// Collision area
+				sprite.boundingMesh = new THREE.Mesh(
+					new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+					//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
+				);
+
+				sprite.boundingMesh.position.set(
+					x * this.tileSize.width + this.x,
+					y * this.tileSize.height + this.y + 10,
+					z
+				);
+				
+				// Register collision to players
+				for (var p = 0; p < this.players.length; p++) {
+					this.players[p].addCollision(sprite);
+				}
+
+				this.tiles.addChild( sprite.boundingMesh );
+
+			}
+
+			sprite.position.set(
+				x * this.tileSize.width + this.x,
+				y * this.tileSize.height + this.y,
+				z
+			);
+
+
+			this.tiles.addChild( sprite );
+		}
+	}
+
+};
+
+/*
+player : PlayerClass
+*/
+TileSystem.prototype.addPlayer = function(player) {
+	this.players.push(player);
 };
 
 TileSystem.prototype.setScene = function(scene) {
 	this.scene = scene;
+	this.scene.addChild(this.tiles);
 };
+
+TileSystem.prototype.getPosition = function(tileX, tileY) {
+	return new THREE.Vector3(
+		tileX * this.tileSize.width + this.x, 
+		tileY * this.tileSize.height + this.y, 
+		0
+	);
+}
 
 
 
@@ -536,10 +633,15 @@ function init() {
 	//player1.addCollision(player2.sprite);
 	//player2.addCollision(player1.sprite);
 
+	var tileSystem = new TileSystem( -800, -400 );
+	tileSystem.addPlayer(player1);
+	tileSystem.addPlayer(player2);
+	tileSystem.loadMap();
+	tileSystem.setScene(scene);
 
+	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
 
-	bombs = new THREE.Object3D();
-
+/*
 	group = new THREE.Object3D();
 
 	var level1 = [
@@ -601,8 +703,11 @@ function init() {
 		group.addChild( sprite );
 	}
 
-	scene.addChild( group );
+	scene.addChild( group );*/
 
+
+
+	bombs = new THREE.Object3D();
 	scene.addChild( bombs );
 
 	
@@ -771,9 +876,9 @@ function onKeyDown(a) {
 	    	var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
 			
 			bomb.position.x = player1.sprite.position.x;
-			bomb.position.y = player1.sprite.position.y;
-			bomb.position.z = player1.sprite.position.z+2;
-			bombs.addChild(bomb);
+			bomb.position.y = player1.sprite.position.y - 40;
+			bomb.position.z = player1.sprite.position.z - 0.5;
+			bombs.addChild( bomb );
     	}
     }
     if (a in player2.keyCode) {
