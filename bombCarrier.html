@@ -32,7 +32,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.13 - 2011-09-29
+ * @version 0.4.14 - 2011-09-29
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -51,6 +51,7 @@ var projector;
 var loader;
 
 var group;
+var bombs;
 var time = 0;
 
 var mouse = { x: 0, y: 0 };
@@ -97,7 +98,8 @@ var texture = {
 	'map-a'	: 'textures/Dirt Block.png',
 	'map-b' : 'textures/Stone Block Tall.png',
 	'map-c' : 'textures/Water Block.png',
-	'char-1' : 'textures/Character Princess Girl.png'
+	'char-1' : 'textures/Character Princess Girl.png',
+	'bomb' : 'textures/bomb.png'
 };
 
 
@@ -127,7 +129,13 @@ var PlayerClass = function( texture, position ) {
 	);
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
-	this.setKeyPressed({up:false,right:false,down:false,left:false});
+	this.setKeyPressed({
+		up:false,
+		right:false,
+		down:false,
+		left:false,
+		bomb:false
+	});
 
 	this.collision = new THREE.CollisionSystem();
 	
@@ -503,10 +511,11 @@ function init() {
 	player1.setScale(new THREE.Vector3(1,1.5,1));
 
 	player1.setKeyCode({
-		87 : 'up',
-		83 : 'down',
-		68 : 'right',
-		65 : 'left'
+		87 : 'up', // w
+		83 : 'down', // s
+		68 : 'right', // d
+		65 : 'left', // a
+		32 : 'bomb' // space
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
@@ -518,10 +527,10 @@ function init() {
 	player2.setScale(new THREE.Vector3(1,1.5,1));
 
 	player2.setKeyCode({
-		38 : 'up',
-		40 : 'down',
-		39 : 'right',
-		37 : 'left'
+		38 : 'up', // arrow up
+		40 : 'down', // arrow down
+		39 : 'right', // arrow right
+		37 : 'left' // arrow left
 	});
 
 	//player1.addCollision(player2.sprite);
@@ -529,7 +538,7 @@ function init() {
 
 
 
-
+	bombs = new THREE.Object3D();
 
 	group = new THREE.Object3D();
 
@@ -593,6 +602,8 @@ function init() {
 	}
 
 	scene.addChild( group );
+
+	scene.addChild( bombs );
 
 	
 
@@ -755,10 +766,20 @@ function onKeyDown(a) {
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = true;
+
+    	if (player1.keyPressed.bomb) {
+	    	var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+			
+			bomb.position.x = player1.sprite.position.x;
+			bomb.position.y = player1.sprite.position.y;
+			bomb.position.z = player1.sprite.position.z+2;
+			bombs.addChild(bomb);
+    	}
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
     }
+
 }
 function onKeyUp(a) {
     a = a.keyCode;
