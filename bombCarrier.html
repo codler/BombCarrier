@@ -102,7 +102,8 @@ var texture = {
 	'green-block' : 'textures/Gem Green.png',
 	'yellow-block' : 'textures/Gem Orange.png',
 	'char-1' : 'textures/Character Princess Girl.png',
-	'bomb' : 'textures/bomb.png'
+	'bomb' : 'textures/bomb.png',
+	'explosion' : 'textures/Explosion.png'
 };
 
 
@@ -685,7 +686,8 @@ function init() {
 		83 : 'down', // s
 		68 : 'right', // d
 		65 : 'left', // a
-		16 : 'bomb' // shift
+		16 : 'bomb', // shift
+		86 : 'explosion'
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
