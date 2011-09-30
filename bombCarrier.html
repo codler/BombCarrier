@@ -228,7 +228,12 @@ keys : { up, right, down, left }
 PlayerClass.prototype.setKeyCode = function(keys) {
 	this.keyCode = keys;
 };
-
+/*
+tileSystem : TileSystem
+*/
+PlayerClass.prototype.setTileSystem = function(tileSystem) {
+	this.tileSystem = tileSystem;
+};
 PlayerClass.prototype.move = function(speed) {
 
 
@@ -248,7 +253,11 @@ PlayerClass.prototype.move = function(speed) {
 
 PlayerClass.prototype.checkZIndex = function() {
 	var z = -2 - (this.sprite.position.y - 200 - 10 )/ tileH * 2;
-	this.setPositionZ(z - (z - Math.floor(z)) / 2 + (z - Math.floor(z)) / 4);
+
+	z = z - (z - Math.floor(z)) / 2 + (z - Math.floor(z)) / 4;
+
+	this.setPositionZ(z);
+	return z;
 };
 
 PlayerClass.prototype.checkCollision = function() {
@@ -301,6 +310,26 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 		callback(side);
 	}
 };
+
+PlayerClass.prototype.handleBomb = function() {
+	if (this.keyPressed.bomb) {
+		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -40, -0.5) );
+		var tilePos = this.tileSystem.getTilePosition(pos.x, pos.y);
+		console.log([tilePos.x,tilePos.y]);
+		pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
+    	
+    	var bomb = new BombClass( pos );
+		bombs.addChild( bomb.sprite );
+	}
+};
+
+var BombClass = function(position, time) {
+	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+	this.sprite.position = position;
+	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
+};
+BombClass.prototype.constructor = BombClass;
+
 
 // x,y offset
 // -800,-400
@@ -433,14 +462,20 @@ TileSystem.prototype.setScene = function(scene) {
 	this.scene.addChild(this.tiles);
 };
 
-TileSystem.prototype.getPosition = function(tileX, tileY) {
+TileSystem.prototype.getPosition = function(tileX, tileY, z) {
 	return new THREE.Vector3(
 		tileX * this.tileSize.width + this.x, 
 		tileY * this.tileSize.height + this.y, 
-		0
+		z || 0
 	);
-}
+};
 
+TileSystem.prototype.getTilePosition = function(x, y) {
+	return {
+		x: Math.floor( (x - this.x) / this.tileSize.width ),
+		y: Math.floor( (y - this.y) / this.tileSize.height )
+	};
+};
 
 
 
@@ -640,6 +675,9 @@ function init() {
 	tileSystem.loadMap();
 	tileSystem.setScene(scene);
 
+	player1.setTileSystem(tileSystem);
+	player2.setTileSystem(tileSystem);
+
 	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
 
 /*
@@ -838,11 +876,13 @@ function render() {
 	player1.move(delta);
 	player1.checkCollision();
 	player1.checkZIndex();
+	player1.handleBomb();
 
 	player2.saveState();
 	player2.move(delta);
 	player2.checkCollision();
 	player2.checkZIndex();
+	player2.handleBomb();
 
 	renderer.render( scene, camera );
 
@@ -872,37 +912,9 @@ function onKeyDown(a) {
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = true;
-
-    	if (player1.keyPressed.bomb) {
-
-    		console.log("Hai");
-	    	var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
-			
-			bomb.position.x = player1.sprite.position.x;
-			bomb.position.y = player1.sprite.position.y - 40;
-			bomb.position.z = player1.sprite.position.z - 0.5;
-			bomb.scale = new THREE.Vector3(1.6,1.6,1);
-
-
-			bombs.addChild( bomb );
-    	}
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
-
-
-    	if(player2.keyPressed.bomb) {
-    		console.log("bai");
-    		var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
-			
-				bomb.position.x = player2.sprite.position.x;
-				bomb.position.y = player2.sprite.position.y - 40;
-				bomb.position.z = player2.sprite.position.z - 0.5;
-				bomb.scale = new THREE.Vector3(1.6,1.6,1);
-
-
-			bombs.addChild( bomb );
-		}
     }
 
 }
