@@ -317,11 +317,11 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 PlayerClass.prototype.handleBomb = function() {
 	if (this.keyPressed.bomb) {
 		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -40, -0.5) );
-		var tilePos = this.tileSystem.getTilePosition(pos.x, pos.y);
+		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
 		console.log([tilePos.x,tilePos.y]);
 		pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
     	
-    	var bomb = new BombClass( pos );
+    	var bomb = new BombClass( pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
 		bombs.addChild( bomb.sprite );
 	}
 };
