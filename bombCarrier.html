@@ -332,7 +332,7 @@ PlayerClass.prototype.handleBomb = function() {
 			pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
 	    	
 	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
-			bombs.addChild( bomb.sprite );
+			bombs.addChild( bomb.animate );
 
 			this.bombs.push(bomb);
 			
@@ -345,7 +345,7 @@ PlayerClass.prototype.handleBomb = function() {
 
 	// Remove bomb
 	if (this.bombs.length && this.bombs[0].expired()) {
-		this.scene.removeObject( this.bombs.shift().sprite );
+		this.scene.removeObject( this.bombs.shift().animate );
 	}
 };
 
@@ -353,6 +353,8 @@ PlayerClass.prototype.handleBomb = function() {
 timeAlive : Seconds
 */
 var BombClass = function(tilePosition, position, timeAlive) {
+	this.animate = new THREE.Object3D();
+
 	this.position = tilePosition;
 	timeAlive = timeAlive || 3;
 	this.timeAlive = new Date().getTime() + timeAlive*1000;
@@ -360,6 +362,9 @@ var BombClass = function(tilePosition, position, timeAlive) {
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
 	this.sprite.frame = 1;
+	this.animate.addChild( this.sprite );
+
+	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
 };
 
 BombClass.prototype.update = function () {
@@ -369,10 +374,18 @@ BombClass.prototype.update = function () {
 			this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
 			this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
 			this.sprite.position.y += 30;
+
+			this.sprite2.position = this.sprite.position;
+			this.sprite2.scale = this.sprite.scale;
+
+			this.animate.addChild( this.sprite2 );
+
 			this.sprite.frame++;
 		}
-		this.sprite.opacity = (this.timeAlive - new Date().getTime()) / (2 * 1000)
-	} 
+		this.sprite.opacity = (this.timeAlive - new Date().getTime()) / (2 * 1000);
+		this.sprite2.opacity = (this.timeAlive - new Date().getTime()) / (2 * 1000);
+
+	}
 };
 
 BombClass.prototype.expired = function () {
