@@ -336,6 +336,11 @@ PlayerClass.prototype.handleBomb = function() {
 			
 		}
 	}
+
+	this.bombs.forEach(function (bomb) {
+		bomb.update();
+	});
+
 	// Remove bomb
 	if (this.bombs.length && this.bombs[0].expired()) {
 		this.scene.removeObject( this.bombs.shift().sprite );
@@ -352,6 +357,17 @@ var BombClass = function(tilePosition, position, timeAlive) {
 	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
+	this.sprite.frame = 1;
+};
+
+BombClass.prototype.update = function () {
+	if (new Date().getTime() > this.timeAlive - 2 * 1000 && this.sprite.frame == 1) {
+		console.log('hhjhjbh');
+		this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion );
+		this.sprite.scale = new THREE.Vector3(0.5,0.5,1);
+		this.sprite.frame++;
+		this.sprite.updateMatrix();
+	}
 };
 
 BombClass.prototype.expired = function () {
