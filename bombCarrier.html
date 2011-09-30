@@ -103,7 +103,9 @@ var texture = {
 	'yellow-block' : 'textures/Gem Orange.png',
 	'char-1' : 'textures/Character Princess Girl.png',
 	'bomb' : 'textures/bomb.png',
-	'explosion' : 'textures/Explosion.png'
+	'explosion' : 'textures/Explosion.png',
+	'explosion2' : 'textures/explosion2.png',
+	'explosion3' : 'textures/explosion3.png'
 };
 
 
@@ -361,13 +363,16 @@ var BombClass = function(tilePosition, position, timeAlive) {
 };
 
 BombClass.prototype.update = function () {
-	if (new Date().getTime() > this.timeAlive - 2 * 1000 && this.sprite.frame == 1) {
-		console.log('hhjhjbh');
-		this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion );
-		this.sprite.scale = new THREE.Vector3(0.5,0.5,1);
-		this.sprite.frame++;
-		this.sprite.updateMatrix();
-	}
+	if (new Date().getTime() > this.timeAlive - 2 * 1000) {
+
+		if (this.sprite.frame == 1) {
+			this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
+			this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
+			this.sprite.position.y += 30;
+			this.sprite.frame++;
+		}
+		this.sprite.opacity = (this.timeAlive - new Date().getTime()) / (2 * 1000)
+	} 
 };
 
 BombClass.prototype.expired = function () {
