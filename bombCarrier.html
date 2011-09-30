@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.15</title>
+		<title>BombCarrier v0.4.20</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
@@ -32,7 +32,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.15 - 2011-09-30
+ * @version 0.4.20 - 2011-09-30
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -117,6 +117,7 @@ position : Vector3
 */
 var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
+	this.bombs = [];
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
 		useScreenCoordinates: false 
@@ -315,7 +316,7 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 };
 
 PlayerClass.prototype.handleBomb = function() {
-	if (this.keyPressed.bomb) {
+	if (this.keyPressed.bomb && this.bombs <= 2) {
 		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -40, -0.5) );
 		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
 		console.log([tilePos.x,tilePos.y]);
@@ -323,15 +324,33 @@ PlayerClass.prototype.handleBomb = function() {
     	
     	var bomb = new BombClass( pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
 		bombs.addChild( bomb.sprite );
+
+		this.bombs.push(bomb);
+	}
+	if (this.bombs.length && this.bombs[0].expired()) {
+
+		bombs.removeChild( this.bombs[0] );
+		var d = this.bombs.pop();
+		//this.scene.removeObject( this.bombs );
+		//d.sprite.map = THREE.ImageUtils.loadTexture( texture['yellow-block'] );
 	}
 };
 
-var BombClass = function(position, time) {
+/*
+timeAlive : Seconds
+*/
+var BombClass = function(position, timeAlive) {
+	timeAlive = timeAlive || 3;
+	this.timeAlive = new Date().getTime() + timeAlive*1000;
 	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
 };
-BombClass.prototype.constructor = BombClass;
+
+BombClass.prototype.expired = function () {
+	return (new Date().getTime() > this.timeAlive);
+}
+//BombClass.prototype.constructor = BombClass;
 
 
 PlayerClass.prototype.amount = function() {
