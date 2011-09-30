@@ -98,6 +98,9 @@ var texture = {
 	'map-a'	: 'textures/Dirt Block.png',
 	'map-b' : 'textures/Stone Block Tall.png',
 	'map-c' : 'textures/Water Block.png',
+	'blue-block' : 'textures/Gem Blue.png',
+	'green-block' : 'textures/Gem Green.png',
+	'yellow-block' : 'textures/Gem Orange.png',
 	'char-1' : 'textures/Character Princess Girl.png',
 	'bomb' : 'textures/bomb.png'
 };
@@ -331,6 +334,11 @@ var BombClass = function(position, time) {
 BombClass.prototype.constructor = BombClass;
 
 
+PlayerClass.prototype.amount = function() {
+	
+}
+
+
 // x,y offset
 // -800,-400
 var TileSystem = function(x, y) {
@@ -348,7 +356,10 @@ TileSystem.prototype.tileSize = {
 TileSystem.prototype.tileInfo = {
 	0 : 'map-a',
 	1 : 'map-b',
-	2 : 'map-c'
+	2 : 'map-c',
+	3 : 'blue-block',
+	4 : 'green-block',
+	5 : 'yellow-block'
 };
 
 TileSystem.prototype.loadMap = function() {
@@ -366,13 +377,13 @@ TileSystem.prototype.loadMap = function() {
 	l.push( times('2 ', 15).trim() );
 	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
 	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('3 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('3 1 ', 6) ).concat('3 2') );
+	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
 	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
+	l.push( '2 '.concat( times('5 1 ', 6) ).concat('5 2') );
+	l.push( '2 '.concat( times('5 ', 13) ).concat(2) );
 	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
 	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
 	l.push( times('2 ', 15).trim() );
@@ -414,7 +425,7 @@ TileSystem.prototype.loadMap = function() {
 			
 
 			// Collision on tileType 1,2
-			if (tileType == 1 || tileType == 2) {
+			if (tileType != 0)  {
 				z++;
 				// Collision area
 				sprite.boundingMesh = new THREE.Mesh(
@@ -647,7 +658,7 @@ function init() {
 		83 : 'down', // s
 		68 : 'right', // d
 		65 : 'left', // a
-		16 : 'bomb' // f
+		16 : 'bomb' // shift
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
@@ -679,6 +690,8 @@ function init() {
 	player2.setTileSystem(tileSystem);
 
 	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
+	player2.setPosition( tileSystem.getPosition(13,11).addSelf(new THREE.Vector3(0, 40, 0)) );
+
 
 /*
 	group = new THREE.Object3D();
@@ -869,7 +882,7 @@ function render() {
 	if ( ! oldTime ) oldTime = new Date().getTime();
 
 	time = new Date().getTime();
-	delta = 0.1 * ( time - oldTime );
+	delta = 0.15 * ( time - oldTime );
 	oldTime = time;
 
 	player1.saveState();
@@ -912,9 +925,12 @@ function onKeyDown(a) {
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = true;
+
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
+
+
     }
 
 }
