@@ -522,7 +522,7 @@ function intro_scene() {
 		});
 
 		var bomb_title = $('<h1>')
-			.html('B<span style="color:#000">o</span>mb')
+			.html('B<img src="textures/logoBomb.png" style="height:155px;"/>mb')
 			.css({
 				'color' : '#fff',
 				'line-height' : 1,
@@ -612,7 +612,7 @@ function init() {
 		83 : 'down', // s
 		68 : 'right', // d
 		65 : 'left', // a
-		32 : 'bomb' // space
+		16 : 'bomb' // f
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
@@ -627,7 +627,8 @@ function init() {
 		38 : 'up', // arrow up
 		40 : 'down', // arrow down
 		39 : 'right', // arrow right
-		37 : 'left' // arrow left
+		37 : 'left', // arrow left
+		32 : 'bomb' // space
 	});
 
 	//player1.addCollision(player2.sprite);
@@ -873,16 +874,35 @@ function onKeyDown(a) {
     	player1.keyPressed[player1.keyCode[a]] = true;
 
     	if (player1.keyPressed.bomb) {
+
+    		console.log("Hai");
 	    	var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
 			
 			bomb.position.x = player1.sprite.position.x;
 			bomb.position.y = player1.sprite.position.y - 40;
 			bomb.position.z = player1.sprite.position.z - 0.5;
+			bomb.scale = new THREE.Vector3(1.6,1.6,1);
+
+
 			bombs.addChild( bomb );
     	}
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
+
+
+    	if(player2.keyPressed.bomb) {
+    		console.log("bai");
+    		var bomb = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+			
+				bomb.position.x = player2.sprite.position.x;
+				bomb.position.y = player2.sprite.position.y - 40;
+				bomb.position.z = player2.sprite.position.z - 0.5;
+				bomb.scale = new THREE.Vector3(1.6,1.6,1);
+
+
+			bombs.addChild( bomb );
+		}
     }
 
 }
