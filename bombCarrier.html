@@ -2,12 +2,12 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.23</title>
+		<title>BombCarrier v0.4.28</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
 			body {
-				background:#fff;
+				background:#000;
 				padding:0;
 				margin:0;
 				font-weight: bold;
@@ -32,7 +32,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.23 - 2011-09-30
+ * @version 0.4.28 - 2011-10-01
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -585,6 +585,15 @@ function init_core() {
 	$(window).resize(function() {
 		SCREEN_WIDTH = window.innerWidth;
 		SCREEN_HEIGHT = window.innerHeight;
+
+		// Fix aspect ratio
+		if (SCREEN_WIDTH / SCREEN_HEIGHT < 1.8) {
+			SCREEN_HEIGHT = SCREEN_WIDTH * 0.5;
+			$('canvas:first').height(SCREEN_HEIGHT);
+		} else {
+			$('canvas:first').height('100%');
+		}
+
 		renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 		camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 		camera.updateProjectionMatrix();
@@ -630,7 +639,7 @@ function intro_scene() {
 		});
 
 		var bomb_title = $('<h1>')
-			.html('B<img src="textures/logoBomb.png" style="height:155px;"/>mb')
+			.html('B<img src="textures/logoBomb.png" style="width:12%;"/>mb')
 			.css({
 				'color' : '#fff',
 				'line-height' : 1,
@@ -673,13 +682,24 @@ function intro_scene() {
 			});
 		});
 
-		intro_scene.append( bomb_title );
-		intro_scene.append( carrier_title );
-		intro_scene.append( meny );
+		var intro_scene_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+		intro_scene_inner.append( bomb_title );
+		intro_scene_inner.append( carrier_title );
+		intro_scene_inner.append( meny );
+
+		intro_scene.append( intro_scene_inner );
 
 		container.append( intro_scene );
 
-		$(bomb_title).fitText( 0.6 );	
+		// Fix aspect ratio
+		if (intro_scene.width() / intro_scene.height() > 1.8) {
+			intro_scene_inner.width(intro_scene.height() * 1.8);
+		}
+
+		$(bomb_title).fitText( 0.6 );
 		$(carrier_title).fitText( 0.9 );
 		$(meny).fitText( 1.3 );
 }
