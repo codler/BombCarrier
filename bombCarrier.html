@@ -38,7 +38,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 // == Begin Constants ==
-var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_WIDTH  = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 
 var DEBUG = true;
@@ -93,19 +93,21 @@ var tileH = 59;
 
 var delta, time, oldTime;
 
+var tileSystem;
+
 
 var texture = {
-	'map-a'	: 'textures/Dirt Block.png',
-	'map-b' : 'textures/Stone Block Tall.png',
-	'map-c' : 'textures/Water Block.png',
-	'blue-block' : 'textures/Gem Blue.png',
-	'green-block' : 'textures/Gem Green.png',
+	'map-a'        : 'textures/Dirt Block.png',
+	'map-b'        : 'textures/Stone Block Tall.png',
+	'map-c'        : 'textures/Water Block.png',
+	'blue-block'   : 'textures/Gem Blue.png',
+	'green-block'  : 'textures/Gem Green.png',
 	'yellow-block' : 'textures/Gem Orange.png',
-	'char-1' : 'textures/Character Princess Girl.png',
-	'bomb' : 'textures/bomb.png',
-	'explosion' : 'textures/Explosion.png',
-	'explosion2' : 'textures/explosion2.png',
-	'explosion3' : 'textures/explosion3.png'
+	'char-1'       : 'textures/Character Princess Girl.png',
+	'bomb'         : 'textures/bomb.png',
+	'explosion'    : 'textures/Explosion.png',
+	'explosion2'   : 'textures/explosion2.png',
+	'explosion3'   : 'textures/explosion3.png'
 };
 
 
@@ -120,14 +122,15 @@ position : Vector3
 */
 var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
-	this.bombs = [];
+	this.bombs   = [];
+	this.width   = 80;
+	this.height  = 100;
+
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
 		useScreenCoordinates: false 
 	} );
 
-	this.width = 80;
-	this.height = 100;
 
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
@@ -137,11 +140,11 @@ var PlayerClass = function( texture, position ) {
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
 	this.setKeyPressed({
-		up:false,
-		right:false,
-		down:false,
-		left:false,
-		bomb:false
+		up    :false,
+		right :false,
+		down  :false,
+		left  :false,
+		bomb  :false
 	});
 
 	this.collision = new THREE.CollisionSystem();
@@ -338,6 +341,8 @@ PlayerClass.prototype.handleBomb = function() {
 			pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
 	    	
 	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
+	    	bomb.setCollision( this.collision );
+
 			bombs.addChild( bomb.animate );
 
 			this.bombs.push(bomb);
@@ -393,12 +398,12 @@ TimeClass.prototype.getFrameElapsed = function (frame) {
 /*
 timeAlive : Seconds
 */
-var BombClass = function(tilePosition, position, timeAlive) {
-	this.animate = new THREE.Object3D();
-
+var BombClass = function(tilePosition, position, timeAlive, firePower) {
+	this.animate   = new THREE.Object3D();
 	this.timeAlive = timeAlive || 5;
+	this.position  = tilePosition;
+	this.firePower = firePower || 2;
 
-	this.position = tilePosition;
 	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false, blending: THREE.AdditiveBlending } );
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
@@ -407,6 +412,22 @@ var BombClass = function(tilePosition, position, timeAlive) {
 	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
 
 	this.time = new TimeClass();
+};
+
+BombClass.prototype.setCollision = function (collision) {
+	this.collision = collision;
+};
+
+BombClass.prototype.checkCollision = function (direction, distance) {
+	var ray = new THREE.Ray( this.sprite.position.clone().addSelf(new THREE.Vector3(0, -20,0)), direction );
+	var c = this.collision.rayCastNearest(ray);
+
+	if (c && c.distance < distance ) {
+		var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
+		console.log([tilePos, c.distance]);
+		tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
+
+	}
 };
 
 BombClass.prototype.update = function () {
@@ -420,6 +441,13 @@ BombClass.prototype.update = function () {
 		$this.sprite2.scale = $this.sprite.scale;
 
 		$this.animate.addChild( $this.sprite2 );
+
+		// collision with tile
+		$this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * $this.firePower);
+		$this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * $this.firePower);
+		$this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * $this.firePower);
+		$this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * $this.firePower);
+
 	}) ) {
 
 		this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
@@ -441,24 +469,42 @@ BombClass.prototype.exploded = function () {
 // x,y offset
 // -800,-400
 var TileSystem = function(x, y) {
-	this.x = x;
-	this.y = y;
-	this.tiles = new THREE.Object3D();
+	this.x       = x;
+	this.y       = y;
+	this.tiles   = new THREE.Object3D();
 	this.players = [];
 };
 
 TileSystem.prototype.tileSize = {
-	'width': 116,
+	'width'  : 116,
 	'height' : 59
 };
 
 TileSystem.prototype.tileInfo = {
-	0 : 'map-a',
-	1 : 'map-b',
-	2 : 'map-c',
-	3 : 'blue-block',
-	4 : 'green-block',
-	5 : 'yellow-block'
+	0 : {
+		'name'       : 'map-a',
+		'destroyable' : true
+	},
+	1 : {
+		'name'       : 'map-b',
+		'destroyable' : false
+	},
+	2 : {
+		'name'       : 'map-c',
+		'destroyable' : false
+	},
+	3 : {
+		'name'       : 'blue-block',
+		'destroyable' : true
+	},
+	4 : {
+		'name'       : 'green-block',
+		'destroyable' : true
+	},
+	5 : {
+		'name'       : 'yellow-block',
+		'destroyable' : true
+	}
 };
 
 TileSystem.prototype.loadMap = function() {
@@ -506,15 +552,26 @@ TileSystem.prototype.loadMap = function() {
 */
 
 	var level = l;
-	this.sizeWidth = level[0].length;
-	this.sizeHeight = level.length;
+
+	this.level      = level;
+	this.sizeWidth  = this.level[0].length;
+	this.sizeHeight = this.level.length;
+
+	// Remapping
+	for (var x = 0; x < this.sizeWidth; x++) {
+		for (var y = 0; y < this.sizeHeight; y++) {
+			this.level[y][x] = {
+				type : this.level[y][x]
+			};
+		}
+	}
 
 	for (var x = 0; x < this.sizeWidth; x++) {
 		for (var y = 0; y < this.sizeHeight; y++) {
 			// Times 2 means one TileSizeY equals 2z
 			var z = this.sizeWidth - y * 2;
-			var tileType = level[y][x];
-			var tileTexture = this.tileInfo[ tileType ];
+			var tileType = this.level[y][x].type;
+			var tileTexture = this.tileInfo[ tileType ].name;
 
 			var sprite = new THREE.Sprite( { 
 				map: texture[tileTexture], 
@@ -555,11 +612,25 @@ TileSystem.prototype.loadMap = function() {
 				z
 			);
 
+			this.level[y][x].sprite = sprite;
 
 			this.tiles.addChild( sprite );
 		}
 	}
 
+};
+
+TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
+	force = force || false;
+	var t =  texture[ this.tileInfo[ tileType ].name ];
+	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
+	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		// TODO : Replace this. This is a temporary fix to "remove" object.
+		this.level[tileY][tileX].sprite.boundingMesh.position.x += 10000;
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		return true;
+	}
+	return false;
 };
 
 /*
@@ -759,13 +830,11 @@ function play_scene() {
 
 
 function init() {
-	// create sprites
 	var amount = 15*13;
-	//var radius = 500;
-	var mapA = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
-	var mapB = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
-	var mapC = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
-	var char1 = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
+	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
+	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
+	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 
 
@@ -806,7 +875,7 @@ function init() {
 	//player1.addCollision(player2.sprite);
 	//player2.addCollision(player1.sprite);
 
-	var tileSystem = new TileSystem( -800, -400 );
+	tileSystem = new TileSystem( -800, -400 );
 	tileSystem.addPlayer(player1);
 	tileSystem.addPlayer(player2);
 	tileSystem.loadMap();
