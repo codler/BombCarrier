@@ -17,6 +17,8 @@
 	</head>
 
 	<body>
+		<!--<script type="text/javascript" src="https://raw.github.com/mrdoob/three.js/dev/build/Three.js"></script>-->
+	
 		<script type="text/javascript" src="js/Three.js"></script>
 		<script type="text/javascript" src="js/Detector.js"></script>
 		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
@@ -404,13 +406,14 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.position  = tilePosition;
 	this.firePower = firePower || 2;
 
-	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false, blending: THREE.AdditiveBlending } );
+	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+	this.sprite.map.needsUpdate = true;
+
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
 	this.animate.addChild( this.sprite );
 
 	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
-
 	this.time = new TimeClass();
 };
 
@@ -439,7 +442,6 @@ BombClass.prototype.update = function () {
 
 		$this.sprite2.position = $this.sprite.position;
 		$this.sprite2.scale = $this.sprite.scale;
-
 		$this.animate.addChild( $this.sprite2 );
 
 		// collision with tile
@@ -626,8 +628,9 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
 	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		// TODO : Replace this. This is a temporary fix to "remove" object.
-		this.level[tileY][tileX].sprite.boundingMesh.position.x += 10000;
+		this.level[tileY][tileX].sprite.boundingMesh.position.y -= 10000;
 		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		return true;
 	}
 	return false;
