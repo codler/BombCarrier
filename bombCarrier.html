@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.29</title>
+		<title>BombCarrier v0.4.36</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
@@ -17,6 +17,8 @@
 	</head>
 
 	<body>
+		<!--<script type="text/javascript" src="https://raw.github.com/mrdoob/three.js/dev/build/Three.js"></script>-->
+	
 		<script type="text/javascript" src="js/Three.js"></script>
 		<script type="text/javascript" src="js/Detector.js"></script>
 		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
@@ -32,13 +34,13 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.29 - 2011-10-02
+ * @version 0.4.36 - 2011-10-03
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 // == Begin Constants ==
-var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_WIDTH  = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 
 var DEBUG = true;
@@ -93,19 +95,21 @@ var tileH = 59;
 
 var delta, time, oldTime;
 
+var tileSystem;
+
 
 var texture = {
-	'map-a'	: 'textures/Dirt Block.png',
-	'map-b' : 'textures/Stone Block Tall.png',
-	'map-c' : 'textures/Water Block.png',
-	'blue-block' : 'textures/Gem Blue.png',
-	'green-block' : 'textures/Gem Green.png',
+	'map-a'        : 'textures/Dirt Block.png',
+	'map-b'        : 'textures/Stone Block Tall.png',
+	'map-c'        : 'textures/Water Block.png',
+	'blue-block'   : 'textures/Gem Blue.png',
+	'green-block'  : 'textures/Gem Green.png',
 	'yellow-block' : 'textures/Gem Orange.png',
-	'char-1' : 'textures/Character Princess Girl.png',
-	'bomb' : 'textures/bomb.png',
-	'explosion' : 'textures/Explosion.png',
-	'explosion2' : 'textures/explosion2.png',
-	'explosion3' : 'textures/explosion3.png'
+	'char-1'       : 'textures/Character Princess Girl.png',
+	'bomb'         : 'textures/bomb.png',
+	'explosion'    : 'textures/Explosion.png',
+	'explosion2'   : 'textures/explosion2.png',
+	'explosion3'   : 'textures/explosion3.png'
 };
 
 
@@ -120,14 +124,15 @@ position : Vector3
 */
 var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
-	this.bombs = [];
+	this.bombs   = [];
+	this.width   = 80;
+	this.height  = 100;
+
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
 		useScreenCoordinates: false 
 	} );
 
-	this.width = 80;
-	this.height = 100;
 
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
@@ -137,11 +142,11 @@ var PlayerClass = function( texture, position ) {
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
 	this.setKeyPressed({
-		up:false,
-		right:false,
-		down:false,
-		left:false,
-		bomb:false
+		up    :false,
+		right :false,
+		down  :false,
+		left  :false,
+		bomb  :false
 	});
 
 	this.collision = new THREE.CollisionSystem();
@@ -319,8 +324,14 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 };
 
 PlayerClass.prototype.handleBomb = function() {
-	if (this.keyPressed.bomb && this.bombs.length < 2) {
-		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -40, -0.5) );
+	var availableBombs = this.bombs.length;
+	for(bomb in this.bombs) {
+		if ( this.bombs[bomb].exploded() ) {
+			availableBombs--;
+		}
+	}
+	if (this.keyPressed.bomb && availableBombs < 2) {
+		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -20, -0.25) );
 		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
 		console.log([tilePos.x,tilePos.y]);
 
@@ -332,12 +343,26 @@ PlayerClass.prototype.handleBomb = function() {
 			pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
 	    	
 	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
+
+	    	var c = new THREE.CollisionSystem();
+	    	c.merge(this.collision);
+	    	bomb.setCollision( c );
+	    	//bomb.setCollision( this.collision );
+
+	    
+			this.bombs.forEach(function (b) {
+			 	b.addCollision( bomb.sprite );
+			});		
+
+
 			bombs.addChild( bomb.animate );
 
 			this.bombs.push(bomb);
 			
 		}
 	}
+
+
 
 	this.bombs.forEach(function (bomb) {
 		bomb.update();
@@ -370,7 +395,7 @@ TimeClass.prototype.elapse = function (frame, seconds, callback) {
 			this.frame++;
 		}
 	}
-	return this.frame > frame;
+	return this.getFrameElapsed(frame);
 };
 
 TimeClass.prototype.getElapse = function () {
@@ -378,36 +403,102 @@ TimeClass.prototype.getElapse = function () {
 	return (new Date().getTime() - this.timeAlive) / 1000;
 };
 
+TimeClass.prototype.getFrameElapsed = function (frame) {
+	return this.frame > frame;
+};
+
 /*
 timeAlive : Seconds
 */
-var BombClass = function(tilePosition, position, timeAlive) {
-	this.animate = new THREE.Object3D();
+var BombClass = function(tilePosition, position, timeAlive, firePower) {
+	this.animate   = new THREE.Object3D();
+	this.timeAlive = timeAlive || 5;
+	this.position  = tilePosition;
+	this.firePower = firePower || 2;
 
-	this.timeAlive = timeAlive || 3;
+	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+	this.sprite.map.needsUpdate = true;
 
-	this.position = tilePosition;
-	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false, blending: THREE.AdditiveBlending } );
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
+
+	this.sprite.boundingMesh = new THREE.Mesh(
+					new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+					//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
+				);
+
+				this.sprite.boundingMesh.position = this.sprite.position;
+
+	this.sprite.boundingMesh.gameType = 'bomb';
+
+
 	this.animate.addChild( this.sprite );
+	this.animate.addChild( this.sprite.boundingMesh );
+
+
+	this.hasExploaded = false;
+	
+	this.time = new TimeClass();
+	this.sprite.boundingMesh.bombClass = this;
+};
+
+/*
+collision : Object3d | Mesh
+*/
+BombClass.prototype.addCollision = function(collision) {
+	this.collision.colliders.push( THREE.CollisionUtils.MeshOBB( collision.boundingMesh || collision ) );
+};
+
+
+BombClass.prototype.setCollision = function (collision) {
+	this.collision = collision;
+};
+
+BombClass.prototype.checkCollision = function (direction, distance) {
+	var ray = new THREE.Ray( this.sprite.position.clone().addSelf(new THREE.Vector3(0, -20,0)), direction );
+	var d = this.collision.rayCastAll(ray);
+	var c = d.sort(function (a,b) {
+		return a.distance - b.distance;
+	})[0];
+
+	if (c && c.distance < distance ) {
+
+		if(c.mesh.gameType == 'bomb'){
+			c.mesh.bombClass.explode();
+		}else{
+			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
+			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
+			
+		}
+	}
+};
+
+BombClass.prototype.explode = function () {
+	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
+	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
+	this.sprite.position.y += 30;
 
 	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite2.map.needsUpdate = true;
+	this.sprite2.position = this.sprite.position;
+	this.sprite2.scale = this.sprite.scale;
+	this.animate.addChild( this.sprite2 );
 
-	this.time = new TimeClass();
-};
+	// collision with tile
+	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
+	this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
+	this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
+	
+	this.hasExploaded = true;
+	this.timeAlive = this.time.getElapse() + 2;
+}
+
 
 BombClass.prototype.update = function () {
 	var $this = this;
-	if ( this.time.elapse(0, 1, function () {
-		$this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
-		$this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
-		$this.sprite.position.y += 30;
-
-		$this.sprite2.position = $this.sprite.position;
-		$this.sprite2.scale = $this.sprite.scale;
-
-		$this.animate.addChild( $this.sprite2 );
+	if (this.hasExploaded || this.time.elapse(0, this.timeAlive - 2, function () {
+		$this.explode();
 	}) ) {
 
 		this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
@@ -418,31 +509,57 @@ BombClass.prototype.update = function () {
 
 BombClass.prototype.expired = function () {
 	return this.time.getElapse() > this.timeAlive;
-}
+};
+
+BombClass.prototype.exploded = function () {
+	return this.time.getElapse() > this.timeAlive - 2;
+};
 
 
 
 // x,y offset
 // -800,-400
 var TileSystem = function(x, y) {
-	this.x = x;
-	this.y = y;
-	this.tiles = new THREE.Object3D();
+	this.x       = x;
+	this.y       = y;
+	this.tiles   = new THREE.Object3D();
 	this.players = [];
 };
 
 TileSystem.prototype.tileSize = {
-	'width': 116,
+	'width'  : 116,
 	'height' : 59
 };
 
 TileSystem.prototype.tileInfo = {
-	0 : 'map-a',
-	1 : 'map-b',
-	2 : 'map-c',
-	3 : 'blue-block',
-	4 : 'green-block',
-	5 : 'yellow-block'
+	0 : {
+		'name'       : 'map-a',
+		'destroyable' : true
+	},
+	1 : {
+		'name'       : 'map-b',
+		'destroyable' : false
+	},
+	2 : {
+		'name'       : 'map-c',
+		'destroyable' : false
+	},
+	3 : {
+		'name'       : 'blue-block',
+		'destroyable' : true
+	},
+	4 : {
+		'name'       : 'green-block',
+		'destroyable' : true
+	},
+	5 : {
+		'name'       : 'yellow-block',
+		'destroyable' : true
+	},
+	6 : {
+		'name'		 : 'bomb',
+		'destroyable': true
+	}
 };
 
 TileSystem.prototype.loadMap = function() {
@@ -490,15 +607,26 @@ TileSystem.prototype.loadMap = function() {
 */
 
 	var level = l;
-	this.sizeWidth = level[0].length;
-	this.sizeHeight = level.length;
+
+	this.level      = level;
+	this.sizeWidth  = this.level[0].length;
+	this.sizeHeight = this.level.length;
+
+	// Remapping
+	for (var x = 0; x < this.sizeWidth; x++) {
+		for (var y = 0; y < this.sizeHeight; y++) {
+			this.level[y][x] = {
+				type : this.level[y][x]
+			};
+		}
+	}
 
 	for (var x = 0; x < this.sizeWidth; x++) {
 		for (var y = 0; y < this.sizeHeight; y++) {
 			// Times 2 means one TileSizeY equals 2z
 			var z = this.sizeWidth - y * 2;
-			var tileType = level[y][x];
-			var tileTexture = this.tileInfo[ tileType ];
+			var tileType = this.level[y][x].type;
+			var tileTexture = this.tileInfo[ tileType ].name;
 
 			var sprite = new THREE.Sprite( { 
 				map: texture[tileTexture], 
@@ -524,6 +652,8 @@ TileSystem.prototype.loadMap = function() {
 					z
 				);
 				
+				sprite.boundingMesh.gameType = 'tile';
+
 				// Register collision to players
 				for (var p = 0; p < this.players.length; p++) {
 					this.players[p].addCollision(sprite);
@@ -539,11 +669,26 @@ TileSystem.prototype.loadMap = function() {
 				z
 			);
 
+			this.level[y][x].sprite = sprite;
 
 			this.tiles.addChild( sprite );
 		}
 	}
 
+};
+
+TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
+	force = force || false;
+	var t =  texture[ this.tileInfo[ tileType ].name ];
+	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
+	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		// TODO : Replace this. This is a temporary fix to "remove" object.
+		this.level[tileY][tileX].sprite.boundingMesh.position.z -= 10000;
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		return true;
+	}
+	return false;
 };
 
 /*
@@ -743,13 +888,11 @@ function play_scene() {
 
 
 function init() {
-	// create sprites
 	var amount = 15*13;
-	//var radius = 500;
-	var mapA = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
-	var mapB = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
-	var mapC = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
-	var char1 = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
+	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
+	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
+	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 
 
@@ -767,8 +910,7 @@ function init() {
 		83 : 'down', // s
 		68 : 'right', // d
 		65 : 'left', // a
-		16 : 'bomb', // shift
-		86 : 'explosion'
+		16 : 'bomb' // shift
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
@@ -790,7 +932,7 @@ function init() {
 	//player1.addCollision(player2.sprite);
 	//player2.addCollision(player1.sprite);
 
-	var tileSystem = new TileSystem( -800, -400 );
+	tileSystem = new TileSystem( -800, -400 );
 	tileSystem.addPlayer(player1);
 	tileSystem.addPlayer(player2);
 	tileSystem.loadMap();
