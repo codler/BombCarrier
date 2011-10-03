@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.4.35</title>
+		<title>BombCarrier v0.4.36</title>
 		<link href='http://fonts.googleapis.com/css?family=Holtwood+One+SC' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Allan:700' rel='stylesheet' type='text/css'>
 		<style type="text/css">
@@ -34,7 +34,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.4.35 - 2011-10-03
+ * @version 0.4.36 - 2011-10-03
  */
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -456,7 +456,10 @@ BombClass.prototype.setCollision = function (collision) {
 
 BombClass.prototype.checkCollision = function (direction, distance) {
 	var ray = new THREE.Ray( this.sprite.position.clone().addSelf(new THREE.Vector3(0, -20,0)), direction );
-	var c = this.collision.rayCastNearest(ray);
+	var d = this.collision.rayCastAll(ray);
+	var c = d.sort(function (a,b) {
+		return a.distance - b.distance;
+	})[0];
 
 	if (c && c.distance < distance ) {
 
@@ -471,7 +474,6 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 };
 
 BombClass.prototype.explode = function () {
-	
 	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
 	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
 	this.sprite.position.y += 30;
