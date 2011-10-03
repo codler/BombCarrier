@@ -343,7 +343,17 @@ PlayerClass.prototype.handleBomb = function() {
 			pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
 	    	
 	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
-	    	bomb.setCollision( this.collision );
+
+	    	var c = new THREE.CollisionSystem();
+	    	c.merge(this.collision);
+	    	bomb.setCollision( c );
+	    	//bomb.setCollision( this.collision );
+
+	    
+			this.bombs.forEach(function (b) {
+			 	b.addCollision( bomb.sprite );
+			});		
+
 
 			bombs.addChild( bomb.animate );
 
@@ -411,11 +421,34 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 
 	this.sprite.position = position;
 	this.sprite.scale = new THREE.Vector3(1.6,1.6,1);
-	this.animate.addChild( this.sprite );
 
+	this.sprite.boundingMesh = new THREE.Mesh(
+					new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+					//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
+				);
+
+				this.sprite.boundingMesh.position = this.sprite.position;
+
+	this.sprite.boundingMesh.gameType = 'bomb';
+
+
+	this.animate.addChild( this.sprite );
+	this.animate.addChild( this.sprite.boundingMesh );
+
+
+	this.hasExploaded = false;
 	
 	this.time = new TimeClass();
+	this.sprite.boundingMesh.bombClass = this;
 };
+
+/*
+collision : Object3d | Mesh
+*/
+BombClass.prototype.addCollision = function(collision) {
+	this.collision.colliders.push( THREE.CollisionUtils.MeshOBB( collision.boundingMesh || collision ) );
+};
+
 
 BombClass.prototype.setCollision = function (collision) {
 	this.collision = collision;
@@ -426,32 +459,44 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 	var c = this.collision.rayCastNearest(ray);
 
 	if (c && c.distance < distance ) {
-		var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
-		console.log([tilePos, c.distance]);
-		tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
 
+		if(c.mesh.gameType == 'bomb'){
+			c.mesh.bombClass.explode();
+		}else{
+			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
+			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
+			
+		}
 	}
 };
 
+BombClass.prototype.explode = function () {
+	
+	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
+	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
+	this.sprite.position.y += 30;
+
+	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite2.map.needsUpdate = true;
+	this.sprite2.position = this.sprite.position;
+	this.sprite2.scale = this.sprite.scale;
+	this.animate.addChild( this.sprite2 );
+
+	// collision with tile
+	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
+	this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
+	this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
+	
+	this.hasExploaded = true;
+	this.timeAlive = this.time.getElapse() + 2;
+}
+
+
 BombClass.prototype.update = function () {
 	var $this = this;
-	if ( this.time.elapse(0, this.timeAlive - 2, function () {
-		$this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
-		$this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
-		$this.sprite.position.y += 30;
-
-		$this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
-		$this.sprite2.map.needsUpdate = true;
-		$this.sprite2.position = $this.sprite.position;
-		$this.sprite2.scale = $this.sprite.scale;
-		$this.animate.addChild( $this.sprite2 );
-
-		// collision with tile
-		$this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * $this.firePower);
-		$this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * $this.firePower);
-		$this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * $this.firePower);
-		$this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * $this.firePower);
-
+	if (this.hasExploaded || this.time.elapse(0, this.timeAlive - 2, function () {
+		$this.explode();
 	}) ) {
 
 		this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
@@ -508,6 +553,10 @@ TileSystem.prototype.tileInfo = {
 	5 : {
 		'name'       : 'yellow-block',
 		'destroyable' : true
+	},
+	6 : {
+		'name'		 : 'bomb',
+		'destroyable': true
 	}
 };
 
@@ -601,6 +650,8 @@ TileSystem.prototype.loadMap = function() {
 					z
 				);
 				
+				sprite.boundingMesh.gameType = 'tile';
+
 				// Register collision to players
 				for (var p = 0; p < this.players.length; p++) {
 					this.players[p].addCollision(sprite);
@@ -630,7 +681,7 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
 	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		// TODO : Replace this. This is a temporary fix to "remove" object.
-		this.level[tileY][tileX].sprite.boundingMesh.position.y -= 10000;
+		this.level[tileY][tileX].sprite.boundingMesh.position.z -= 10000;
 		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		return true;
@@ -857,8 +908,7 @@ function init() {
 		83 : 'down', // s
 		68 : 'right', // d
 		65 : 'left', // a
-		16 : 'bomb', // shift
-		86 : 'explosion'
+		16 : 'bomb' // shift
 	});
 
 	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
