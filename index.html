@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>BombCarrier v0.4.37</title>
+		
+		<style type="text/css">
+			@font-face {
+				font-family: 'Holtwood One SC';
+				font-style: normal;
+				font-weight: normal;
+				src: local('Holtwood One SC'), local('HoltwoodOneSC'), url('fonts/Holtwood_One_SC/HoltwoodOneSC.ttf') format('truetype');
+			}
+			@font-face {
+				font-family: 'Allan';
+				font-style: normal;
+				font-weight: bold;
+				src: local('Allan'), url('fonts/Allan/Allan-Bold.ttf') format('truetype');
+			}
+
+			body {
+				background: #000;
+				padding: 0;
+				margin: 0;
+				font-family: Arial;
+				font-weight: bold;
+				overflow: hidden;
+			}
+
+			#first {
+				color: #fff;
+				text-align: center;
+			}
+
+			#loading {
+				background-clip: padding-box;
+				
+				border: #fff double 1px;
+				border-width: 3px;
+				color: green;
+				font-size: 40px;
+				text-shadow: 1px 1px 1px #000;
+			}
+		</style>
+	</head>
+
+	<body>
+	
+<script type="text/javascript" src="libs/yepnope.1.0.2-min.js"></script>
+<script type="text/javascript" src="libs/Detector.js"></script>
+<script type="text/javascript">
+/**
+ * @author Gustav Hjortsparre and Han Lin Yap
+ * @license http://creativecommons.org/licenses/by-sa/3.0/
+ * @package BombCarrier
+ * @version 0.4.37 - 2011-10-07
+ */
+var DEBUG = true;
+
+if ( ! Detector.webgl ) {
+	Detector.addGetWebGLMessage();
+} else {
+	if ( DEBUG ) {
+		var rId = '?' + new Date().getTime();
+		yepnope.addFilter(function (resourceObj) {
+			resourceObj.url += rId;
+			return resourceObj;
+		});
+	}
+	yepnope('src/loader.js');
+}
+</script>
+
+<div id="first">
+	BombCarrier. This game is made by Gustav Hjortsparre and Han Lin Yap.
+	<div id="loading"></div>
+</div>
+
+	</body>
+</html>
