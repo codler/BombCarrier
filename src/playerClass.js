@@ -89,8 +89,8 @@ scene : Vector3
 */
 PlayerClass.prototype.setScene = function(scene) {
 	this.scene = scene;
-	this.scene.addChild(this.sprite);
-	this.scene.addChild(this.sprite.boundingMesh);
+	this.scene.add(this.sprite);
+	this.scene.add(this.sprite.boundingMesh);
 };
 
 /*
@@ -237,7 +237,7 @@ PlayerClass.prototype.handleBomb = function() {
 			});		
 
 
-			bombs.addChild( bomb.animate );
+			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
 			
@@ -252,6 +252,6 @@ PlayerClass.prototype.handleBomb = function() {
 
 	// Remove bomb
 	if (this.bombs.length && this.bombs[0].expired()) {
-		this.scene.removeObject( this.bombs.shift().animate );
+		this.scene.remove( this.bombs.shift().animate );
 	}
 };

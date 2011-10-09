@@ -140,7 +140,7 @@ TileSystem.prototype.loadMap = function() {
 					this.players[p].addCollision(sprite);
 				}
 
-				this.tiles.addChild( sprite.boundingMesh );
+				this.tiles.add( sprite.boundingMesh );
 
 			}
 
@@ -152,7 +152,7 @@ TileSystem.prototype.loadMap = function() {
 
 			this.level[y][x].sprite = sprite;
 
-			this.tiles.addChild( sprite );
+			this.tiles.add( sprite );
 		}
 	}
 
@@ -181,7 +181,7 @@ TileSystem.prototype.addPlayer = function(player) {
 
 TileSystem.prototype.setScene = function(scene) {
 	this.scene = scene;
-	this.scene.addChild(this.tiles);
+	this.scene.add(this.tiles);
 };
 
 TileSystem.prototype.getPosition = function(tileX, tileY, z) {

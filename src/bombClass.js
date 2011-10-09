@@ -23,8 +23,8 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.sprite.boundingMesh.gameType = 'bomb';
 
 
-	this.animate.addChild( this.sprite );
-	this.animate.addChild( this.sprite.boundingMesh );
+	this.animate.add( this.sprite );
+	this.animate.add( this.sprite.boundingMesh );
 
 
 	this.hasExploaded = false;
@@ -73,7 +73,7 @@ BombClass.prototype.explode = function () {
 	this.sprite2.map.needsUpdate = true;
 	this.sprite2.position = this.sprite.position;
 	this.sprite2.scale = this.sprite.scale;
-	this.animate.addChild( this.sprite2 );
+	this.animate.add( this.sprite2 );
 
 	// collision with tile
 	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);

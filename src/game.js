@@ -340,7 +340,7 @@ function init() {
 
 
 	bombs = new THREE.Object3D();
-	scene.addChild( bombs );
+	scene.add( bombs );
 
 	
 
