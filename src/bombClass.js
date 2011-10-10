@@ -80,6 +80,7 @@ BombClass.prototype.explode = function () {
 	this.sprite2.scale = this.sprite.scale;
 	this.animate.add( this.sprite2 );
 
+	// Right
 	this.sprite3 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
 	this.sprite3.map.needsUpdate = true;
 	this.sprite3.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width,-30,0));
@@ -87,10 +88,37 @@ BombClass.prototype.explode = function () {
 	this.sprite3.rotation = -Math.PI/2;
 	this.animate.add( this.sprite3 );
 
+	// Left
+	this.sprite4 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite4.map.needsUpdate = true;
+	this.sprite4.position = this.sprite.position.clone().addSelf(new THREE.Vector3(-tileSystem.tileSize.width,-30,0));
+	this.sprite4.scale.y /= 2;
+	this.sprite4.rotation = Math.PI/2;
+	this.animate.add( this.sprite4 );
+
+	// up
+	this.sprite5 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite5.map.needsUpdate = true;
+	this.sprite5.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 + tileSystem.tileSize.height,0));
+	this.sprite5.scale.y /= 2;
+	this.animate.add( this.sprite5 );
+
+	// down
+	this.sprite6 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite6.map.needsUpdate = true;
+	this.sprite6.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 - tileSystem.tileSize.height,2));
+	this.sprite6.scale.y /= 2;
+	this.sprite6.rotation = Math.PI;
+	this.animate.add( this.sprite6 );
+
 	// collision with tile
+	// up
 	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
+	// down
 	this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
+	// left
 	this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	// right
 	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
 	
 	this.timeAlive = this.time.getElapse() + 2;
@@ -105,6 +133,10 @@ BombClass.prototype.update = function () {
 
 		this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 		this.sprite2.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		this.sprite3.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		this.sprite4.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		this.sprite5.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		this.sprite6.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 
 	}
 };

@@ -32,6 +32,7 @@ var delta, time, oldTime;
 
 var tileSystem;
 
+var background_sound;
 
 var texture = {
 	'map-a'        : 'textures/Dirt Block.png',
@@ -117,6 +118,10 @@ function init_core() {
 	}
 
 	// Sound on/off
+	if (localStorage.getItem('sound_on') == null) {
+		localStorage.setItem('sound_on', 1); // On by default
+	}
+
 	var sound_switch = $('<div>').css({
 		'background-color' : '#ccc',
 		'cursor' : 'pointer',
@@ -124,14 +129,16 @@ function init_core() {
 		'top' : 0,
 		'right' : 0,
 		'z-index' : 1002
-	});
+	}).text(parseInt(localStorage.getItem('sound_on')) ? 'Sound on': 'Sound off');
 
 	sound_switch.click(function () {
-		var sound_on = localStorage.getItem('sound_on');
-		sound_on = (parseInt(sound_on)) ? 0 : 1;
+		var sound_on = parseInt(localStorage.getItem('sound_on')) ? 0 : 1;
 		localStorage.setItem('sound_on', sound_on);
 		$(this).text(sound_on ? 'Sound on': 'Sound off');
-	}).click();
+		if (background_sound) {
+			background_sound.volume = sound_on;
+		}
+	});
 	container.append( sound_switch );
 	
 
@@ -322,7 +329,7 @@ function play_scene() {
 	$(document).keyup( onKeyUp );
 
 	if (parseInt(localStorage.getItem('sound_on'))) {
-		loadAudio('sound/battle4.ogg');
+		background_sound = loadAudio('sound/battle4.ogg');
 	}
 	init();
 	animate();
@@ -336,7 +343,7 @@ function loadAudio(uri, audio)
 {
     //audio = audio || new Audio();
 
-    audio = audio || $('<audio>').attr({
+    audio = audio || $('<audio>', {
     	'preload':'auto'
     }).appendTo('body')[0];
 
@@ -405,71 +412,6 @@ function init() {
 
 	player1.registerPlayer(player2);
 	player2.registerPlayer(player1);
-
-/*
-	group = new THREE.Object3D();
-
-	var level1 = [
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC]
-	];
-	var level = level1;
-
-	for( var a = 0; a < amount; a++ ) {
-
-		var z = 15 - Math.floor(a/15) * 2;
-
-		var map = level[Math.floor(a/15)][a%15];
-		var sprite = new THREE.Sprite( { map: map, useScreenCoordinates: false } );
-
-		if (sprite.map == mapB || sprite.map == mapC) {
-			z++;
-			// Collision area
-			sprite.boundingMesh = new THREE.Mesh(
-				new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
-				//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
-			);
-
-			sprite.boundingMesh.position.set( a%15 * tileW - 800,
-		                     Math.floor(a/15) * tileH - 400 + 10,
-		                     z - 20);
-
-			group.addChild( sprite.boundingMesh );
-			player1.addCollision(sprite);
-			player2.addCollision(sprite);
-		}
-
-		sprite.position.set( a%15 * tileW - 800,
-		                     Math.floor(a/15) * tileH - 400,
-		                     z);
-
-		//sprite.position.normalize();
-		//sprite.position.multiplyScalar( radius );
-		
-		
-		group.addChild( sprite );
-	}
-
-	scene.addChild( group );*/
-
 
 
 	bombs = new THREE.Object3D();

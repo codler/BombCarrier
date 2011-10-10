@@ -248,6 +248,7 @@ PlayerClass.prototype.handleBomb = function() {
 			this.bombs.push(bomb);
 			this.tileSystem.bombs.push(bomb);					
 		}
+		this.keyPressed.bomb = false;
 	}
 
 	// Remove expired bombs from array
