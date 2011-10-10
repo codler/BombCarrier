@@ -18,6 +18,9 @@ var loaded = 0,
 	,'src/timeClass.js'
 	,'src/bombClass.js'
 	,'src/tileSystem.js'
+
+	// Music
+	//,'preload!sound/battle4.mid'
 ];
 
 yepnope({
