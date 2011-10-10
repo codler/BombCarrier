@@ -394,16 +394,16 @@ function help_scene_page_2() {
 				'white-space': 'pre'
 			});
 
-		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/up.png"/>'+ 
-			'                                                                       '+
-			'<img src="textures/W.png"/><br/>'+
-			'<img src="textures/left.png"/><img src="textures/down.png"/><img src="textures/right.png"/>' +
+		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/up.png" width="5%"/>'+ 
+			'                                                                          '+
+			'<img src="textures/W.png" width="5%"/><br/>'+
+			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/>' +
 			'                                                         ' +
-			'<img src="textures/A.png"/><img src="textures/S.png"/><img src="textures/D.png"/> <br/>'+
+			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/> <br/>'+
 			'Drop bomb<br/>'+
 			'Space...' +
 			'                                                               '+
-			'<img src="textures/shift.png"/>')
+			'<img src="textures/shift.png" width="11%"/>')
 			.css({
 				'white-space' : 'pre',
 				'margin' : 0,
