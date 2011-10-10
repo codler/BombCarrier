@@ -267,7 +267,7 @@ function help_scene() {
 				'margin' : 0
 			});
 		var ask = $('<h1>')
-			.html('Ask Han Lin')
+			.html('BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>')
 			.css({
 				'width' : '100%',
 				'margin' : 0,
@@ -283,6 +283,16 @@ function help_scene() {
 				'margin' : 0
 			});
 
+		var next_screen = $('<h1>')
+			.html('->')
+			.css({
+				'width' : '100%',
+				'cursor' : 'pointer',
+				'margin' : 0,
+				'padding' : 0
+
+			});
+
 		// Return to main menu
 		$(main_menu).click(function() {
 			help_scene.remove();
@@ -293,8 +303,19 @@ function help_scene() {
 				'color' : '#FFF'
 			});
 		});
+		$(next_screen).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
 
 		$(main_menu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+		$(next_screen).mouseout(function() {
 			$(this).css({
 				'color' : '#000'
 			});
@@ -307,6 +328,7 @@ function help_scene() {
 		help_scene_inner.append(help_header);
 		help_scene_inner.append(ask);
 		help_scene_inner.append(main_menu);
+		help_scene_inner.append(next_screen)
 		
 
 		help_scene.append(help_scene_inner);
@@ -318,6 +340,8 @@ function help_scene() {
 		// Size of the text.
 		$(help_header).fitText(1.4);
 		$(main_menu).fitText(4.0);
+		$(ask).fitText(5.0);
+		$(next_screen).fitText(4.0);
 
 
 }
