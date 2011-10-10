@@ -10,6 +10,7 @@ var PlayerClass = function( texture, position ) {
 	this.players = [];
 	this.width   = 80;
 	this.height  = 100;
+	this.alive   = true;
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -22,6 +23,7 @@ var PlayerClass = function( texture, position ) {
 		new THREE.CubeGeometry(40, 40, 100, 1, 1, 1) 
 		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
+	this.sprite.boundingMesh.gameType = 'player';
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
 	this.setKeyPressed({
@@ -34,7 +36,7 @@ var PlayerClass = function( texture, position ) {
 
 	this.collision = new THREE.CollisionSystem();
 	
-	
+	this.sprite.boundingMesh.playerClass = this;
 };
 //PlayerClass.prototype.constructor = PlayerClass;
 
@@ -133,10 +135,10 @@ PlayerClass.prototype.move = function(speed) {
 
 
 	if (this.keyPressed.up) {
-		this.setPositionY(this.sprite.position.y + speed);
+		this.setPositionY(this.sprite.position.y + speed * 0.8);
 	}
 	if (this.keyPressed.down) {
-		this.setPositionY(this.sprite.position.y - speed);
+		this.setPositionY(this.sprite.position.y - speed * 0.8);
 	}
 	if (this.keyPressed.right) {
 		this.setPositionX(this.sprite.position.x + speed);
@@ -243,6 +245,10 @@ PlayerClass.prototype.handleBomb = function() {
 			 	bomb.addCollision( b.sprite );
 			});
 
+			for (player in this.players) {
+				bomb.addCollision( this.players[player].sprite );
+			}
+
 			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
@@ -255,4 +261,9 @@ PlayerClass.prototype.handleBomb = function() {
 	this.bombs = this.bombs.filter(function (bomb) {
 		return !bomb.expired();
 	});
+};
+
+PlayerClass.prototype.die = function() {
+	this.scene.remove( this.sprite );
+	this.alive = false;
 };

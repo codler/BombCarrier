@@ -385,8 +385,9 @@ function init() {
 	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 
-
-
+	/* === IMPORTANT === */
+	/* The execution order should be like this! */
+	
 	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
 		0 * tileW - 200 + 0,
 		0 * tileH - 200 + 280,
@@ -437,11 +438,12 @@ function init() {
 	player1.registerPlayer(player2);
 	player2.registerPlayer(player1);
 
+	/* The execution order should be like this! */
+	/* === END OF IMPORTANT === */
 
 	bombs = new THREE.Object3D();
 	scene.add( bombs );
 
-	
 
 
 	// Inline text
@@ -564,17 +566,21 @@ function render() {
 	delta = 0.35 * ( time - oldTime );
 	oldTime = time;
 
-	player1.saveState();
-	player1.move(delta);
-	player1.checkCollision();
-	player1.checkZIndex();
-	player1.handleBomb();
+	if (player1.alive) {
+		player1.saveState();
+		player1.move(delta);
+		player1.checkCollision();
+		player1.checkZIndex();
+		player1.handleBomb();
+	}
 
-	player2.saveState();
-	player2.move(delta);
-	player2.checkCollision();
-	player2.checkZIndex();
-	player2.handleBomb();
+	if (player2.alive) {
+		player2.saveState();
+		player2.move(delta);
+		player2.checkCollision();
+		player2.checkZIndex();
+		player2.handleBomb();
+	}
 
 	// Garbage Collector
 	tileSystem.handleBomb();
