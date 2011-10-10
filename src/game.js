@@ -116,6 +116,25 @@ function init_core() {
 
 	}
 
+	// Sound on/off
+	var sound_switch = $('<div>').css({
+		'background-color' : '#ccc',
+		'cursor' : 'pointer',
+		'position' : 'absolute',
+		'top' : 0,
+		'right' : 0,
+		'z-index' : 1002
+	});
+
+	sound_switch.click(function () {
+		var sound_on = localStorage.getItem('sound_on');
+		sound_on = (parseInt(sound_on)) ? 0 : 1;
+		localStorage.setItem('sound_on', sound_on);
+		$(this).text(sound_on ? 'Sound on': 'Sound off');
+	}).click();
+	container.append( sound_switch );
+	
+
 	// Stats - FPS viewer
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -302,7 +321,9 @@ function play_scene() {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	loadAudio('sound/battle4.ogg');
+	if (parseInt(localStorage.getItem('sound_on'))) {
+		loadAudio('sound/battle4.ogg');
+	}
 	init();
 	animate();
 }
