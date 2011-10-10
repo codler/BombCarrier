@@ -157,14 +157,14 @@ function intro_scene() {
 				'width' : '100%'
 			});
 
-		var meny = $('<h1>')
+		var play_menu = $('<h1>')
 			.html('Play')
 			.css({
 				'cursor' : 'pointer',
 				'width' : '100%'
 			});
 
-		var helpMenu = $('<h1>')
+		var help_menu = $('<h1>')
 			.html('How to play')
 			.css({
 				'cursor' : 'pointer',
@@ -172,42 +172,28 @@ function intro_scene() {
 			});
 			
 		// Start game
-		$(meny).click(function() {
-				play_scene();
-				intro_scene.remove();
-			});
-
+		$(play_menu).click(function() {
+			play_scene();
+			intro_scene.remove();
+		});
 
 		// Open help scene
-		$(helpMenu).click(function() {
-				help_scene();
-				//intro_scene.remove();
-			});	
+		$(help_menu).click(function() {
+			help_scene();
+			//intro_scene.remove();
+		});	
 
-		$(meny).mouseover(function() {
+		$(play_menu).add(help_menu).mouseover(function() {
 			$(this).css({
 				'color' : '#FFF'
 			});
 		});
 
-		$(helpMenu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(meny).mouseout(function() {
+		$(play_menu).add(help_menu).mouseout(function() {
 			$(this).css({
 				'color' : '#000'
 			});
 		});
-
-		$(helpMenu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
 
 		var intro_scene_inner = $('<div>').css({
 			'margin' : '0 auto'
@@ -215,8 +201,8 @@ function intro_scene() {
 
 		intro_scene_inner.append( bomb_title );
 		intro_scene_inner.append( carrier_title );
-		intro_scene_inner.append( meny );
-		intro_scene_inner.append(helpMenu);
+		intro_scene_inner.append( play_menu );
+		intro_scene_inner.append( help_menu );
 
 		intro_scene.append( intro_scene_inner );
 
@@ -229,8 +215,8 @@ function intro_scene() {
 
 		$(bomb_title).fitText( 0.6 );
 		$(carrier_title).fitText( 0.9 );
-		$(meny).fitText( 1.3 );
-		$(helpMenu).fitText(4.0);
+		$(play_menu).fitText( 1.3 );
+		$(help_menu).fitText( 4.0 );
 }
 
 function help_scene() {
@@ -269,12 +255,12 @@ function help_scene() {
 				'cursor' : 'pointer',
 				'padding' : 0,
 				'margin' : 0
-		});
+			});
 
 		// Return to main menu
 		$(main_menu).click(function() {
-				help_scene.remove();
-			});	
+			help_scene.remove();
+		});	
 
 		$(main_menu).mouseover(function() {
 			$(this).css({
@@ -288,7 +274,7 @@ function help_scene() {
 			});
 		});
 
-			var help_scene_inner = $('<div>').css({
+		var help_scene_inner = $('<div>').css({
 			'margin' : '0 auto'
 		});
 
@@ -321,17 +307,21 @@ function play_scene() {
 	animate();
 }
 
-function loadAudio(uri)
+/*
+audio : Audio tag - DOM element
+Return DOM element
+*/
+function loadAudio(uri, audio)
 {
-    var audio = new Audio();
+    //audio = audio || new Audio();
 
-    var audio = $('<audio>').attr({
+    audio = audio || $('<audio>').attr({
     	'preload':'auto'
-    	,'src': uri
-    })[0];
-    $('body').append(audio);
+    }).appendTo('body')[0];
+
     audio.src = uri;
     audio.play();
+
     return audio;
 }
 
