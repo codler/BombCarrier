@@ -27,7 +27,7 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.animate.add( this.sprite.boundingMesh );
 
 
-	this.hasExploaded = false;
+	this.hasExploded = false;
 	
 	this.time = new TimeClass();
 	this.sprite.boundingMesh.bombClass = this;
@@ -55,7 +55,9 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 	if (c && c.distance < distance ) {
 
 		if(c.mesh.gameType == 'bomb'){
-			c.mesh.bombClass.explode();
+			if (!c.mesh.bombClass.hasExploded) {
+				c.mesh.bombClass.explode();
+			}
 		}else{
 			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
@@ -65,6 +67,9 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 };
 
 BombClass.prototype.explode = function () {
+	if (this.hasExploded) return;
+	this.hasExploded = true;
+
 	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
 	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
 	this.sprite.position.y += 30;
@@ -75,20 +80,26 @@ BombClass.prototype.explode = function () {
 	this.sprite2.scale = this.sprite.scale;
 	this.animate.add( this.sprite2 );
 
+	this.sprite3 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite3.map.needsUpdate = true;
+	this.sprite3.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width,-30,0));
+	this.sprite3.scale.y /= 2;
+	this.sprite3.rotation = -Math.PI/2;
+	this.animate.add( this.sprite3 );
+
 	// collision with tile
 	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
 	this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
 	this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
 	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
 	
-	this.hasExploaded = true;
 	this.timeAlive = this.time.getElapse() + 2;
 }
 
 
 BombClass.prototype.update = function () {
 	var $this = this;
-	if (this.hasExploaded || this.time.elapse(0, this.timeAlive - 2, function () {
+	if (this.hasExploded || this.time.elapse(0, this.timeAlive - 2, function () {
 		$this.explode();
 	}) ) {
 

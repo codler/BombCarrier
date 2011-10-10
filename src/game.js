@@ -272,6 +272,8 @@ function init() {
 	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
 	player2.setPosition( tileSystem.getPosition(13,11).addSelf(new THREE.Vector3(0, 40, 0)) );
 
+	player1.registerPlayer(player2);
+	player2.registerPlayer(player1);
 
 /*
 	group = new THREE.Object3D();
@@ -476,6 +478,10 @@ function render() {
 	player2.checkCollision();
 	player2.checkZIndex();
 	player2.handleBomb();
+
+	// Garbage Collector
+	tileSystem.handleBomb();
+	tileSystem.gc();
 
 	renderer.render( scene, camera );
 
