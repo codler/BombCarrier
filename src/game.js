@@ -210,10 +210,24 @@ function play_scene() {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
+	loadAudio('sound/battle4.ogg');
 	init();
 	animate();
 }
 
+function loadAudio(uri)
+{
+    var audio = new Audio();
+
+    var audio = $('<audio>').attr({
+    	'preload':'auto'
+    	,'src': uri
+    })[0];
+    $('body').append(audio);
+    audio.src = uri;
+    audio.play();
+    return audio;
+}
 
 function init() {
 	var amount = 15*13;
@@ -462,7 +476,7 @@ function render() {
 	if ( ! oldTime ) oldTime = new Date().getTime();
 
 	time = new Date().getTime();
-	delta = 0.15 * ( time - oldTime );
+	delta = 0.35 * ( time - oldTime );
 	oldTime = time;
 
 	player1.saveState();
