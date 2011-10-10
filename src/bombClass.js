@@ -23,11 +23,11 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.sprite.boundingMesh.gameType = 'bomb';
 
 
-	this.animate.addChild( this.sprite );
-	this.animate.addChild( this.sprite.boundingMesh );
+	this.animate.add( this.sprite );
+	this.animate.add( this.sprite.boundingMesh );
 
 
-	this.hasExploaded = false;
+	this.hasExploded = false;
 	
 	this.time = new TimeClass();
 	this.sprite.boundingMesh.bombClass = this;
@@ -45,6 +45,9 @@ BombClass.prototype.setCollision = function (collision) {
 	this.collision = collision;
 };
 
+/*
+returns distance
+*/
 BombClass.prototype.checkCollision = function (direction, distance) {
 	var ray = new THREE.Ray( this.sprite.position.clone().addSelf(new THREE.Vector3(0, -20,0)), direction );
 	var d = this.collision.rayCastAll(ray);
@@ -53,18 +56,26 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 	})[0];
 
 	if (c && c.distance < distance ) {
-
-		if(c.mesh.gameType == 'bomb'){
-			c.mesh.bombClass.explode();
-		}else{
+		if(c.mesh.gameType == 'bomb') {
+			if (!c.mesh.bombClass.hasExploded) {
+				c.mesh.bombClass.explode();
+			}
+		} else if(c.mesh.gameType == 'player') {
+			console.log('kill');
+			c.mesh.playerClass.die();
+		} else {
 			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
-			
 		}
+		return c.distance;
 	}
+	return false;
 };
 
 BombClass.prototype.explode = function () {
+	if (this.hasExploded) return;
+	this.hasExploded = true;
+
 	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
 	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
 	this.sprite.position.y += 30;
@@ -73,27 +84,79 @@ BombClass.prototype.explode = function () {
 	this.sprite2.map.needsUpdate = true;
 	this.sprite2.position = this.sprite.position;
 	this.sprite2.scale = this.sprite.scale;
-	this.animate.addChild( this.sprite2 );
+	this.animate.add( this.sprite2 );
+
+	// Right2
+	/*this.sprite7 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite7.map.needsUpdate = true;
+	this.sprite7.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width*2,-30,0));
+	this.sprite7.scale.y /= 2;
+	this.sprite7.rotation = -Math.PI/2;
+	this.animate.add( this.sprite7 );*/
 
 	// collision with tile
-	this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
-	this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
-	this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	var distance = 0;
+	// up
+	distance = this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
+	if (distance > tileSystem.tileSize.height) {
+		// up
+		this.sprite5 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite5.map.needsUpdate = true;
+		this.sprite5.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 + tileSystem.tileSize.height,0));
+		this.sprite5.scale.y /= 2;
+		this.animate.add( this.sprite5 );
+	}
+	// down
+	distance = this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
+	if (distance > tileSystem.tileSize.height) {
+		// down
+		this.sprite6 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite6.map.needsUpdate = true;
+		this.sprite6.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 - tileSystem.tileSize.height,2));
+		this.sprite6.scale.y /= 2;
+		this.sprite6.rotation = Math.PI;
+		this.animate.add( this.sprite6 );
+	}
+	// left
+	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	if (distance > tileSystem.tileSize.width) {
+		// Left
+		this.sprite4 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite4.map.needsUpdate = true;
+		this.sprite4.position = this.sprite.position.clone().addSelf(new THREE.Vector3(-tileSystem.tileSize.width,-30,0));
+		this.sprite4.scale.y /= 2;
+		this.sprite4.rotation = Math.PI/2;
+		this.animate.add( this.sprite4 );
+	}
+	// right
 	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
+	if (distance > tileSystem.tileSize.width) {
+		// Right
+		this.sprite3 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite3.map.needsUpdate = true;
+		this.sprite3.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width,-30,0));
+		this.sprite3.scale.y /= 2;
+		this.sprite3.rotation = -Math.PI/2;
+		this.animate.add( this.sprite3 );
+	}
 	
-	this.hasExploaded = true;
 	this.timeAlive = this.time.getElapse() + 2;
 }
 
 
 BombClass.prototype.update = function () {
 	var $this = this;
-	if (this.hasExploaded || this.time.elapse(0, this.timeAlive - 2, function () {
+	if (this.hasExploded || this.time.elapse(0, this.timeAlive - 2, function () {
 		$this.explode();
 	}) ) {
 
-		this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		this.sprite2.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite) this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite2) this.sprite2.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite3) this.sprite3.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite4) this.sprite4.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite5) this.sprite5.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite6) this.sprite6.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		//this.sprite7.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 
 	}
 };

@@ -32,6 +32,7 @@ var delta, time, oldTime;
 
 var tileSystem;
 
+var background_sound;
 
 var texture = {
 	'map-a'        : 'textures/Dirt Block.png',
@@ -116,6 +117,31 @@ function init_core() {
 
 	}
 
+	// Sound on/off
+	if (localStorage.getItem('sound_on') == null) {
+		localStorage.setItem('sound_on', 1); // On by default
+	}
+
+	var sound_switch = $('<div>').css({
+		'background-color' : '#ccc',
+		'cursor' : 'pointer',
+		'position' : 'absolute',
+		'top' : 0,
+		'right' : 0,
+		'z-index' : 1002
+	}).text(parseInt(localStorage.getItem('sound_on')) ? 'Sound on': 'Sound off');
+
+	sound_switch.click(function () {
+		var sound_on = parseInt(localStorage.getItem('sound_on')) ? 0 : 1;
+		localStorage.setItem('sound_on', sound_on);
+		$(this).text(sound_on ? 'Sound on': 'Sound off');
+		if (background_sound) {
+			background_sound.volume = sound_on;
+		}
+	});
+	container.append( sound_switch );
+	
+
 	// Stats - FPS viewer
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -157,26 +183,39 @@ function intro_scene() {
 				'width' : '100%'
 			});
 
-		var meny = $('<h1>')
+		var play_menu = $('<h1>')
 			.html('Play')
+			.css({
+				'cursor' : 'pointer',
+				'width' : '100%'
+			});
+
+		var help_menu = $('<h1>')
+			.html('How to play')
 			.css({
 				'cursor' : 'pointer',
 				'width' : '100%'
 			});
 			
 		// Start game
-		$(meny).click(function() {
-				play_scene();
-				intro_scene.remove();
-			});
+		$(play_menu).click(function() {
+			play_scene();
+			intro_scene.remove();
+		});
 
-		$(meny).mouseover(function() {
+		// Open help scene
+		$(help_menu).click(function() {
+			help_scene();
+			//intro_scene.remove();
+		});	
+
+		$(play_menu).add(help_menu).mouseover(function() {
 			$(this).css({
 				'color' : '#FFF'
 			});
 		});
 
-		$(meny).mouseout(function() {
+		$(play_menu).add(help_menu).mouseout(function() {
 			$(this).css({
 				'color' : '#000'
 			});
@@ -188,21 +227,250 @@ function intro_scene() {
 
 		intro_scene_inner.append( bomb_title );
 		intro_scene_inner.append( carrier_title );
-		intro_scene_inner.append( meny );
+		intro_scene_inner.append( play_menu );
+		intro_scene_inner.append( help_menu );
 
 		intro_scene.append( intro_scene_inner );
 
 		container.append( intro_scene );
 
 		// Fix aspect ratio
-		if (intro_scene.width() / intro_scene.height() > 1.8) {
-			intro_scene_inner.width(intro_scene.height() * 1.8);
-		}
+		var fixAspectRatio = function() {
+			if (intro_scene.width() / intro_scene.height() > 1.8) {
+				intro_scene_inner.width(intro_scene.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
 
+		// Size of the text.
 		$(bomb_title).fitText( 0.6 );
 		$(carrier_title).fitText( 0.9 );
-		$(meny).fitText( 1.3 );
+		$(play_menu).fitText( 1.3 );
+		$(help_menu).fitText( 4.0 );
+
 }
+
+function help_scene() {
+		var help_scene = $('<div>').css({
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'font-family' : "'Holtwood One SC', serif",
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'text-align' : 'center',
+			'width' : '100%',
+			'height' : '100%'
+		});
+
+		var help_header = $('<h1>')
+			.html('How to play')
+			.css({
+				'width' : '100%',
+				'padding' : 0,
+				'margin' : 0
+			});
+		var ask = $('<h1>')
+			.html('BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>')
+			.css({
+				'width' : '100%',
+				'margin' : 0,
+				'color' : '#fff'
+			});
+
+		var main_menu = $('<h1>')
+			.html('Main Menu')
+			.css({
+				'width' : '100%',
+				'cursor' : 'pointer',
+				'padding' : 0,
+				'margin' : 0
+			});
+
+		var next_screen = $('<h1>')
+			.html('->')
+			.css({
+				'width' : '100%',
+				'cursor' : 'pointer',
+				'margin' : 0,
+				'padding' : 0
+
+			});
+
+		// Return to main menu
+		$(main_menu).click(function() {
+			help_scene.remove();
+		});	
+		// Goes to the second screen of the help screen
+		$(next_screen).click(function() {
+			help_scene_page_2();
+			help_scene.remove();
+		});	
+
+		$(main_menu).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+		$(next_screen).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(main_menu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+		$(next_screen).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+		var help_scene_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+		help_scene_inner.append(help_header);
+		help_scene_inner.append(ask);
+		help_scene_inner.append(main_menu);
+		help_scene_inner.append(next_screen)
+		
+
+		help_scene.append(help_scene_inner);
+
+		container.append( help_scene );
+
+
+		// Fix aspect ratio
+		var fixAspectRatio = function() {
+			if (help_scene.width() / help_scene.height() > 1.8) {
+				help_scene_inner.width(help_scene.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
+
+		// Size of the text.
+		$(help_header).fitText(1.4);
+		$(main_menu).fitText(4.0);
+		$(ask).fitText(5.0);
+		$(next_screen).fitText(4.0);
+
+}
+
+function help_scene_page_2() {
+	var help_scene_page_2 = $('<div>').css({
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'font-family' : "'Holtwood One SC', serif",
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'text-align' : 'center',
+			'width' : '100%',
+			'height' : '100%'
+		});
+
+		var control_header = $('<h1>')
+			.html('Controls')
+			.css({
+				 'width' : '100%',
+				 'margin' : 0,
+				 'padding' : 0
+
+			});
+		
+		var description = $('<h1>').html('Player 1'+
+			'                    '+
+			'Player 2')
+			.css({
+				'white-space': 'pre'
+			});
+
+		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/up.png" width="5%"/>'+ 
+			'                                                                          '+
+			'<img src="textures/W.png" width="5%"/><br/>'+
+			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/>' +
+			'                                                         ' +
+			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/> <br/>'+
+			'Drop bomb<br/>'+
+			'Space...' +
+			'                                                               '+
+			'<img src="textures/shift.png" width="11%"/>')
+			.css({
+				'white-space' : 'pre',
+				'margin' : 0,
+				'padding' : 0
+			});
+
+		var main_menu = $('<h1>')
+			.html('<br/>Main Menu')
+			.css({
+				'width' : '100%',
+				'padding' : 0,
+				'margin' : 0,
+				'cursor' : 'pointer'
+			});
+			
+
+
+var help_scene_page_2_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+
+	    $(main_menu).click(function() {
+			
+			help_scene_page_2.remove();
+		});
+			
+		$(main_menu).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(main_menu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+
+
+		help_scene_page_2_inner.append(control_header);
+		help_scene_page_2_inner.append(description);
+		help_scene_page_2_inner.append(controllers);
+		help_scene_page_2_inner.append(main_menu);
+
+
+	
+		help_scene_page_2.append(help_scene_page_2_inner);
+		container.append( help_scene_page_2 );
+
+		// Fix aspect ratio
+		var fixAspectRatio = function() {
+			if (help_scene_page_2.width() / help_scene_page_2.height() > 1.8) {
+				help_scene_page_2_inner.width(help_scene_page_2.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
+
+		// Size of the Text
+		$(control_header).fitText(1.9);
+		$(description).fitText(3.0);
+		$(controllers).fitText(6.0);
+		$(main_menu).fitText(4.0);
+}
+
 
 function play_scene() {
 
@@ -210,10 +478,30 @@ function play_scene() {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
+	background_sound = loadAudio('sound/battle4.ogg');
+
 	init();
 	animate();
 }
 
+/*
+audio : Audio tag - DOM element
+Return DOM element
+*/
+function loadAudio(uri, audio)
+{
+    //audio = audio || new Audio();
+
+    audio = audio || $('<audio>', {
+    	'preload':'auto'
+    }).appendTo('body')[0];
+
+    audio.src = uri;
+    audio.volume = parseInt(localStorage.getItem('sound_on'));
+    audio.play();
+
+    return audio;
+}
 
 function init() {
 	var amount = 15*13;
@@ -223,8 +511,9 @@ function init() {
 	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 
-
-
+	/* === IMPORTANT === */
+	/* The execution order should be like this! */
+	
 	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
 		0 * tileW - 200 + 0,
 		0 * tileH - 200 + 280,
@@ -272,77 +561,15 @@ function init() {
 	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
 	player2.setPosition( tileSystem.getPosition(13,11).addSelf(new THREE.Vector3(0, 40, 0)) );
 
+	player1.registerPlayer(player2);
+	player2.registerPlayer(player1);
 
-/*
-	group = new THREE.Object3D();
-
-	var level1 = [
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-		
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-		[mapC, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapB, mapA, mapC],
-
-		[mapC, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapA, mapC],
-
-		[mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC, mapC]
-	];
-	var level = level1;
-
-	for( var a = 0; a < amount; a++ ) {
-
-		var z = 15 - Math.floor(a/15) * 2;
-
-		var map = level[Math.floor(a/15)][a%15];
-		var sprite = new THREE.Sprite( { map: map, useScreenCoordinates: false } );
-
-		if (sprite.map == mapB || sprite.map == mapC) {
-			z++;
-			// Collision area
-			sprite.boundingMesh = new THREE.Mesh(
-				new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
-				//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
-			);
-
-			sprite.boundingMesh.position.set( a%15 * tileW - 800,
-		                     Math.floor(a/15) * tileH - 400 + 10,
-		                     z - 20);
-
-			group.addChild( sprite.boundingMesh );
-			player1.addCollision(sprite);
-			player2.addCollision(sprite);
-		}
-
-		sprite.position.set( a%15 * tileW - 800,
-		                     Math.floor(a/15) * tileH - 400,
-		                     z);
-
-		//sprite.position.normalize();
-		//sprite.position.multiplyScalar( radius );
-		
-		
-		group.addChild( sprite );
-	}
-
-	scene.addChild( group );*/
-
-
+	/* The execution order should be like this! */
+	/* === END OF IMPORTANT === */
 
 	bombs = new THREE.Object3D();
-	scene.addChild( bombs );
+	scene.add( bombs );
 
-	
 
 
 	// Inline text
@@ -462,20 +689,28 @@ function render() {
 	if ( ! oldTime ) oldTime = new Date().getTime();
 
 	time = new Date().getTime();
-	delta = 0.15 * ( time - oldTime );
+	delta = 0.35 * ( time - oldTime );
 	oldTime = time;
 
-	player1.saveState();
-	player1.move(delta);
-	player1.checkCollision();
-	player1.checkZIndex();
-	player1.handleBomb();
+	if (player1.alive) {
+		player1.saveState();
+		player1.move(delta);
+		player1.checkCollision();
+		player1.checkZIndex();
+		player1.handleBomb();
+	}
 
-	player2.saveState();
-	player2.move(delta);
-	player2.checkCollision();
-	player2.checkZIndex();
-	player2.handleBomb();
+	if (player2.alive) {
+		player2.saveState();
+		player2.move(delta);
+		player2.checkCollision();
+		player2.checkZIndex();
+		player2.handleBomb();
+	}
+
+	// Garbage Collector
+	tileSystem.handleBomb();
+	tileSystem.gc();
 
 	renderer.render( scene, camera );
 

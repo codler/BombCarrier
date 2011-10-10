@@ -7,8 +7,10 @@ position : Vector3
 var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
 	this.bombs   = [];
+	this.players = [];
 	this.width   = 80;
 	this.height  = 100;
+	this.alive   = true;
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -21,6 +23,7 @@ var PlayerClass = function( texture, position ) {
 		new THREE.CubeGeometry(40, 40, 100, 1, 1, 1) 
 		//,new THREE.MeshLambertMaterial( { color: 0xffffff } )
 	);
+	this.sprite.boundingMesh.gameType = 'player';
 
 	this.setPosition(position || new THREE.Vector3(0,0,0));
 	this.setKeyPressed({
@@ -33,7 +36,7 @@ var PlayerClass = function( texture, position ) {
 
 	this.collision = new THREE.CollisionSystem();
 	
-	
+	this.sprite.boundingMesh.playerClass = this;
 };
 //PlayerClass.prototype.constructor = PlayerClass;
 
@@ -89,8 +92,8 @@ scene : Vector3
 */
 PlayerClass.prototype.setScene = function(scene) {
 	this.scene = scene;
-	this.scene.addChild(this.sprite);
-	this.scene.addChild(this.sprite.boundingMesh);
+	this.scene.add(this.sprite);
+	this.scene.add(this.sprite.boundingMesh);
 };
 
 /*
@@ -132,10 +135,10 @@ PlayerClass.prototype.move = function(speed) {
 
 
 	if (this.keyPressed.up) {
-		this.setPositionY(this.sprite.position.y + speed);
+		this.setPositionY(this.sprite.position.y + speed * 0.8);
 	}
 	if (this.keyPressed.down) {
-		this.setPositionY(this.sprite.position.y - speed);
+		this.setPositionY(this.sprite.position.y - speed * 0.8);
 	}
 	if (this.keyPressed.right) {
 		this.setPositionX(this.sprite.position.x + speed);
@@ -152,6 +155,10 @@ PlayerClass.prototype.checkZIndex = function() {
 
 	this.setPositionZ(z);
 	return z;
+};
+
+PlayerClass.prototype.registerPlayer = function(player) {
+	this.players.push(player);
 };
 
 PlayerClass.prototype.checkCollision = function() {
@@ -218,7 +225,7 @@ PlayerClass.prototype.handleBomb = function() {
 		console.log([tilePos.x,tilePos.y]);
 
 		// Check bomb isnt on same tile
-		if (this.bombs.every(function (bomb) {
+		if (this.tileSystem.bombs.every(function (bomb) {
 				return !(tilePos.x == bomb.position.x && tilePos.y == bomb.position.y);
 			})
 		) {
@@ -228,30 +235,35 @@ PlayerClass.prototype.handleBomb = function() {
 
 	    	var c = new THREE.CollisionSystem();
 	    	c.merge(this.collision);
+
 	    	bomb.setCollision( c );
-	    	//bomb.setCollision( this.collision );
 
+			var $this = this;
 	    
-			this.bombs.forEach(function (b) {
+			this.tileSystem.bombs.forEach(function (b) {
 			 	b.addCollision( bomb.sprite );
-			});		
+			 	bomb.addCollision( b.sprite );
+			});
 
+			for (player in this.players) {
+				bomb.addCollision( this.players[player].sprite );
+			}
 
-			bombs.addChild( bomb.animate );
+			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
-			
+			this.tileSystem.bombs.push(bomb);					
 		}
+		this.keyPressed.bomb = false;
 	}
 
-
-
-	this.bombs.forEach(function (bomb) {
-		bomb.update();
+	// Remove expired bombs from array
+	this.bombs = this.bombs.filter(function (bomb) {
+		return !bomb.expired();
 	});
+};
 
-	// Remove bomb
-	if (this.bombs.length && this.bombs[0].expired()) {
-		this.scene.removeObject( this.bombs.shift().animate );
-	}
+PlayerClass.prototype.die = function() {
+	this.scene.remove( this.sprite );
+	this.alive = false;
 };

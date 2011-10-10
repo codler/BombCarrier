@@ -5,6 +5,7 @@ var TileSystem = function(x, y) {
 	this.y       = y;
 	this.tiles   = new THREE.Object3D();
 	this.players = [];
+	this.bombs   = [];
 };
 
 TileSystem.prototype.tileSize = {
@@ -140,7 +141,7 @@ TileSystem.prototype.loadMap = function() {
 					this.players[p].addCollision(sprite);
 				}
 
-				this.tiles.addChild( sprite.boundingMesh );
+				this.tiles.add( sprite.boundingMesh );
 
 			}
 
@@ -152,7 +153,7 @@ TileSystem.prototype.loadMap = function() {
 
 			this.level[y][x].sprite = sprite;
 
-			this.tiles.addChild( sprite );
+			this.tiles.add( sprite );
 		}
 	}
 
@@ -181,7 +182,7 @@ TileSystem.prototype.addPlayer = function(player) {
 
 TileSystem.prototype.setScene = function(scene) {
 	this.scene = scene;
-	this.scene.addChild(this.tiles);
+	this.scene.add(this.tiles);
 };
 
 TileSystem.prototype.getPosition = function(tileX, tileY, z) {
@@ -197,4 +198,30 @@ TileSystem.prototype.getTilePosition = function(x, y) {
 		x: Math.floor( (x - this.x) / this.tileSize.width ),
 		y: Math.floor( (y - this.y) / this.tileSize.height )
 	};
+};
+
+TileSystem.prototype.addBomb = function(bomb) {
+	this.bombs = bomb;
+};
+
+TileSystem.prototype.handleBomb = function() {
+	var $this = this;
+	this.bombs.forEach(function (bomb) {
+		bomb.update();
+		
+		// Remove bomb from scene
+		if ( bomb.expired() ) {
+			$this.scene.remove( bomb.animate );	
+			
+		}
+	});
+};
+
+TileSystem.prototype.gc = function() {
+	// Remove expired bombs from array
+	this.bombs = this.bombs.filter(function (bomb) {
+		return !bomb.expired();
+	});
+	//index = array.indexOf(item);
+	//array.splice(index, 1);
 };
