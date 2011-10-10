@@ -428,7 +428,6 @@ var help_scene_page_2_inner = $('<div>').css({
 
 	    $(main_menu).click(function() {
 			
-			intro_scene();
 			help_scene_page_2.remove();
 		});
 			
