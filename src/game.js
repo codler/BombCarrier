@@ -235,14 +235,20 @@ function intro_scene() {
 		container.append( intro_scene );
 
 		// Fix aspect ratio
-		if (intro_scene.width() / intro_scene.height() > 1.8) {
-			intro_scene_inner.width(intro_scene.height() * 1.8);
-		}
+		var fixAspectRatio = function() {
+			if (intro_scene.width() / intro_scene.height() > 1.8) {
+				intro_scene_inner.width(intro_scene.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
 
+		// Size of the text.
 		$(bomb_title).fitText( 0.6 );
 		$(carrier_title).fitText( 0.9 );
 		$(play_menu).fitText( 1.3 );
 		$(help_menu).fitText( 4.0 );
+
 }
 
 function help_scene() {
@@ -341,13 +347,20 @@ function help_scene() {
 		container.append( help_scene );
 
 
+		// Fix aspect ratio
+		var fixAspectRatio = function() {
+			if (help_scene.width() / help_scene.height() > 1.8) {
+				help_scene_inner.width(help_scene.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
 
 		// Size of the text.
 		$(help_header).fitText(1.4);
 		$(main_menu).fitText(4.0);
 		$(ask).fitText(5.0);
 		$(next_screen).fitText(4.0);
-
 
 }
 
@@ -443,12 +456,20 @@ var help_scene_page_2_inner = $('<div>').css({
 		help_scene_page_2.append(help_scene_page_2_inner);
 		container.append( help_scene_page_2 );
 
+		// Fix aspect ratio
+		var fixAspectRatio = function() {
+			if (help_scene_page_2.width() / help_scene_page_2.height() > 1.8) {
+				help_scene_page_2_inner.width(help_scene_page_2.height() * 1.8);
+			}
+		};
+		fixAspectRatio();
+		$(window).resize(fixAspectRatio);
+
 		// Size of the Text
 		$(control_header).fitText(1.9);
 		$(description).fitText(3.0);
 		$(controllers).fitText(6.0);
 		$(main_menu).fitText(4.0);
-
 }
 
 
@@ -458,9 +479,8 @@ function play_scene() {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	if (parseInt(localStorage.getItem('sound_on'))) {
-		background_sound = loadAudio('sound/battle4.ogg');
-	}
+	background_sound = loadAudio('sound/battle4.ogg');
+
 	init();
 	animate();
 }
@@ -478,6 +498,7 @@ function loadAudio(uri, audio)
     }).appendTo('body')[0];
 
     audio.src = uri;
+    audio.volume = parseInt(localStorage.getItem('sound_on'));
     audio.play();
 
     return audio;
