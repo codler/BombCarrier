@@ -290,6 +290,11 @@ function help_scene() {
 		$(main_menu).click(function() {
 			help_scene.remove();
 		});	
+		// Goes to the second screen of the help screen
+		$(next_screen).click(function() {
+			help_scene_page_2();
+			help_scene.remove();
+		});	
 
 		$(main_menu).mouseover(function() {
 			$(this).css({
@@ -338,6 +343,107 @@ function help_scene() {
 
 
 }
+
+function help_scene_page_2() {
+	var help_scene_page_2 = $('<div>').css({
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'font-family' : "'Holtwood One SC', serif",
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'text-align' : 'center',
+			'width' : '100%',
+			'height' : '100%'
+		});
+
+		var control_header = $('<h1>')
+			.html('Controls')
+			.css({
+				 'width' : '100%',
+				 'margin' : 0,
+				 'padding' : 0
+
+			});
+		
+		var description = $('<h1>').html('Player 1'+
+			'                    '+
+			'Player 2')
+			.css({
+				'white-space': 'pre'
+			});
+
+		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/up.png"/>'+ 
+			'                                                                       '+
+			'<img src="textures/W.png"/><br/>'+
+			'<img src="textures/left.png"/><img src="textures/down.png"/><img src="textures/right.png"/>' +
+			'                                                         ' +
+			'<img src="textures/A.png"/><img src="textures/S.png"/><img src="textures/D.png"/> <br/>'+
+			'Drop bomb<br/>'+
+			'Space...' +
+			'                                                               '+
+			'<img src="textures/shift.png"/>')
+			.css({
+				'white-space' : 'pre',
+				'margin' : 0,
+				'padding' : 0
+			});
+
+		var main_menu = $('<h1>')
+			.html('<br/>Main Menu')
+			.css({
+				'width' : '100%',
+				'padding' : 0,
+				'margin' : 0,
+				'cursor' : 'pointer'
+			});
+			
+
+
+var help_scene_page_2_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+
+	    $(main_menu).click(function() {
+			
+			intro_scene();
+			help_scene_page_2.remove();
+		});
+			
+		$(main_menu).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(main_menu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+
+
+		help_scene_page_2_inner.append(control_header);
+		help_scene_page_2_inner.append(description);
+		help_scene_page_2_inner.append(controllers);
+		help_scene_page_2_inner.append(main_menu);
+
+
+	
+		help_scene_page_2.append(help_scene_page_2_inner);
+		container.append( help_scene_page_2 );
+
+		// Size of the Text
+		$(control_header).fitText(1.9);
+		$(description).fitText(3.0);
+		$(controllers).fitText(6.0);
+		$(main_menu).fitText(4.0);
+
+}
+
 
 function play_scene() {
 
