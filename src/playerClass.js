@@ -7,6 +7,7 @@ position : Vector3
 var PlayerClass = function( texture, position ) {
 	this.history = []; // Players previous positions
 	this.bombs   = [];
+	this.players = [];
 	this.width   = 80;
 	this.height  = 100;
 
@@ -154,6 +155,10 @@ PlayerClass.prototype.checkZIndex = function() {
 	return z;
 };
 
+PlayerClass.prototype.registerPlayer = function(player) {
+	this.players.push(player);
+};
+
 PlayerClass.prototype.checkCollision = function() {
 	var pop = false;
 	var $this = this;
@@ -218,7 +223,7 @@ PlayerClass.prototype.handleBomb = function() {
 		console.log([tilePos.x,tilePos.y]);
 
 		// Check bomb isnt on same tile
-		if (this.bombs.every(function (bomb) {
+		if (this.tileSystem.bombs.every(function (bomb) {
 				return !(tilePos.x == bomb.position.x && tilePos.y == bomb.position.y);
 			})
 		) {
@@ -228,30 +233,25 @@ PlayerClass.prototype.handleBomb = function() {
 
 	    	var c = new THREE.CollisionSystem();
 	    	c.merge(this.collision);
+
 	    	bomb.setCollision( c );
-	    	//bomb.setCollision( this.collision );
 
+			var $this = this;
 	    
-			this.bombs.forEach(function (b) {
+			this.tileSystem.bombs.forEach(function (b) {
 			 	b.addCollision( bomb.sprite );
-			});		
-
+			 	bomb.addCollision( b.sprite );
+			});
 
 			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
-			
+			this.tileSystem.bombs.push(bomb);					
 		}
 	}
 
-
-
-	this.bombs.forEach(function (bomb) {
-		bomb.update();
+	// Remove expired bombs from array
+	this.bombs = this.bombs.filter(function (bomb) {
+		return !bomb.expired();
 	});
-
-	// Remove bomb
-	if (this.bombs.length && this.bombs[0].expired()) {
-		this.scene.remove( this.bombs.shift().animate );
-	}
 };
