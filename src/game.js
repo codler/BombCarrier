@@ -163,6 +163,13 @@ function intro_scene() {
 				'cursor' : 'pointer',
 				'width' : '100%'
 			});
+
+		var helpMenu = $('<h1>')
+			.html('How to play')
+			.css({
+				'cursor' : 'pointer',
+				'width' : '100%'
+			});
 			
 		// Start game
 		$(meny).click(function() {
@@ -170,7 +177,20 @@ function intro_scene() {
 				intro_scene.remove();
 			});
 
+
+		// Open help scene
+		$(helpMenu).click(function() {
+				help_scene();
+				//intro_scene.remove();
+			});	
+
 		$(meny).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(helpMenu).mouseover(function() {
 			$(this).css({
 				'color' : '#FFF'
 			});
@@ -182,6 +202,13 @@ function intro_scene() {
 			});
 		});
 
+		$(helpMenu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+
 		var intro_scene_inner = $('<div>').css({
 			'margin' : '0 auto'
 		});
@@ -189,6 +216,7 @@ function intro_scene() {
 		intro_scene_inner.append( bomb_title );
 		intro_scene_inner.append( carrier_title );
 		intro_scene_inner.append( meny );
+		intro_scene_inner.append(helpMenu);
 
 		intro_scene.append( intro_scene_inner );
 
@@ -202,6 +230,84 @@ function intro_scene() {
 		$(bomb_title).fitText( 0.6 );
 		$(carrier_title).fitText( 0.9 );
 		$(meny).fitText( 1.3 );
+		$(helpMenu).fitText(4.0);
+}
+
+function help_scene() {
+		var help_scene = $('<div>').css({
+			'background-image' : 'url(textures/diaglog-box.png)',
+			'background-size' : '100% 100%',
+			'font-family' : "'Holtwood One SC', serif",
+			'position' : 'absolute',
+			'top' : 0,
+			'left' : 0,
+			'z-index' : 101,
+			'text-align' : 'center',
+			'width' : '100%',
+			'height' : '100%'
+		});
+
+		var help_header = $('<h1>')
+			.html('How to play')
+			.css({
+				'width' : '100%',
+				'padding' : 0,
+				'margin' : 0
+			});
+		var ask = $('<h1>')
+			.html('Ask Han Lin')
+			.css({
+				'width' : '100%',
+				'margin' : 0,
+				'color' : '#fff'
+			});
+
+		var main_menu = $('<h1>')
+			.html('Main Menu')
+			.css({
+				'width' : '100%',
+				'cursor' : 'pointer',
+				'padding' : 0,
+				'margin' : 0
+		});
+
+		// Return to main menu
+		$(main_menu).click(function() {
+				help_scene.remove();
+			});	
+
+		$(main_menu).mouseover(function() {
+			$(this).css({
+				'color' : '#FFF'
+			});
+		});
+
+		$(main_menu).mouseout(function() {
+			$(this).css({
+				'color' : '#000'
+			});
+		});
+
+			var help_scene_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+		help_scene_inner.append(help_header);
+		help_scene_inner.append(ask);
+		help_scene_inner.append(main_menu);
+		
+
+		help_scene.append(help_scene_inner);
+
+		container.append( help_scene );
+
+
+
+		// Size of the text.
+		$(help_header).fitText(1.4);
+		$(main_menu).fitText(4.0);
+
+
 }
 
 function play_scene() {
