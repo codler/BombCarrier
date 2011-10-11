@@ -507,46 +507,132 @@ function score_bar(){
 		});
 
 
-	var time = $('<h3>')
-		.html('')
-		.css({
-			'white-space' : 'pre',
-			'margin' : 0,
-			'padding' : 0
-		});
-		
-	
-
-
 	var players = $('<h1>')
-		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.getId() + '">0</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.getId() + '">0</span> ')
+		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">0</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">0</span> ')
 		.css({
 			'white-space' : 'pre',
 			'margin' : 0,
 			'padding' : 0
 		});
 
+	var bar2 = $('<div id="timer"></div>')
+		.html('Time left: <span id="time-left"></span>')
+		.css({
+			'background-image' : 'url(textures/button-off.png)',
+			'background-size' : '100% 100%',
+			'width' : '20%',
+			'margin' : '0 auto',		
+			'padding' : 0
 
-	
-	var bar_inner = $('<div>').css({
-			'margin' : '0 auto'
 		});
 
 	container.append( outer_layer );
 	outer_layer.append(bar);
+	outer_layer.append(bar2);
 	bar.append( players );
 
 	// Fix aspect ratio
 	var fixAspectRatio = function() {
 		if (SCREEN_WIDTH / SCREEN_HEIGHT > 1.8) {
 			bar.width(SCREEN_HEIGHT * 1.8 * 0.2);
+			bar2.width(SCREEN_HEIGHT * 1.8 * 0.2);
 		}
 	};
 	fixAspectRatio();
 	$(window).resize(fixAspectRatio);
 
 	$(players).fitText(0.7);
+	$(bar2).fitText(0.7);
 	
+}
+
+function gameover_scene() {
+	game_alive = false;
+	$('#score').remove();
+	$('#timer').remove();
+	background_sound.pause();
+
+	var gameover_scene = $('<div>').css({
+		'background-image' : 'url(textures/diaglog-box.png)',
+		'background-size' : '100% 100%',
+		'font-family' : "'Holtwood One SC', serif",
+		'position' : 'absolute',
+		'top' : 0,
+		'left' : 0,
+		'z-index' : 101,
+		'text-align' : 'center',
+		'width' : '100%',
+		'height' : '100%'
+	});
+
+	var gameover_header = $('<h1>')
+		.html('Game Over')
+		.css({
+			'width' : '100%',
+			'padding' : 0,
+			'margin' : 0
+		});
+
+	var winner = $('<h1>')
+		.html((player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS')
+		.css({
+			'color' : '#fff',
+			'width' : '100%'
+		});
+
+	var main_menu = $('<h1>')
+		.html('Main Menu')
+		.css({
+			'width' : '100%',
+			'cursor' : 'pointer',
+			'padding' : 0,
+			'margin' : 0
+		});
+
+	// Return to main menu
+	$(main_menu).click(function() {
+		gameover_scene.remove();
+		intro_scene();
+	});	
+
+	$(main_menu).mouseover(function() {
+		$(this).css({
+			'color' : '#FFF'
+		});
+	});
+
+	$(main_menu).mouseout(function() {
+		$(this).css({
+			'color' : '#000'
+		});
+	});
+
+	var gameover_scene_inner = $('<div>').css({
+		'margin' : '0 auto'
+	});
+
+	gameover_scene_inner.append(gameover_header);
+	gameover_scene_inner.append(winner);
+	gameover_scene_inner.append(main_menu);
+
+	gameover_scene.append(gameover_scene_inner);
+
+	container.append( gameover_scene );
+
+
+	// Fix aspect ratio
+	var fixAspectRatio = function() {
+		if (gameover_scene.width() / gameover_scene.height() > 1.8) {
+			gameover_scene_inner.width(gameover_scene.height() * 1.8);
+		}
+	};
+	fixAspectRatio();
+	$(window).resize(fixAspectRatio);
+
+	// Size of the text.
+	$(gameover_header).fitText(1.4);
+	$(main_menu).fitText(4.0);
+	$(winner).fitText( 1.3 );
 }
 
 
@@ -723,10 +809,12 @@ function render() {
 	time += 0.02;
 	*/
 
-	fightTime.elapse(0,10, function() { 
+	fightTime.elapse(0,180, function() { 
 		console.log('Time over');
 
-		var time = $('<div>')
+		gameover_scene();
+
+		/*var time = $('<div>')
 			.css({
 			'width' : '100%',
 			'position' : 'absolute',
@@ -749,10 +837,10 @@ function render() {
 
 			container.append( time );
 			time.append(time_inner);
-			time_inner.append( timeOver );
+			time_inner.append( timeOver );*/
 
 	});
-
+	$('#time-left').text(180 - fightTime.getElapse().toFixed());
 
 	if (DEBUG) {
 		var s = [

@@ -271,7 +271,7 @@ PlayerClass.prototype.die = function() {
 	var $this = this;
 	if (this.lifes) {
 		$('.player-score').each(function (i,e) {
-			if ($(e).data('id') == $this.getId()) {
+			if ($(e).data('id') == $this.id) {
 				$(e).text(parseInt($(e).text())+1);
 				return false;
 			}
@@ -284,13 +284,5 @@ PlayerClass.prototype.die = function() {
 	this.scene.remove( this.sprite );
 	this.alive = false;
 
-	game_alive = false;
-	$('#score').remove();
-	background_sound.pause();
-	intro_scene()
-	
-};
-
-PlayerClass.prototype.getId = function() {
-	return this.id;	
+	gameover_scene();	
 };
