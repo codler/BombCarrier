@@ -48,7 +48,7 @@ BombClass.prototype.setCollision = function (collision) {
 /*
 returns distance
 */
-BombClass.prototype.checkCollision = function (direction, distance) {
+BombClass.prototype.checkCollision = function (direction, distance, done) {
 	var ray = new THREE.Ray( this.sprite.position.clone().addSelf(new THREE.Vector3(0, -20,0)), direction );
 	var d = this.collision.rayCastAll(ray);
 	var c = d.sort(function (a,b) {
@@ -61,8 +61,12 @@ BombClass.prototype.checkCollision = function (direction, distance) {
 				c.mesh.bombClass.explode();
 			}
 		} else if(c.mesh.gameType == 'player') {
-			console.log('kill');
-			c.mesh.playerClass.die();
+			if (!done.player) {
+				console.log('kill');
+				c.mesh.playerClass.die();
+				done.player = true;
+			}
+
 		} else {
 			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
@@ -95,9 +99,12 @@ BombClass.prototype.explode = function () {
 	this.animate.add( this.sprite7 );*/
 
 	// collision with tile
+	var done = {
+		'player' : false
+	};
 	var distance = 0;
 	// up
-	distance = this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower);
+	distance = this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower, done);
 	if (distance > tileSystem.tileSize.height) {
 		// up
 		this.sprite5 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
@@ -107,7 +114,7 @@ BombClass.prototype.explode = function () {
 		this.animate.add( this.sprite5 );
 	}
 	// down
-	distance = this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower);
+	distance = this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower, done);
 	if (distance > tileSystem.tileSize.height) {
 		// down
 		this.sprite6 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
@@ -118,7 +125,7 @@ BombClass.prototype.explode = function () {
 		this.animate.add( this.sprite6 );
 	}
 	// left
-	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower);
+	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower, done);
 	if (distance > tileSystem.tileSize.width) {
 		// Left
 		this.sprite4 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
@@ -129,7 +136,7 @@ BombClass.prototype.explode = function () {
 		this.animate.add( this.sprite4 );
 	}
 	// right
-	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower);
+	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower, done);
 	if (distance > tileSystem.tileSize.width) {
 		// Right
 		this.sprite3 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );

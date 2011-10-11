@@ -15,6 +15,7 @@ returns if it has elapsed
 TimeClass.prototype.elapse = function (frame, seconds, callback) {
 	if (this.frame == frame) {
 		if (new Date().getTime() > this.timeAlive + seconds * 1000) {
+			callback = callback || function() {};
 			callback( this.getElapse );
 			this.frame++;
 		}

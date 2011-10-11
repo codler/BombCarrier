@@ -24,9 +24,8 @@ var player1, player2;
 
 var debugElement;
 
-var tileW = 116;
-var tileH = 59;
 
+var fightTime;
 
 var delta, time, oldTime;
 
@@ -48,6 +47,7 @@ var texture = {
 	'explosion3'   : 'textures/explosion3.png'
 };
 
+var game_alive = false;
 
 
 
@@ -113,7 +113,7 @@ function init_core() {
 			'top' : 0,
 			'z-index' : 1001
 		});
-		container.append( debugElement );
+		//	container.append( debugElement );
 
 	}
 
@@ -280,6 +280,8 @@ function help_scene() {
 				'color' : '#fff'
 			});
 
+	
+
 		var main_menu = $('<h1>')
 			.html('Main Menu')
 			.css({
@@ -309,24 +311,13 @@ function help_scene() {
 			help_scene.remove();
 		});	
 
-		$(main_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-		$(next_screen).mouseover(function() {
+		$(main_menu).add(next_screen).mouseover(function() {
 			$(this).css({
 				'color' : '#FFF'
 			});
 		});
 
-		$(main_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		$(next_screen).mouseout(function() {
+		$(main_menu).add(next_screen).mouseout(function() {
 			$(this).css({
 				'color' : '#000'
 			});
@@ -365,7 +356,7 @@ function help_scene() {
 }
 
 function help_scene_page_2() {
-	var help_scene_page_2 = $('<div>').css({
+		var help_scene_page_2 = $('<div>').css({
 			'background-image' : 'url(textures/diaglog-box.png)',
 			'background-size' : '100% 100%',
 			'font-family' : "'Holtwood One SC', serif",
@@ -419,11 +410,10 @@ function help_scene_page_2() {
 				'cursor' : 'pointer'
 			});
 			
-
-
-var help_scene_page_2_inner = $('<div>').css({
+			var help_scene_page_2_inner = $('<div>').css({
 			'margin' : '0 auto'
 		});
+
 
 
 	    $(main_menu).click(function() {
@@ -473,6 +463,8 @@ var help_scene_page_2_inner = $('<div>').css({
 
 
 function play_scene() {
+	game_alive = true;
+	scene = new THREE.Scene();
 
 	// Event listener
 	$(document).keydown( onKeyDown );
@@ -480,9 +472,169 @@ function play_scene() {
 
 	background_sound = loadAudio('sound/battle4.ogg');
 
+	$('body').css({
+		'background-image' : 'url(textures/paper-dialog.png)',
+		'background-size' : '50% 50%'
+	});
+	fightTime = new TimeClass();
 	init();
 	animate();
+	score_bar();
+	
+
 }
+
+function score_bar(){
+	
+	var outer_layer = $('<div id="outer">')
+		.css({
+			'width' : '100%',
+			'position' : 'absolute',
+			'top' : 0,
+			'text-align' : 'center',
+			'z-index' : 1001
+		});
+
+
+	var bar = $('<div id="score"></div>')
+		.css({
+			'background-image' : 'url(textures/button-off.png)',
+			'background-size' : '100% 100%',
+			'width' : '20%',
+			'margin' : '0 auto',		
+			'padding' : 0
+
+		});
+
+
+	var players = $('<h1>')
+		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">0</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">0</span> ')
+		.css({
+			'white-space' : 'pre',
+			'margin' : 0,
+			'padding' : 0
+		});
+
+	var bar2 = $('<div id="timer"></div>')
+		.html('Time left: <span id="time-left"></span>')
+		.css({
+			'background-image' : 'url(textures/button-off.png)',
+			'background-size' : '100% 100%',
+			'width' : '20%',
+			'margin' : '0 auto',		
+			'padding' : 0
+
+		});
+
+	container.append( outer_layer );
+	outer_layer.append(bar);
+	outer_layer.append(bar2);
+	bar.append( players );
+
+	// Fix aspect ratio
+	var fixAspectRatio = function() {
+		if (SCREEN_WIDTH / SCREEN_HEIGHT > 1.8) {
+			bar.width(SCREEN_HEIGHT * 1.8 * 0.2);
+			bar2.width(SCREEN_HEIGHT * 1.8 * 0.2);
+		}
+	};
+	fixAspectRatio();
+	$(window).resize(fixAspectRatio);
+
+	$(players).fitText(0.7);
+	$(bar2).fitText(0.7);
+	
+}
+
+function gameover_scene() {
+	game_alive = false;
+	$('#score').remove();
+	$('#timer').remove();
+	background_sound.pause();
+
+	var gameover_scene = $('<div>').css({
+		'background-image' : 'url(textures/diaglog-box.png)',
+		'background-size' : '100% 100%',
+		'font-family' : "'Holtwood One SC', serif",
+		'position' : 'absolute',
+		'top' : 0,
+		'left' : 0,
+		'z-index' : 101,
+		'text-align' : 'center',
+		'width' : '100%',
+		'height' : '100%'
+	});
+
+	var gameover_header = $('<h1>')
+		.html('Game Over')
+		.css({
+			'width' : '100%',
+			'padding' : 0,
+			'margin' : 0
+		});
+
+	var winner = $('<h1>')
+		.html((player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS')
+		.css({
+			'color' : '#fff',
+			'width' : '100%'
+		});
+
+	var main_menu = $('<h1>')
+		.html('Main Menu')
+		.css({
+			'width' : '100%',
+			'cursor' : 'pointer',
+			'padding' : 0,
+			'margin' : 0
+		});
+
+	// Return to main menu
+	$(main_menu).click(function() {
+		gameover_scene.remove();
+		intro_scene();
+	});	
+
+	$(main_menu).mouseover(function() {
+		$(this).css({
+			'color' : '#FFF'
+		});
+	});
+
+	$(main_menu).mouseout(function() {
+		$(this).css({
+			'color' : '#000'
+		});
+	});
+
+	var gameover_scene_inner = $('<div>').css({
+		'margin' : '0 auto'
+	});
+
+	gameover_scene_inner.append(gameover_header);
+	gameover_scene_inner.append(winner);
+	gameover_scene_inner.append(main_menu);
+
+	gameover_scene.append(gameover_scene_inner);
+
+	container.append( gameover_scene );
+
+
+	// Fix aspect ratio
+	var fixAspectRatio = function() {
+		if (gameover_scene.width() / gameover_scene.height() > 1.8) {
+			gameover_scene_inner.width(gameover_scene.height() * 1.8);
+		}
+	};
+	fixAspectRatio();
+	$(window).resize(fixAspectRatio);
+
+	// Size of the text.
+	$(gameover_header).fitText(1.4);
+	$(main_menu).fitText(4.0);
+	$(winner).fitText( 1.3 );
+}
+
 
 /*
 audio : Audio tag - DOM element
@@ -510,15 +662,19 @@ function init() {
 	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
 	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
+	var bg = new THREE.Sprite({ 
+		map: THREE.ImageUtils.loadTexture( "textures/paper-dialog.png" ),
+		useScreenCoordinates: false 
+	});
+	bg.position.z = -250;
+	bg.scale.x *= 4;
+	bg.scale.y *= 2;
+	scene.add( bg );
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
 	
-	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
-		0 * tileW - 200 + 0,
-		0 * tileH - 200 + 280,
-		15 + 2
-	) );
+	player1 = new PlayerClass( "textures/Character Princess Girl.png" );
 	player1.setScene(scene);
 	player1.setScale(new THREE.Vector3(1,1.5,1));
 
@@ -530,11 +686,7 @@ function init() {
 		16 : 'bomb' // shift
 	});
 
-	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
-		0 * tileW - 100 + 90,
-		0 * tileH - 200 + 160,
-		15 + 2
-	) );
+	player2 = new PlayerClass( "textures/Character Horn Girl.png" );
 	player2.setScene(scene);
 	player2.setScale(new THREE.Vector3(1,1.5,1));
 
@@ -627,6 +779,7 @@ function init() {
 
 
 function animate() {
+	if (!game_alive) return;
 
 	requestAnimationFrame( animate );
 
@@ -637,6 +790,7 @@ function animate() {
 
 
 function render() {
+
 	/*
 	for ( var c = 0; c < group.children.length; c++ ) {
 
@@ -655,7 +809,39 @@ function render() {
 	time += 0.02;
 	*/
 
-	
+	fightTime.elapse(0,180, function() { 
+		console.log('Time over');
+
+		gameover_scene();
+
+		/*var time = $('<div>')
+			.css({
+			'width' : '100%',
+			'position' : 'absolute',
+			'top' : 0,
+			'text-align' : 'center',
+			'z-index' : 1003
+			});
+
+		var timeOver = $('<h1>')
+			.html('Time over!')
+			.css({
+				'color' : '#DB2F2F'
+			});
+
+		var time_inner = $('<div>')
+			.css({
+				'margin' : '0 auto'	
+			});
+
+
+			container.append( time );
+			time.append(time_inner);
+			time_inner.append( timeOver );*/
+
+	});
+	$('#time-left').text(180 - fightTime.getElapse().toFixed());
+
 	if (DEBUG) {
 		var s = [
 			//'Mouse - X:' + mouse.x.toFixed(2) + ' Y:' + mouse.y.toFixed(2),
@@ -690,6 +876,7 @@ function render() {
 
 	time = new Date().getTime();
 	delta = 0.35 * ( time - oldTime );
+	delta = Math.min( delta, tileSystem.tileSize.width, tileSystem.tileSize.height );
 	oldTime = time;
 
 	if (player1.alive) {

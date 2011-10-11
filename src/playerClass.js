@@ -11,6 +11,8 @@ var PlayerClass = function( texture, position ) {
 	this.width   = 80;
 	this.height  = 100;
 	this.alive   = true;
+	this.lifes   = 3;
+	this.id      = Math.random();
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -149,7 +151,7 @@ PlayerClass.prototype.move = function(speed) {
 };
 
 PlayerClass.prototype.checkZIndex = function() {
-	var z = -2 - (this.sprite.position.y - 200 - 10 )/ tileH * 2;
+	var z = -2 - (this.sprite.position.y - 200 - 10 )/ this.tileSystem.tileSize.height * 2;
 
 	z = z - (z - Math.floor(z)) / 2 + (z - Math.floor(z)) / 4;
 
@@ -249,6 +251,8 @@ PlayerClass.prototype.handleBomb = function() {
 				bomb.addCollision( this.players[player].sprite );
 			}
 
+			bomb.addCollision( this.sprite );
+
 			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
@@ -264,6 +268,21 @@ PlayerClass.prototype.handleBomb = function() {
 };
 
 PlayerClass.prototype.die = function() {
+	var $this = this;
+	if (this.lifes) {
+		$('.player-score').each(function (i,e) {
+			if ($(e).data('id') == $this.id) {
+				$(e).text(parseInt($(e).text())+1);
+				return false;
+			}
+		});
+		this.lifes--;
+		return;
+	}
+
+	if (!this.alive) return;
 	this.scene.remove( this.sprite );
 	this.alive = false;
+
+	gameover_scene();	
 };
