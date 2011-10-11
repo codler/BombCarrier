@@ -266,6 +266,7 @@ PlayerClass.prototype.handleBomb = function() {
 };
 
 PlayerClass.prototype.die = function() {
+	if (!this.alive) return;
 	this.scene.remove( this.sprite );
 	this.alive = false;
 
