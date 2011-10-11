@@ -409,7 +409,9 @@ function help_scene_page_2() {
 				'cursor' : 'pointer'
 			});
 			
-
+			var help_scene_page_2_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
 
 
 
