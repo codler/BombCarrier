@@ -15,7 +15,6 @@ var loaded = 0,
 	,'src/game.js'
 	,'src/playerClass.js'
 	,'src/timeClass.js'
-	,'src/timeClass.js'
 	,'src/bombClass.js'
 	,'src/tileSystem.js'
 
