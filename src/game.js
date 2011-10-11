@@ -310,24 +310,13 @@ function help_scene() {
 			help_scene.remove();
 		});	
 
-		$(main_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-		$(next_screen).mouseover(function() {
+		$(main_menu).add(next_screen).mouseover(function() {
 			$(this).css({
 				'color' : '#FFF'
 			});
 		});
 
-		$(main_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		$(next_screen).mouseout(function() {
+		$(main_menu).add(next_screen).mouseout(function() {
 			$(this).css({
 				'color' : '#000'
 			});
@@ -366,7 +355,7 @@ function help_scene() {
 }
 
 function help_scene_page_2() {
-	var help_scene_page_2 = $('<div>').css({
+		var help_scene_page_2 = $('<div>').css({
 			'background-image' : 'url(textures/diaglog-box.png)',
 			'background-size' : '100% 100%',
 			'font-family' : "'Holtwood One SC', serif",
@@ -492,30 +481,40 @@ function play_scene() {
 
 function score_bar(){
 	
-	var bar = $('<div id="score">')
+	var outer_layer = $('<div id="outer">')
+		.css({
+			'width' : '100%',
+			'position' : 'absolute',
+			'top' : 0,
+			'text-align' : 'center',
+			'z-index' : 1001
+		});
+
+
+	var bar = $('<div id="score"></div>')
 		.css({
 			'background-image' : 'url(textures/button-off.png)',
 			'background-size' : '100% 100%',
-			'margin-left' : 80,
-			'position' : 'absolute',
-			'top' : 10,
-			'left': 400,	
-			'z-index' : 1002
+			'width' : '20%',
+			'margin' : '0 auto',		
+			'padding' : 0
+
 		});
 
 
 	var time = $('<h3>')
 		.html('')
 		.css({
-				'white-space' : 'pre',
-				'margin' : 0,
-				'padding' : 0
+			'white-space' : 'pre',
+			'margin' : 0,
+			'padding' : 0
 		});
 		
 	
 
+
 	var players = $('<h1>')
-		.html(' <img src="textures/Player_1.png" /> 0  <img src="textures/Player_2.png" /> 0 ')
+		.html(' <img src="textures/Player_1.png" width="30%"/> <span id="player1_score">0</span>  <img src="textures/Player_2.png" width="30%" /> <span id="player2_score">0</span> ')
 		.css({
 			'white-space' : 'pre',
 			'margin' : 0,
@@ -528,9 +527,20 @@ function score_bar(){
 			'margin' : '0 auto'
 		});
 
-		container.append( bar );
-		bar.append(bar_inner);
-		bar_inner.append( players );
+	container.append( outer_layer );
+	outer_layer.append(bar);
+	bar.append( players );
+
+	// Fix aspect ratio
+	var fixAspectRatio = function() {
+		if (SCREEN_WIDTH / SCREEN_HEIGHT > 1.8) {
+			bar.width(SCREEN_HEIGHT * 1.8 * 0.2);
+		}
+	};
+	fixAspectRatio();
+	$(window).resize(fixAspectRatio);
+
+	$(players).fitText(0.7);
 	
 }
 
