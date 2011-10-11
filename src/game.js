@@ -114,7 +114,7 @@ function init_core() {
 			'top' : 0,
 			'z-index' : 1001
 		});
-		container.append( debugElement );
+		//	container.append( debugElement );
 
 	}
 
@@ -422,9 +422,6 @@ function help_scene_page_2() {
 			
 
 
-var help_scene_page_2_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
 
 
 	    $(main_menu).click(function() {
@@ -490,7 +487,42 @@ function play_scene() {
 
 	init();
 	animate();
+	score_bar();
 }
+
+function score_bar(){
+	
+	var bar = $('<div>')
+		.css({
+			'background-image' : 'url(textures/button-off.png)',
+			'background-size' : '100% 100%',
+			'margin-left' : 80,
+			'position' : 'absolute',
+			'top' : 10,
+			'left': 400,	
+			'z-index' : 1002
+		});
+
+	var hej = $('<h1>')
+		.html(' <img src="textures/Player_1.png" />       <img src="textures/Player_2.png" /> ')
+		.css({
+			'white-space' : 'pre',
+			'margin' : 0,
+			'padding' : 0
+		});
+
+
+	
+	var bar_inner = $('<div>').css({
+			'margin' : '0 auto'
+		});
+
+		container.append( bar );
+		bar.append(bar_inner);
+		bar_inner.append( hej );
+	
+}
+
 
 /*
 audio : Audio tag - DOM element
