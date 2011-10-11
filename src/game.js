@@ -503,6 +503,7 @@ function score_bar(){
 			'z-index' : 1002
 		});
 
+
 	var time = $('<h3>')
 		.html('')
 		.css({
@@ -510,6 +511,8 @@ function score_bar(){
 				'margin' : 0,
 				'padding' : 0
 		});
+		
+	
 
 	var players = $('<h1>')
 		.html(' <img src="textures/Player_1.png" /> 0  <img src="textures/Player_2.png" /> 0 ')

@@ -11,6 +11,7 @@ var PlayerClass = function( texture, position ) {
 	this.width   = 80;
 	this.height  = 100;
 	this.alive   = true;
+	this.lifes   = 3;
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -266,6 +267,11 @@ PlayerClass.prototype.handleBomb = function() {
 };
 
 PlayerClass.prototype.die = function() {
+	if (this.lifes) {
+		this.lifes--;
+		return;
+	}
+
 	if (!this.alive) return;
 	this.scene.remove( this.sprite );
 	this.alive = false;
