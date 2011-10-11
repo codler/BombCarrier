@@ -151,7 +151,7 @@ PlayerClass.prototype.move = function(speed) {
 };
 
 PlayerClass.prototype.checkZIndex = function() {
-	var z = -2 - (this.sprite.position.y - 200 - 10 )/ tileH * 2;
+	var z = -2 - (this.sprite.position.y - 200 - 10 )/ this.tileSystem.tileSize.height * 2;
 
 	z = z - (z - Math.floor(z)) / 2 + (z - Math.floor(z)) / 4;
 

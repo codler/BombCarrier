@@ -24,8 +24,6 @@ var player1, player2;
 
 var debugElement;
 
-var tileW = 116;
-var tileH = 59;
 
 var fightTime;
 
@@ -590,11 +588,7 @@ function init() {
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
 	
-	player1 = new PlayerClass( "textures/Character Princess Girl.png", new THREE.Vector3(
-		0 * tileW - 200 + 0,
-		0 * tileH - 200 + 280,
-		15 + 2
-	) );
+	player1 = new PlayerClass( "textures/Character Princess Girl.png" );
 	player1.setScene(scene);
 	player1.setScale(new THREE.Vector3(1,1.5,1));
 
@@ -606,11 +600,7 @@ function init() {
 		16 : 'bomb' // shift
 	});
 
-	player2 = new PlayerClass( "textures/Character Horn Girl.png", new THREE.Vector3(
-		0 * tileW - 100 + 90,
-		0 * tileH - 200 + 160,
-		15 + 2
-	) );
+	player2 = new PlayerClass( "textures/Character Horn Girl.png" );
 	player2.setScene(scene);
 	player2.setScale(new THREE.Vector3(1,1.5,1));
 
@@ -798,6 +788,7 @@ function render() {
 
 	time = new Date().getTime();
 	delta = 0.35 * ( time - oldTime );
+	delta = Math.min( delta, tileSystem.tileSize.width, tileSystem.tileSize.height );
 	oldTime = time;
 
 	if (player1.alive) {
