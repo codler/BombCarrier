@@ -12,6 +12,7 @@ var PlayerClass = function( texture, position ) {
 	this.height  = 100;
 	this.alive   = true;
 	this.lifes   = 3;
+	this.id      = Math.random();
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -267,7 +268,14 @@ PlayerClass.prototype.handleBomb = function() {
 };
 
 PlayerClass.prototype.die = function() {
+	var $this = this;
 	if (this.lifes) {
+		$('.player-score').each(function (i,e) {
+			if ($(e).data('id') == $this.getId()) {
+				$(e).text(parseInt($(e).text())+1);
+				return false;
+			}
+		});
 		this.lifes--;
 		return;
 	}
@@ -278,6 +286,11 @@ PlayerClass.prototype.die = function() {
 
 	game_alive = false;
 	$('#score').remove();
+	background_sound.pause();
 	intro_scene()
 	
+};
+
+PlayerClass.prototype.getId = function() {
+	return this.id;	
 };
