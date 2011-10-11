@@ -27,6 +27,7 @@ var debugElement;
 var tileW = 116;
 var tileH = 59;
 
+var fightTime;
 
 var delta, time, oldTime;
 
@@ -281,6 +282,8 @@ function help_scene() {
 				'color' : '#fff'
 			});
 
+	
+
 		var main_menu = $('<h1>')
 			.html('Main Menu')
 			.css({
@@ -475,10 +478,12 @@ function play_scene() {
 		'background-image' : 'url(textures/paper-dialog.png)',
 		'background-size' : '50% 50%'
 	});
-
+	fightTime = new TimeClass();
 	init();
 	animate();
 	score_bar();
+	
+
 }
 
 function score_bar(){
@@ -728,7 +733,37 @@ function render() {
 	time += 0.02;
 	*/
 
-	
+	fightTime.elapse(0,10, function() { 
+		console.log('Time over');
+
+		var time = $('<div>')
+			.css({
+			'width' : '100%',
+			'position' : 'absolute',
+			'top' : 0,
+			'text-align' : 'center',
+			'z-index' : 1003
+			});
+
+		var timeOver = $('<h1>')
+			.html('Time over!')
+			.css({
+				'color' : '#DB2F2F'
+			});
+
+		var time_inner = $('<div>')
+			.css({
+				'margin' : '0 auto'	
+			});
+
+
+			container.append( time );
+			time.append(time_inner);
+			time_inner.append( timeOver );
+
+	});
+
+
 	if (DEBUG) {
 		var s = [
 			//'Mouse - X:' + mouse.x.toFixed(2) + ' Y:' + mouse.y.toFixed(2),
