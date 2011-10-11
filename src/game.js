@@ -48,7 +48,6 @@ var texture = {
 	'explosion3'   : 'textures/explosion3.png'
 };
 
-var game_alive = false;
 
 
 
@@ -471,19 +470,12 @@ function help_scene_page_2() {
 
 
 function play_scene() {
-	game_alive = true;
-	scene = new THREE.Scene();
 
 	// Event listener
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
 	background_sound = loadAudio('sound/battle4.ogg');
-
-	$('body').css({
-		'background-image' : 'url(textures/paper-dialog.png)',
-		'background-size' : '50% 50%'
-	});
 
 	init();
 	animate();
@@ -492,7 +484,7 @@ function play_scene() {
 
 function score_bar(){
 	
-	var bar = $('<div>')
+	var bar = $('<div id="score">')
 		.css({
 			'background-image' : 'url(textures/button-off.png)',
 			'background-size' : '100% 100%',
@@ -503,8 +495,16 @@ function score_bar(){
 			'z-index' : 1002
 		});
 
-	var hej = $('<h1>')
-		.html(' <img src="textures/Player_1.png" />       <img src="textures/Player_2.png" /> ')
+	var time = $('<h3>')
+		.html('                      TIME')
+		.css({
+				'white-space' : 'pre',
+				'margin' : 0,
+				'padding' : 0
+		});
+
+	var players = $('<h1>')
+		.html(' <img src="textures/Player_1.png" /> 0  <img src="textures/Player_2.png" /> 0 ')
 		.css({
 			'white-space' : 'pre',
 			'margin' : 0,
@@ -519,7 +519,8 @@ function score_bar(){
 
 		container.append( bar );
 		bar.append(bar_inner);
-		bar_inner.append( hej );
+		//bar_inner.append( time );
+		bar_inner.append( players );
 	
 }
 
@@ -550,14 +551,6 @@ function init() {
 	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
 	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
-	var bg = new THREE.Sprite({ 
-		map: THREE.ImageUtils.loadTexture( "textures/paper-dialog.png" ),
-		useScreenCoordinates: false 
-	});
-	bg.position.z = -250;
-	bg.scale.x *= 4;
-	bg.scale.y *= 2;
-	scene.add( bg );
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
@@ -675,7 +668,6 @@ function init() {
 
 
 function animate() {
-	if (!game_alive) return;
 
 	requestAnimationFrame( animate );
 
@@ -686,7 +678,6 @@ function animate() {
 
 
 function render() {
-
 	/*
 	for ( var c = 0; c < group.children.length; c++ ) {
 

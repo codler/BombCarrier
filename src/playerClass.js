@@ -270,5 +270,7 @@ PlayerClass.prototype.die = function() {
 	this.alive = false;
 
 	game_alive = false;
+	$('#score').remove();
 	intro_scene()
+	
 };
