@@ -496,7 +496,7 @@ function score_bar(){
 		});
 
 	var time = $('<h3>')
-		.html('                      TIME')
+		.html('')
 		.css({
 				'white-space' : 'pre',
 				'margin' : 0,
