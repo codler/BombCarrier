@@ -249,6 +249,8 @@ PlayerClass.prototype.handleBomb = function() {
 				bomb.addCollision( this.players[player].sprite );
 			}
 
+			bomb.addCollision( this.sprite );
+
 			bombs.add( bomb.animate );
 
 			this.bombs.push(bomb);
@@ -266,4 +268,7 @@ PlayerClass.prototype.handleBomb = function() {
 PlayerClass.prototype.die = function() {
 	this.scene.remove( this.sprite );
 	this.alive = false;
+
+	game_alive = false;
+	intro_scene()
 };

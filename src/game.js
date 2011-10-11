@@ -48,6 +48,7 @@ var texture = {
 	'explosion3'   : 'textures/explosion3.png'
 };
 
+var game_alive = false;
 
 
 
@@ -473,12 +474,19 @@ var help_scene_page_2_inner = $('<div>').css({
 
 
 function play_scene() {
+	game_alive = true;
+	scene = new THREE.Scene();
 
 	// Event listener
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
 	background_sound = loadAudio('sound/battle4.ogg');
+
+	$('body').css({
+		'background-image' : 'url(textures/paper-dialog.png)',
+		'background-size' : '50% 50%'
+	});
 
 	init();
 	animate();
@@ -510,6 +518,14 @@ function init() {
 	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
 	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
+	var bg = new THREE.Sprite({ 
+		map: THREE.ImageUtils.loadTexture( "textures/paper-dialog.png" ),
+		useScreenCoordinates: false 
+	});
+	bg.position.z = -250;
+	bg.scale.x *= 4;
+	bg.scale.y *= 2;
+	scene.add( bg );
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
@@ -627,6 +643,7 @@ function init() {
 
 
 function animate() {
+	if (!game_alive) return;
 
 	requestAnimationFrame( animate );
 
@@ -637,6 +654,7 @@ function animate() {
 
 
 function render() {
+
 	/*
 	for ( var c = 0; c < group.children.length; c++ ) {
 
