@@ -385,16 +385,16 @@ function help_scene_page_2() {
 				'white-space': 'pre'
 			});
 
-		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/up.png" width="5%"/>'+ 
+		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/W.png" width="5%"/>'+ 
 			'                                                                          '+
-			'<img src="textures/W.png" width="5%"/><br/>'+
-			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/>' +
+			'<img src="textures/up.png" width="5%"/><br/>'+
+			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/>' +
 			'                                                         ' +
-			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/> <br/>'+
+			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/> <br/>'+
 			'Drop bomb<br/>'+
-			'<img src="textures/spacebar.png"/>' +
+			'<img src="textures/shift.png" width="11%"/>' +
 			'                                                               '+
-			'<img src="textures/shift.png" width="11%"/>')
+			'<img src="textures/spacebar.png" width="11%"/>')
 			.css({
 				'white-space' : 'pre',
 				'margin' : 0,
