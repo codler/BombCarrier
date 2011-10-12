@@ -392,7 +392,7 @@ function help_scene_page_2() {
 			'                                                         ' +
 			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/> <br/>'+
 			'Drop bomb<br/>'+
-			'Space...' +
+			'<img src="textures/spacebar.png"/>' +
 			'                                                               '+
 			'<img src="textures/shift.png" width="11%"/>')
 			.css({
