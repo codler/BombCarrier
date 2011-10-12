@@ -136,7 +136,7 @@ function init_core() {
 		localStorage.setItem('sound_on', sound_on);
 		$(this).text(sound_on ? 'Sound on': 'Sound off');
 		if (background_sound) {
-			background_sound.volume = sound_on;
+			background_sound.volume = sound_on / 2;
 		}
 	});
 	container.append( sound_switch );
@@ -649,7 +649,7 @@ function loadAudio(uri, audio)
     }).appendTo('body')[0];
 
     audio.src = uri;
-    audio.volume = parseInt(localStorage.getItem('sound_on'));
+    audio.volume = parseInt(localStorage.getItem('sound_on')) / 2;
     audio.play();
 
     return audio;
@@ -809,7 +809,17 @@ function render() {
 	time += 0.02;
 	*/
 
-	fightTime.elapse(0,180, function() { 
+	// lower sound at end game
+	if (fightTime.elapse(0,180-4)) {
+		if (parseInt(localStorage.getItem('sound_on'))) {
+			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
+			
+		console.log(background_sound.volume);
+		}
+	}
+
+	// switch to game over scene
+	fightTime.elapse(1,180, function() { 
 		console.log('Time over');
 
 		gameover_scene();
