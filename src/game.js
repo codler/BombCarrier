@@ -49,6 +49,7 @@ var texture = {
 
 var game_alive = false;
 
+var sceneHandler;
 
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -141,6 +142,8 @@ function init_core() {
 	});
 	container.append( sound_switch );
 	
+	// Init sceneClass
+	sceneHandler = new SceneClass();
 
 	// Stats - FPS viewer
 	stats = new Stats();
@@ -150,317 +153,76 @@ function init_core() {
 	container.append( stats.domElement );
 }
 
-function intro_scene() {
-		var intro_scene = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
-		});
+function init_scene() {
+	var intro = new SceneContent();
+	intro.add(0.6, 'B<img src="textures/logoBomb.png" style="width:12%;"/>mb', null, {
+		'line-height' : 1
+	});
+	intro.add(0.9, 'Carrier', null, {
+		'color' : '#000',
+		'line-height' : 1
+	});
+	intro.add(1.3, 'Play', 'play', {
+		'margin' : '0.67em 0'
+	});
+	intro.add(4, 'How to play', 'help1');
 
-		var bomb_title = $('<h1>')
-			.html('B<img src="textures/logoBomb.png" style="width:12%;"/>mb')
-			.css({
-				'color' : '#fff',
-				'line-height' : 1,
-				'padding' : 0,
-				'margin' : 0,
-				'width' : '100%'
-			});
+	var help1 = new SceneContent();
+	help1.add(1.4, 'How to play', null, {
+		'color' : '#000'
+	});
+	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>');
+	help1.add(4, 'Main Menu', 'intro');
+	help1.add(4, 'Next Page', 'help2');
 
-		var carrier_title = $('<h1>')
-			.text('Carrier')
-			.css({
-				'padding' : 0,
-				'line-height' : 1,
-				'margin' : 0,
-				'width' : '100%'
-			});
+	var help2 = new SceneContent();
+	help2.add(1.4, 'Controls', null, {
+		'color' : '#000'
+	});
+	help2.add(3, 'Player 1'+
+	'                    '+
+	'Player 2', null, {
+		'color' : '#000',
+		'white-space': 'pre'
+	});
+	help2.add(5, 'Movement controls<br/><img src="textures/W.png" width="5%"/>'+ 
+	'                                                                          '+
+	'<img src="textures/up.png" width="5%"/><br/>'+
+	'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/>' +
+	'                                                         ' +
+	'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/> <br/>'+
+	'Drop bomb<br/>'+
+	'<img src="textures/shift.png" width="11%"/>' +
+	'                                                               '+
+	'<img src="textures/spacebar.png" width="11%"/>', null, {
+		'color' : '#000',
+		'white-space': 'pre'
+	});
+	help2.add(4, 'Main Menu', 'intro');
 
-		var play_menu = $('<h1>')
-			.html('Play')
-			.css({
-				'cursor' : 'pointer',
-				'width' : '100%'
-			});
+	var gameOver = new SceneContent();
+	gameOver.add(1.4, 'Game Over', null, {
+		'color' : '#000'
+	});
+	gameOver.add(1.3, function() {
+		return (player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS';
+	});
+	gameOver.add(4, 'Main Menu', 'intro');
 
-		var help_menu = $('<h1>')
-			.html('How to play')
-			.css({
-				'cursor' : 'pointer',
-				'width' : '100%'
-			});
-			
-		// Start game
-		$(play_menu).click(function() {
-			play_scene();
-			intro_scene.remove();
-		});
+	sceneHandler.add('intro', intro);
+	sceneHandler.add('play', play_scene);
+	sceneHandler.add('help1', help1);
+	sceneHandler.add('help2', help2);
+	sceneHandler.add('gameOver', gameOver, function() {
+		game_alive = false;
+		$('#score').remove();
+		$('#timer').remove();
+		background_sound.pause();
+		console.log('ss');
+	});
 
-		// Open help scene
-		$(help_menu).click(function() {
-			help_scene();
-			//intro_scene.remove();
-		});	
-
-		$(play_menu).add(help_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(play_menu).add(help_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		var intro_scene_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-		intro_scene_inner.append( bomb_title );
-		intro_scene_inner.append( carrier_title );
-		intro_scene_inner.append( play_menu );
-		intro_scene_inner.append( help_menu );
-
-		intro_scene.append( intro_scene_inner );
-
-		container.append( intro_scene );
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (intro_scene.width() / intro_scene.height() > 1.8) {
-				intro_scene_inner.width(intro_scene.height() * 1.8);
-			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
-
-		// Size of the text.
-		$(bomb_title).fitText( 0.6 );
-		$(carrier_title).fitText( 0.9 );
-		$(play_menu).fitText( 1.3 );
-		$(help_menu).fitText( 4.0 );
-
+	sceneHandler.change('intro');
 }
-
-function help_scene() {
-		var help_scene = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
-		});
-
-		var help_header = $('<h1>')
-			.html('How to play')
-			.css({
-				'width' : '100%',
-				'padding' : 0,
-				'margin' : 0
-			});
-		var ask = $('<h1>')
-			.html('BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>')
-			.css({
-				'width' : '100%',
-				'margin' : 0,
-				'color' : '#fff'
-			});
-
-	
-
-		var main_menu = $('<h1>')
-			.html('Main Menu')
-			.css({
-				'width' : '100%',
-				'cursor' : 'pointer',
-				'padding' : 0,
-				'margin' : 0
-			});
-
-		var next_screen = $('<h1>')
-			.html('->')
-			.css({
-				'width' : '100%',
-				'cursor' : 'pointer',
-				'margin' : 0,
-				'padding' : 0
-
-			});
-
-		// Return to main menu
-		$(main_menu).click(function() {
-			help_scene.remove();
-		});	
-		// Goes to the second screen of the help screen
-		$(next_screen).click(function() {
-			help_scene_page_2();
-			help_scene.remove();
-		});	
-
-		$(main_menu).add(next_screen).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(main_menu).add(next_screen).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		var help_scene_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-		help_scene_inner.append(help_header);
-		help_scene_inner.append(ask);
-		help_scene_inner.append(main_menu);
-		help_scene_inner.append(next_screen)
-		
-
-		help_scene.append(help_scene_inner);
-
-		container.append( help_scene );
-
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (help_scene.width() / help_scene.height() > 1.8) {
-				help_scene_inner.width(help_scene.height() * 1.8);
-			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
-
-		// Size of the text.
-		$(help_header).fitText(1.4);
-		$(main_menu).fitText(4.0);
-		$(ask).fitText(5.0);
-		$(next_screen).fitText(4.0);
-
-}
-
-function help_scene_page_2() {
-		var help_scene_page_2 = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
-		});
-
-		var control_header = $('<h1>')
-			.html('Controls')
-			.css({
-				 'width' : '100%',
-				 'margin' : 0,
-				 'padding' : 0
-
-			});
-		
-		var description = $('<h1>').html('Player 1'+
-			'                    '+
-			'Player 2')
-			.css({
-				'white-space': 'pre'
-			});
-
-		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/W.png" width="5%"/>'+ 
-			'                                                                          '+
-			'<img src="textures/up.png" width="5%"/><br/>'+
-			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/>' +
-			'                                                         ' +
-			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/> <br/>'+
-			'Drop bomb<br/>'+
-			'<img src="textures/shift.png" width="11%"/>' +
-			'                                                               '+
-			'<img src="textures/spacebar.png" width="11%"/>')
-			.css({
-				'white-space' : 'pre',
-				'margin' : 0,
-				'padding' : 0
-			});
-
-		var main_menu = $('<h1>')
-			.html('<br/>Main Menu')
-			.css({
-				'width' : '100%',
-				'padding' : 0,
-				'margin' : 0,
-				'cursor' : 'pointer'
-			});
-			
-			var help_scene_page_2_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-
-
-	    $(main_menu).click(function() {
-			
-			help_scene_page_2.remove();
-		});
-			
-		$(main_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(main_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-
-
-		help_scene_page_2_inner.append(control_header);
-		help_scene_page_2_inner.append(description);
-		help_scene_page_2_inner.append(controllers);
-		help_scene_page_2_inner.append(main_menu);
-
-
-	
-		help_scene_page_2.append(help_scene_page_2_inner);
-		container.append( help_scene_page_2 );
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (help_scene_page_2.width() / help_scene_page_2.height() > 1.8) {
-				help_scene_page_2_inner.width(help_scene_page_2.height() * 1.8);
-			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
-
-		// Size of the Text
-		$(control_header).fitText(1.9);
-		$(description).fitText(3.0);
-		$(controllers).fitText(6.0);
-		$(main_menu).fitText(4.0);
-}
-
 
 function play_scene() {
 	game_alive = true;
@@ -546,94 +308,6 @@ function score_bar(){
 	
 }
 
-function gameover_scene() {
-	game_alive = false;
-	$('#score').remove();
-	$('#timer').remove();
-	background_sound.pause();
-
-	var gameover_scene = $('<div>').css({
-		'background-image' : 'url(textures/diaglog-box.png)',
-		'background-size' : '100% 100%',
-		'font-family' : "'Holtwood One SC', serif",
-		'position' : 'absolute',
-		'top' : 0,
-		'left' : 0,
-		'z-index' : 101,
-		'text-align' : 'center',
-		'width' : '100%',
-		'height' : '100%'
-	});
-
-	var gameover_header = $('<h1>')
-		.html('Game Over')
-		.css({
-			'width' : '100%',
-			'padding' : 0,
-			'margin' : 0
-		});
-
-	var winner = $('<h1>')
-		.html((player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS')
-		.css({
-			'color' : '#fff',
-			'width' : '100%'
-		});
-
-	var main_menu = $('<h1>')
-		.html('Main Menu')
-		.css({
-			'width' : '100%',
-			'cursor' : 'pointer',
-			'padding' : 0,
-			'margin' : 0
-		});
-
-	// Return to main menu
-	$(main_menu).click(function() {
-		gameover_scene.remove();
-		intro_scene();
-	});	
-
-	$(main_menu).mouseover(function() {
-		$(this).css({
-			'color' : '#FFF'
-		});
-	});
-
-	$(main_menu).mouseout(function() {
-		$(this).css({
-			'color' : '#000'
-		});
-	});
-
-	var gameover_scene_inner = $('<div>').css({
-		'margin' : '0 auto'
-	});
-
-	gameover_scene_inner.append(gameover_header);
-	gameover_scene_inner.append(winner);
-	gameover_scene_inner.append(main_menu);
-
-	gameover_scene.append(gameover_scene_inner);
-
-	container.append( gameover_scene );
-
-
-	// Fix aspect ratio
-	var fixAspectRatio = function() {
-		if (gameover_scene.width() / gameover_scene.height() > 1.8) {
-			gameover_scene_inner.width(gameover_scene.height() * 1.8);
-		}
-	};
-	fixAspectRatio();
-	$(window).resize(fixAspectRatio);
-
-	// Size of the text.
-	$(gameover_header).fitText(1.4);
-	$(main_menu).fitText(4.0);
-	$(winner).fitText( 1.3 );
-}
 
 
 /*
@@ -813,8 +487,6 @@ function render() {
 	if (fightTime.elapse(0,180-4)) {
 		if (parseInt(localStorage.getItem('sound_on'))) {
 			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
-			
-		console.log(background_sound.volume);
 		}
 	}
 
@@ -822,33 +494,7 @@ function render() {
 	fightTime.elapse(1,180, function() { 
 		console.log('Time over');
 
-		gameover_scene();
-
-		/*var time = $('<div>')
-			.css({
-			'width' : '100%',
-			'position' : 'absolute',
-			'top' : 0,
-			'text-align' : 'center',
-			'z-index' : 1003
-			});
-
-		var timeOver = $('<h1>')
-			.html('Time over!')
-			.css({
-				'color' : '#DB2F2F'
-			});
-
-		var time_inner = $('<div>')
-			.css({
-				'margin' : '0 auto'	
-			});
-
-
-			container.append( time );
-			time.append(time_inner);
-			time_inner.append( timeOver );*/
-
+		sceneHandler.change('gameOver');
 	});
 	$('#time-left').text(180 - fightTime.getElapse().toFixed());
 
@@ -908,7 +554,7 @@ function render() {
 	// Garbage Collector
 	tileSystem.handleBomb();
 	tileSystem.gc();
-
+	if (!game_alive) return;
 	renderer.render( scene, camera );
 
 }

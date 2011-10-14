@@ -284,5 +284,5 @@ PlayerClass.prototype.die = function() {
 	this.scene.remove( this.sprite );
 	this.alive = false;
 
-	gameover_scene();	
+	sceneHandler.change('gameOver');	
 };

@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>BombCarrier v0.5.66</title>
+		<title>BombCarrier v0.5.67</title>
 		
 		<style type="text/css">
 			@font-face {
@@ -20,11 +20,22 @@
 
 			body {
 				background: #ccc;
-				padding: 0;
-				margin: 0;
 				font-family: Arial;
 				font-weight: bold;
+				margin: 0;
+				padding: 0;
 				overflow: hidden;
+			}
+
+			div[tag=a] {
+				color: #000;
+				cursor: pointer;
+				text-shadow: 1px -1px 1px #ccc;
+			}
+
+			div[tag=a]:hover {
+				color: #fff;
+				text-shadow: none;
 			}
 
 			#first {
@@ -53,7 +64,7 @@
  * @author Gustav Hjortsparre and Han Lin Yap
  * @license http://creativecommons.org/licenses/by-sa/3.0/
  * @package BombCarrier
- * @version 0.5.66 - 2011-10-12
+ * @version 0.5.67 - 2011-10-14
  */
 var DEBUG = true;
 
@@ -61,6 +72,7 @@ if ( ! Detector.webgl ) {
 	Detector.addGetWebGLMessage();
 } else {
 	if ( DEBUG ) {
+		// Prevent caching on files
 		var rId = '?' + new Date().getTime();
 		yepnope.addFilter(function (resourceObj) {
 			resourceObj.url += rId;

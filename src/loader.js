@@ -16,6 +16,7 @@ var loaded = 0,
 		,'src/playerClass.js'
 		,'src/timeClass.js'
 		,'src/bombClass.js'
+		,'src/sceneClass.js'
 		,'src/tileSystem.js'
 	],
 	preload_images = [
@@ -90,7 +91,7 @@ yepnope({
 		jQuery(function ($) {
 			$('#first').remove();
 			init_core();
-			intro_scene();
+			init_scene();
 		});
 	}
 });
