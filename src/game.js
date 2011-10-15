@@ -188,8 +188,9 @@ function init_scene() {
 		'line-height' : 1
 	});
 	intro.add(1.3, 'Play', 'play', {
-		'margin' : '0.4em 0'
+		'margin' : '0.2em 0'
 	});
+	intro.add(4, 'Play online', 'online-lobby');
 	intro.add(4, 'Load level', function () {
 		var input = $('<input type="file"/>').appendTo('body');
 		input.change(function () {
@@ -217,6 +218,33 @@ function init_scene() {
 		}
 	});
 	intro.add(4, 'How to play', 'help1');
+
+	var onlineLobby = new SceneContent();
+	onlineLobby.add(1.4, 'Play online - Lobby', null, {
+		'color' : '#000'
+	});
+	onlineLobby.add(4, 'Connect', function () {
+		var $this = this;
+		var socket = io.connect('http://zencodez.net:8080/lobby');
+		socket.on('connect', function () {
+			console.log('socket-connect');
+		    socket.emit('join-lobby');
+		});
+
+		socket.on('users', function(users) {
+			var online = $('#online-lobby');
+			if (online.length) {
+				online.empty();
+			} else {
+				online = $('<div id="online-lobby">').insertAfter($this);
+			}
+			for(var user in users) {
+				online.append($('<div>').text(user));
+			}
+			console.log(users);
+		});
+	});
+	onlineLobby.add(4, 'Main menu', 'intro');
 
 	var help1 = new SceneContent();
 	help1.add(1.4, 'How to play', null, {
@@ -274,6 +302,7 @@ function init_scene() {
 		background_sound.pause();
 		console.log('ss');
 	});
+	sceneHandler.add('online-lobby', onlineLobby);
 
 	sceneHandler.change('intro');
 }
@@ -286,7 +315,7 @@ function play_scene(raw_map) {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	background_sound = loadAudio('sound/battle4.ogg');
+	background_sound = loadAudio('sound/battle4.ogg', background_sound);
 
 	$('body').css({
 		'background-image' : 'url(textures/paper-dialog.png)',
@@ -323,7 +352,7 @@ function reset_play_scene(raw_map) {
 
 	scene.add( bombs );
 
-	background_sound = loadAudio('sound/battle4.ogg');
+	background_sound = loadAudio('sound/battle4.ogg', background_sound);
 	fightTime = new TimeClass();
 
 }

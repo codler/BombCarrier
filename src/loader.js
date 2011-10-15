@@ -18,6 +18,8 @@ var loaded = 0,
 		,'src/bombClass.js'
 		,'src/sceneClass.js'
 		,'src/tileSystem.js'
+
+		,'http://zencodez.net:8080/socket.io/socket.io.js'
 	],
 	preload_images = [
 		// Hotkeys

@@ -57,7 +57,7 @@ SceneClass.prototype.change = function(name, params) {
 	if (!this.scenes.hasOwnProperty(name)) return;
 
 	// remove old scene
-	this.htmlSceneInner.children().remove();
+	this.htmlSceneInner.empty();
 
 	// Get new scene
 	scene = this.scenes[name];
@@ -93,17 +93,17 @@ SceneClass.prototype.change = function(name, params) {
 			content.attr('tag', 'a');
 			content.css('color', '');
 			// Lambda function needed here to fix reference problem.
-			(function(v) {
+			(function(v, c) {
 				if (v instanceof Function) {
 					content.bind('click', function () {
-						v();
+						v.call(c);
 					});
 				} else {
 					content.one('click', function () {
 						$this.change(v);
 					});
 				}
-			})(value.clickScene);
+			})(value.clickScene, content);
 		} else {
 			content.css('cursor', 'default');
 		}
