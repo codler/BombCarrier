@@ -60,41 +60,8 @@ TileSystem.prototype.loadMap = function(l) {
 
 	this.tiles = new THREE.Object3D();
 
-	/*
-	var l = [];
-	l.push( times('2 ', 15).trim() );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('3 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('3 1 ', 6) ).concat('3 2') );
-	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('5 1 ', 6) ).concat('5 2') );
-	l.push( '2 '.concat( times('5 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( times('2 ', 15).trim() );
-	l = l.join('\r\n');
-*/
-//	console.log(l == lv);
-
-	l = l.split('\r\n').reverse().map(function(x) { return x.split(' ')});
+	l = l.replace(/[\n\r\t]/g,'').split(',').reverse().map(function(x) { return x.split(' ')});
 	console.log(l);
-	/*
-	var l = [];
-	l.push( repeat(3, 15) );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( repeat(3, 15) );
-*/
 
 	var level = l;
 
