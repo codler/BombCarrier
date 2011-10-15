@@ -68,8 +68,16 @@ BombClass.prototype.checkCollision = function (direction, distance, done) {
 			}
 
 		} else {
+			var randTiles = [0,7,8,9];
 			var tilePos = tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
-			tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
+
+			if (tileSystem.level[tilePos.y][tilePos.x].type == 7 ||
+				tileSystem.level[tilePos.y][tilePos.x].type == 8) {
+				tileSystem.changeTile( tilePos.x, tilePos.y, 0 );				
+			} else {
+				tileSystem.changeTile( tilePos.x, tilePos.y, randTiles[Math.floor(Math.random() * randTiles.length)] );
+			}
+
 		}
 		return c.distance;
 	}

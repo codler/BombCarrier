@@ -41,6 +41,18 @@ TileSystem.prototype.tileInfo = {
 	6 : {
 		'name'		 : 'bomb',
 		'destroyable': true
+	},
+	7 : {
+		'name'		 : 'upgrade-life',
+		'destroyable': true
+	},
+	8 : {
+		'name'		 : 'upgrade-power',
+		'destroyable': true
+	},
+	9 : {
+		'name'		 : 'upgrade-bomb',
+		'destroyable': true
 	}
 };
 
@@ -138,11 +150,36 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	force = force || false;
 	var t =  texture[ this.tileInfo[ tileType ].name ];
 	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
+
+	// Need refactor
+
+
 	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		// TODO : Replace this. This is a temporary fix to "remove" object.
 		this.level[tileY][tileX].sprite.boundingMesh.position.z -= 10000;
 		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 0;
+		return true;
+	}
+
+	
+	if (force || (tileType == 7 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 7;
+		return true;
+	}
+	if (force || (tileType == 8 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 8;
+		return true;
+	}
+	if (force || (tileType == 9 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 9;
 		return true;
 	}
 	return false;

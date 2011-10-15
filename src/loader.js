@@ -45,6 +45,9 @@ var loaded = 0,
 		,'Gem Blue.png'
 		,'Gem Green.png'
 		,'Gem Orange.png'
+		,'Heart.png'
+		,'Rock.png'
+		,'Star.png'
 		,'Stone Block Tall.png'
 		,'Water Block.png'
 		

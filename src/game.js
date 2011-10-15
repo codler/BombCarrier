@@ -44,7 +44,10 @@ var texture = {
 	'bomb'         : 'textures/bomb.png',
 	'explosion'    : 'textures/Explosion.png',
 	'explosion2'   : 'textures/explosion2.png',
-	'explosion3'   : 'textures/explosion3.png'
+	'explosion3'   : 'textures/explosion3.png',
+	'upgrade-life' : 'textures/Heart.png',
+	'upgrade-power': 'textures/Star.png',
+	'upgrade-bomb' : 'textures/Rock.png'
 };
 
 var game_alive = false;
