@@ -185,7 +185,33 @@ function init_scene() {
 		'line-height' : 1
 	});
 	intro.add(1.3, 'Play', 'play', {
-		'margin' : '0.67em 0'
+		'margin' : '0.4em 0'
+	});
+	intro.add(4, 'Load level', function () {
+		var input = $('<input type="file"/>').appendTo('body');
+		input.change(function () {
+			if (!this.files.length) {
+				return false;
+			}
+			var files = this.files;
+			var reader = new FileReader();
+
+			reader.onload = function(e) {
+				var raw_map = e.target.result;
+				if (game_alive) {
+					reset_play_scene(raw_map);
+				} else {
+					sceneHandler.change(function () {
+						play_scene(raw_map);
+					});
+				}
+			}
+			reader.readAsText(files[0]);
+		});
+		input.click();
+		if (navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1 || $.browser.msie) {
+			input.change();
+		}
 	});
 	intro.add(4, 'How to play', 'help1');
 

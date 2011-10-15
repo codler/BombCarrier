@@ -94,9 +94,15 @@ SceneClass.prototype.change = function(name, params) {
 			content.css('color', '');
 			// Lambda function needed here to fix reference problem.
 			(function(v) {
-				content.one('click', function () {
-					$this.change(v);
-				});
+				if (v instanceof Function) {
+					content.bind('click', function () {
+						v();
+					});
+				} else {
+					content.one('click', function () {
+						$this.change(v);
+					});
+				}
 			})(value.clickScene);
 		} else {
 			content.css('cursor', 'default');
