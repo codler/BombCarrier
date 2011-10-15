@@ -41,8 +41,18 @@ SceneClass.prototype.add = function(name, sceneContent, callback) {
 	};
 };
 
-SceneClass.prototype.change = function(name) {
+/*
+name : string|function , if function overwrite all
+*/
+SceneClass.prototype.change = function(name, params) {
 	var $this = this;
+
+	if (name instanceof Function) {
+		this.htmlScene.hide();
+		name(params);
+		return;
+	}
+
 	// scene does not exist
 	if (!this.scenes.hasOwnProperty(name)) return;
 
@@ -54,7 +64,7 @@ SceneClass.prototype.change = function(name) {
 
 	if (scene.content instanceof Function) {
 		this.htmlScene.hide();
-		scene.content();
+		scene.content(params);
 		return;
 	} else {
 		this.htmlScene.show();
@@ -93,6 +103,7 @@ SceneClass.prototype.change = function(name) {
 		}
 
 		this.htmlSceneInner.append( content );
+
 		$(content).fitText( value.fitTextSize );
 	}
 

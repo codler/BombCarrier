@@ -277,6 +277,7 @@ PlayerClass.prototype.die = function() {
 			}
 		});
 		this.lifes--;
+		$.get('maps/classic.txt', reset_play_scene);
 		return;
 	}
 

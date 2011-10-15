@@ -145,6 +145,28 @@ function init_core() {
 	// Init sceneClass
 	sceneHandler = new SceneClass();
 
+	// handle drop files
+	$(container).bind('dragover', function(e) {
+		e.stopPropagation(); e.preventDefault();
+	}).bind('drop', function(e) {
+		e.stopPropagation(); e.preventDefault();
+		var files = e.originalEvent.dataTransfer.files;
+		var reader = new FileReader();
+
+		reader.onload = function(e) {
+			var raw_map = e.target.result;
+			if (game_alive) {
+				reset_play_scene(raw_map);
+			} else {
+				sceneHandler.change(function () {
+					play_scene(raw_map);
+				});
+			}
+		}
+		reader.readAsText(files[0]);
+
+	});
+
 	// Stats - FPS viewer
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -210,7 +232,10 @@ function init_scene() {
 	gameOver.add(4, 'Main Menu', 'intro');
 
 	sceneHandler.add('intro', intro);
-	sceneHandler.add('play', play_scene);
+	sceneHandler.add('play', function (map) {
+		map = map || 'maps/classic.txt';
+		$.get(map, play_scene);
+	});
 	sceneHandler.add('help1', help1);
 	sceneHandler.add('help2', help2);
 	sceneHandler.add('gameOver', gameOver, function() {
@@ -224,7 +249,7 @@ function init_scene() {
 	sceneHandler.change('intro');
 }
 
-function play_scene() {
+function play_scene(raw_map) {
 	game_alive = true;
 	scene = new THREE.Scene();
 
@@ -239,10 +264,38 @@ function play_scene() {
 		'background-size' : '50% 50%'
 	});
 	fightTime = new TimeClass();
-	init();
+	init(raw_map);
 	animate();
 	score_bar();
+}
+
+function reset_play_scene(raw_map) {
+	scene.remove(player1.sprite);
+	scene.remove(player2.sprite);
 	
+	// required to update scene
+	renderer.render( scene, camera );
+
+	scene = new THREE.Scene();
+
+	load_background("textures/paper-dialog.png");
+
+	player1.collision = new THREE.CollisionSystem();
+	player2.collision = new THREE.CollisionSystem();
+
+	player1.setScene(scene);
+	player2.setScene(scene);
+
+	tileSystem.loadMap(raw_map);
+	tileSystem.setScene(scene);
+
+	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
+	player2.setPosition( tileSystem.getPosition(13,11).addSelf(new THREE.Vector3(0, 40, 0)) );
+
+	scene.add( bombs );
+
+	background_sound = loadAudio('sound/battle4.ogg');
+	fightTime = new TimeClass();
 
 }
 
@@ -329,21 +382,25 @@ function loadAudio(uri, audio)
     return audio;
 }
 
-function init() {
-	var amount = 15*13;
-	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
-	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
-	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
-	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
-
+function load_background(bg) {
 	var bg = new THREE.Sprite({ 
-		map: THREE.ImageUtils.loadTexture( "textures/paper-dialog.png" ),
+		map: THREE.ImageUtils.loadTexture( bg ),
 		useScreenCoordinates: false 
 	});
 	bg.position.z = -250;
 	bg.scale.x *= 4;
 	bg.scale.y *= 2;
 	scene.add( bg );
+}
+
+function init(raw_map) {
+	var amount = 15*13;
+	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
+	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
+	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
+	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+
+	load_background("textures/paper-dialog.png");
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
@@ -378,7 +435,7 @@ function init() {
 	tileSystem = new TileSystem( -800, -400 );
 	tileSystem.addPlayer(player1);
 	tileSystem.addPlayer(player2);
-	tileSystem.loadMap();
+	tileSystem.loadMap(raw_map);
 	tileSystem.setScene(scene);
 
 	player1.setTileSystem(tileSystem);

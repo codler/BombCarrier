@@ -44,7 +44,10 @@ TileSystem.prototype.tileInfo = {
 	}
 };
 
-TileSystem.prototype.loadMap = function() {
+/*
+l : string
+*/
+TileSystem.prototype.loadMap = function(l) {
 
 	var times = function (s, i) {
 		return (new Array(i+1)).join(s);
@@ -55,6 +58,9 @@ TileSystem.prototype.loadMap = function() {
 		return t;
 	};
 
+	this.tiles = new THREE.Object3D();
+
+	/*
 	var l = [];
 	l.push( times('2 ', 15).trim() );
 	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
@@ -69,10 +75,12 @@ TileSystem.prototype.loadMap = function() {
 	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
 	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
 	l.push( times('2 ', 15).trim() );
-	l = l.join('\n');
+	l = l.join('\r\n');
+*/
+//	console.log(l == lv);
 
-
-	l = l.split('\n').reverse().map(function(x) { return x.split(' ')});
+	l = l.split('\r\n').reverse().map(function(x) { return x.split(' ')});
+	console.log(l);
 	/*
 	var l = [];
 	l.push( repeat(3, 15) );
