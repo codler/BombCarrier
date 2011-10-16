@@ -89,6 +89,8 @@ TileSystem.prototype.loadMap = function(l) {
 		}
 	}
 
+	var geometry = new THREE.CubeGeometry(120, 60, 100, 1, 1, 1);
+
 	for (var x = 0; x < this.sizeWidth; x++) {
 		for (var y = 0; y < this.sizeHeight; y++) {
 			// Times 2 means one TileSizeY equals 2z
@@ -97,7 +99,7 @@ TileSystem.prototype.loadMap = function(l) {
 			var tileTexture = this.tileInfo[ tileType ].name;
 
 			var sprite = new THREE.Sprite( { 
-				map: texture[tileTexture], 
+				map: loaded_texture[tileTexture], 
 				useScreenCoordinates: false 
 			} );
 
@@ -110,7 +112,7 @@ TileSystem.prototype.loadMap = function(l) {
 				
 				// Collision area
 				sprite.boundingMesh = new THREE.Mesh(
-					new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+					geometry
 					//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
 				);
 

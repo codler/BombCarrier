@@ -17,9 +17,6 @@ var time = 0;
 
 var mouse = { x: 0, y: 0 };
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
 var player1, player2;
 
 var debugElement;
@@ -50,6 +47,8 @@ var texture = {
 	'upgrade-bomb' : 'textures/Rock.png'
 };
 
+var loaded_texture = {};
+
 var game_alive = false;
 
 var sceneHandler;
@@ -66,7 +65,7 @@ function init_core() {
 
 	projector = new THREE.Projector();
 
-	camera = new THREE.Camera( 
+	camera = new THREE.PerspectiveCamera( 
 		60, 							// FOV, field of view
 		SCREEN_WIDTH / SCREEN_HEIGHT, 	// Aspect ratio
 		1, 								// Near
@@ -179,6 +178,14 @@ function init_core() {
 	stats.domElement.style.top = '0px';
 	stats.domElement.style.zIndex = 1000;
 	container.append( stats.domElement );
+
+	preload_texture();
+}
+
+function preload_texture() {
+	for(var t in texture) {
+		loaded_texture[t] = THREE.ImageUtils.loadTexture(texture[t]);
+	}
 }
 
 function init_scene() {
@@ -195,7 +202,7 @@ function init_scene() {
 	});
 	intro.add(4, 'Play online', 'online-lobby');
 	intro.add(4, 'Load level', function () {
-		var input = $('<input type="file"/>').appendTo('body');
+		var input = $('<input type="file"/>').css('opacity', 0).appendTo('body');
 		input.change(function () {
 			if (!this.files.length) {
 				return false;
