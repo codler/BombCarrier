@@ -73,7 +73,6 @@ TileSystem.prototype.loadMap = function(l) {
 	this.tiles = new THREE.Object3D();
 
 	l = l.replace(/[\n\r\t]/g,'').split(',').reverse().map(function(x) { return x.split(' ')});
-	console.log(l);
 
 	var level = l;
 

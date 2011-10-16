@@ -54,6 +54,9 @@ var game_alive = false;
 
 var sceneHandler;
 
+var socket;
+var remote = 0;
+
 
 // Initialize core - canvas, camera, scene, debuginfo
 function init_core() {
@@ -223,12 +226,34 @@ function init_scene() {
 	onlineLobby.add(1.4, 'Play online - Lobby', null, {
 		'color' : '#000'
 	});
+
+	
+
 	onlineLobby.add(4, 'Connect', function () {
 		var $this = this;
-		var socket = io.connect('http://zencodez.net:8080/lobby');
+		var id = Math.random();
+		var playing = null;
+
+		$('#online-lobby').die('click').live('click', function() {
+			var user = $(this).data('user');
+			if (!user) return;
+
+			console.log('plays');
+			socket.emit('play', user);
+			socket.emit('leave-lobby');
+
+			sceneHandler.change('play');
+			remote = {
+				'player' : 2, // player 2 is remote
+				'id' : user
+			}; 
+			playing = user;
+		});
+
+		socket = io.connect('http://zencodez.net:8080/lobby');
 		socket.on('connect', function () {
 			console.log('socket-connect');
-		    socket.emit('join-lobby');
+		    socket.emit('join-lobby', id);
 		});
 
 		socket.on('users', function(users) {
@@ -239,9 +264,40 @@ function init_scene() {
 				online = $('<div id="online-lobby">').insertAfter($this);
 			}
 			for(var user in users) {
-				online.append($('<div>').text(user));
+				if (id == users[user]) {
+					online.append($('<div>').text('(you) ' + users[user]));
+				} else {
+					online.append($('<div>')
+						.text(users[user]))
+						.data('user', users[user]);				
+				}
+
 			}
 			console.log(users);
+		});
+
+		socket.on('play', function (clientId, playingWith) {
+			if (id != clientId) return;
+			if (playing) return;
+			playing = playingWith;
+			sceneHandler.change('play');
+			remote = {
+				'player' : 1, // player 1 is remote
+				'id' : playing
+			}
+			socket.emit('leave-lobby');
+		});
+
+		socket.on('key', function(clientId, keyCode, isKeyDown) {
+			//console.log(clientId + '|'+ playing + '|' + id);
+			if (playing == clientId || clientId != id) return;
+			var a = keyCode;
+			if (a in player1.keyCode) {
+		    	player1.keyPressed[player1.keyCode[a]] = isKeyDown;
+		    }
+		    if (a in player2.keyCode) {
+		    	player2.keyPressed[player2.keyCode[a]] = isKeyDown;
+		    }
 		});
 	});
 	onlineLobby.add(4, 'Main menu', 'intro');
@@ -706,6 +762,10 @@ function onKeyDown(a) {
 
     }
 
+    if (remote) {
+    	socket.emit('key', remote.id, a, true);
+    }
+
 }
 function onKeyUp(a) {
     a = a.keyCode;
@@ -719,5 +779,9 @@ function onKeyUp(a) {
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = false;
+    }
+
+    if (remote) {
+    	socket.emit('key', remote.id, a, false);
     }
 }

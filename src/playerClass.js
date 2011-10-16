@@ -214,7 +214,7 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	if (c && c.distance < 40 - 5) {
 		var tilePos = this.tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 		var tileType = this.tileSystem.level[tilePos.y][tilePos.x].type;
-		console.log($.inArray(tileType, [7, 8, 9]));
+
 		if ($.inArray(tileType, [7, 8, 9]) != -1) {
 			if (tileType == 7) {
 				this.lifes++;
