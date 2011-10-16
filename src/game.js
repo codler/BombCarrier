@@ -299,6 +299,25 @@ function init_scene() {
 		    	player2.keyPressed[player2.keyCode[a]] = isKeyDown;
 		    }
 		});
+
+		/* // Not finish
+		socket.on('screenshot', function(clientId, dataUrl) {
+			if (playing == clientId || clientId != id) return;
+			var ss = $('#screenshot');
+			if (ss.length) {
+				ss.attr('src', dataUrl);
+			} else {
+				ss = $('<img id="screenshot">').css({
+					'background-color' : '#aaa',
+					'position' : 'absolute',
+					'top' : 0,
+					'right' : 0,
+					'z-index' : 1003
+				});
+				container.append( ss );
+			}			
+		});
+		*/
 	});
 	onlineLobby.add(4, 'Main menu', 'intro');
 
@@ -783,5 +802,24 @@ function onKeyUp(a) {
 
     if (remote) {
     	socket.emit('key', remote.id, a, false);
+
+    	/* // Not finish
+    	var screenshot = resizeDataUrlImage(renderer.domElement.toDataURL("image/png"), 100, 100);
+    	socket.emit('screenshot', remote.id, screenshot);
+    	*/
     }
+}
+
+function resizeDataUrlImage(dataUrl, width, height) {
+	var canvas = document.createElement('canvas');
+	var img = new Image();
+	img.src = dataUrl;
+
+	canvas.width = width;
+	canvas.height = height;
+
+	var ctx = canvas.getContext('2d');
+	ctx.drawImage(img, 0, 0, width, height);
+
+	return canvas.toDataURL('image/png');
 }

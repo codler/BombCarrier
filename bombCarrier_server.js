@@ -31,6 +31,10 @@ var lobby = io
 			console.log('Client key' + opponentId + '|' + keyCode + '|' + isKeyDown);
 			socket.broadcast.emit('key', opponentId, keyCode, isKeyDown);
 		});	
+		
+		socket.on('screenshot', function (opponentId, dataurl) {
+			socket.broadcast.emit('screenshot', opponentId, dataurl);
+		});	
 
 		socket.on('disconnect', function() {
 			console.log('Client disconnect' + randomId);
