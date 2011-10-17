@@ -17,9 +17,6 @@ var time = 0;
 
 var mouse = { x: 0, y: 0 };
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
 var player1, player2;
 
 var debugElement;
@@ -44,11 +41,20 @@ var texture = {
 	'bomb'         : 'textures/bomb.png',
 	'explosion'    : 'textures/Explosion.png',
 	'explosion2'   : 'textures/explosion2.png',
-	'explosion3'   : 'textures/explosion3.png'
+	'explosion3'   : 'textures/explosion3.png',
+	'upgrade-life' : 'textures/Heart.png',
+	'upgrade-power': 'textures/Star.png',
+	'upgrade-bomb' : 'textures/Rock.png'
 };
+
+var loaded_texture = {};
 
 var game_alive = false;
 
+var sceneHandler;
+
+var socket;
+var remote = 0;
 
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -59,7 +65,7 @@ function init_core() {
 
 	projector = new THREE.Projector();
 
-	camera = new THREE.Camera( 
+	camera = new THREE.PerspectiveCamera( 
 		60, 							// FOV, field of view
 		SCREEN_WIDTH / SCREEN_HEIGHT, 	// Aspect ratio
 		1, 								// Near
@@ -141,6 +147,30 @@ function init_core() {
 	});
 	container.append( sound_switch );
 	
+	// Init sceneClass
+	sceneHandler = new SceneClass();
+
+	// handle drop files
+	$(container).bind('dragover', function(e) {
+		e.stopPropagation(); e.preventDefault();
+	}).bind('drop', function(e) {
+		e.stopPropagation(); e.preventDefault();
+		var files = e.originalEvent.dataTransfer.files;
+		var reader = new FileReader();
+
+		reader.onload = function(e) {
+			var raw_map = e.target.result;
+			if (game_alive) {
+				reset_play_scene(raw_map);
+			} else {
+				sceneHandler.change(function () {
+					play_scene(raw_map);
+				});
+			}
+		}
+		reader.readAsText(files[0]);
+
+	});
 
 	// Stats - FPS viewer
 	stats = new Stats();
@@ -148,321 +178,264 @@ function init_core() {
 	stats.domElement.style.top = '0px';
 	stats.domElement.style.zIndex = 1000;
 	container.append( stats.domElement );
+
+	preload_texture();
 }
 
-function intro_scene() {
-		var intro_scene = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
-		});
+function preload_texture() {
+	for(var t in texture) {
+		loaded_texture[t] = THREE.ImageUtils.loadTexture(texture[t]);
+	}
+}
 
-		var bomb_title = $('<h1>')
-			.html('B<img src="textures/logoBomb.png" style="width:12%;"/>mb')
-			.css({
-				'color' : '#fff',
-				'line-height' : 1,
-				'padding' : 0,
-				'margin' : 0,
-				'width' : '100%'
-			});
-
-		var carrier_title = $('<h1>')
-			.text('Carrier')
-			.css({
-				'padding' : 0,
-				'line-height' : 1,
-				'margin' : 0,
-				'width' : '100%'
-			});
-
-		var play_menu = $('<h1>')
-			.html('Play')
-			.css({
-				'cursor' : 'pointer',
-				'width' : '100%'
-			});
-
-		var help_menu = $('<h1>')
-			.html('How to play')
-			.css({
-				'cursor' : 'pointer',
-				'width' : '100%'
-			});
-			
-		// Start game
-		$(play_menu).click(function() {
-			play_scene();
-			intro_scene.remove();
-		});
-
-		// Open help scene
-		$(help_menu).click(function() {
-			help_scene();
-			//intro_scene.remove();
-		});	
-
-		$(play_menu).add(help_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(play_menu).add(help_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-		var intro_scene_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-		intro_scene_inner.append( bomb_title );
-		intro_scene_inner.append( carrier_title );
-		intro_scene_inner.append( play_menu );
-		intro_scene_inner.append( help_menu );
-
-		intro_scene.append( intro_scene_inner );
-
-		container.append( intro_scene );
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (intro_scene.width() / intro_scene.height() > 1.8) {
-				intro_scene_inner.width(intro_scene.height() * 1.8);
+function init_scene() {
+	var intro = new SceneContent();
+	intro.add(0.6, 'B<img src="textures/logoBomb.png" style="width:12%;"/>mb', null, {
+		'line-height' : 1
+	});
+	intro.add(0.9, 'Carrier', null, {
+		'color' : '#000',
+		'line-height' : 1
+	});
+	intro.add(1.3, 'Play', 'select-level', {
+		'margin' : '0.2em 0'
+	});
+	intro.add(4, 'Play online', 'online-lobby');
+	intro.add(4, 'Load level', function () {
+		var input = $('<input type="file"/>').css('opacity', 0).appendTo('body');
+		input.change(function () {
+			if (!this.files.length) {
+				return false;
 			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
+			var files = this.files;
+			var reader = new FileReader();
 
-		// Size of the text.
-		$(bomb_title).fitText( 0.6 );
-		$(carrier_title).fitText( 0.9 );
-		$(play_menu).fitText( 1.3 );
-		$(help_menu).fitText( 4.0 );
-
-}
-
-function help_scene() {
-		var help_scene = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
+			reader.onload = function(e) {
+				var raw_map = e.target.result;
+				if (game_alive) {
+					reset_play_scene(raw_map);
+				} else {
+					sceneHandler.change(function () {
+						play_scene(raw_map);
+					});
+				}
+			}
+			reader.readAsText(files[0]);
 		});
+		input.click();
+		if (navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1 || $.browser.msie) {
+			input.change();
+		}
+	});
+	intro.add(4, 'How to play', 'help1');
 
-		var help_header = $('<h1>')
-			.html('How to play')
+	var selectLevel = new SceneContent();
+	selectLevel.add(1.4, 'Select level', function() {
+		if ($('#levels').length) return;
+
+		var play = function() {
+			
+			sceneHandler.change('play', $(this).data('play'));
+		};
+
+		var save = function(name, map) {
+			var $this = this;
+			$.get(map, function(data) {
+				var a = download_level(name, data);
+				a.text('save');
+				a.bind('dragstart', function(e) {
+					e.originalEvent.dataTransfer.setData('DownloadURL', a.data('downloadurl'));
+				});
+				$($this).after(a);
+			});	
+		};
+		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="30%"/><br/>Classic</div>')
 			.css({
-				'width' : '100%',
-				'padding' : 0,
-				'margin' : 0
-			});
-		var ask = $('<h1>')
-			.html('BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>')
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat'
+			})
+			.one('click', play);
+		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="30%"/><br/>Spiral</div>')
 			.css({
-				'width' : '100%',
-				'margin' : 0,
-				'color' : '#fff'
-			});
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat'
+			})
+			.one('click', play);
+		var levels = $('<div id="levels"/>').append(level1).append(level2);
+		
+		save.call(level1, 'classic', 'maps/classic.txt');
+		save.call(level2, 'spiral', 'maps/spiral.txt');
+
+		$(this).after(levels);
+	}, {
+		'color' : '#000'
+	});
+
+
+	var onlineLobby = new SceneContent();
+	onlineLobby.add(1.4, 'Play online - Lobby', null, {
+		'color' : '#000'
+	});
 
 	
 
-		var main_menu = $('<h1>')
-			.html('Main Menu')
-			.css({
-				'width' : '100%',
-				'cursor' : 'pointer',
-				'padding' : 0,
-				'margin' : 0
-			});
+	onlineLobby.add(4, 'Connect', function () {
+		var $this = this;
+		var id = Math.random();
+		var playing = null;
 
-		var next_screen = $('<h1>')
-			.html('->')
-			.css({
-				'width' : '100%',
-				'cursor' : 'pointer',
-				'margin' : 0,
-				'padding' : 0
+		$('#online-lobby').die('click').live('click', function() {
+			var user = $(this).data('user');
+			if (!user) return;
 
-			});
+			console.log('plays');
+			socket.emit('play', user);
+			socket.emit('leave-lobby');
 
-		// Return to main menu
-		$(main_menu).click(function() {
-			help_scene.remove();
-		});	
-		// Goes to the second screen of the help screen
-		$(next_screen).click(function() {
-			help_scene_page_2();
-			help_scene.remove();
-		});	
-
-		$(main_menu).add(next_screen).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
+			sceneHandler.change('play');
+			remote = {
+				'player' : 2, // player 2 is remote
+				'id' : user
+			}; 
+			playing = user;
 		});
 
-		$(main_menu).add(next_screen).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
+		socket = io.connect('http://zencodez.net:8080/lobby');
+		socket.on('connect', function () {
+			console.log('socket-connect');
+		    socket.emit('join-lobby', id);
 		});
 
-		var help_scene_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-		help_scene_inner.append(help_header);
-		help_scene_inner.append(ask);
-		help_scene_inner.append(main_menu);
-		help_scene_inner.append(next_screen)
-		
-
-		help_scene.append(help_scene_inner);
-
-		container.append( help_scene );
-
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (help_scene.width() / help_scene.height() > 1.8) {
-				help_scene_inner.width(help_scene.height() * 1.8);
+		socket.on('users', function(users) {
+			var online = $('#online-lobby');
+			if (online.length) {
+				online.empty();
+			} else {
+				online = $('<div id="online-lobby">').insertAfter($this);
 			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
+			for(var user in users) {
+				if (id == users[user]) {
+					online.append($('<div>').text('(you) ' + users[user]));
+				} else {
+					online.append($('<div>')
+						.text(users[user]))
+						.data('user', users[user]);				
+				}
 
-		// Size of the text.
-		$(help_header).fitText(1.4);
-		$(main_menu).fitText(4.0);
-		$(ask).fitText(5.0);
-		$(next_screen).fitText(4.0);
+			}
+			console.log(users);
+		});
 
+		socket.on('play', function (clientId, playingWith) {
+			if (id != clientId) return;
+			if (playing) return;
+			playing = playingWith;
+			sceneHandler.change('play');
+			remote = {
+				'player' : 1, // player 1 is remote
+				'id' : playing
+			}
+			socket.emit('leave-lobby');
+		});
+
+		socket.on('key', function(clientId, keyCode, isKeyDown) {
+			//console.log(clientId + '|'+ playing + '|' + id);
+			if (playing == clientId || clientId != id) return;
+			var a = keyCode;
+			if (a in player1.keyCode) {
+		    	player1.keyPressed[player1.keyCode[a]] = isKeyDown;
+		    }
+		    if (a in player2.keyCode) {
+		    	player2.keyPressed[player2.keyCode[a]] = isKeyDown;
+		    }
+		});
+
+		/* // Not finish
+		socket.on('screenshot', function(clientId, dataUrl) {
+			if (playing == clientId || clientId != id) return;
+			var ss = $('#screenshot');
+			if (ss.length) {
+				ss.attr('src', dataUrl);
+			} else {
+				ss = $('<img id="screenshot">').css({
+					'background-color' : '#aaa',
+					'position' : 'absolute',
+					'top' : 0,
+					'right' : 0,
+					'z-index' : 1003
+				});
+				container.append( ss );
+			}			
+		});
+		*/
+	});
+	onlineLobby.add(4, 'Main menu', 'intro');
+
+	var help1 = new SceneContent();
+	help1.add(1.4, 'How to play', null, {
+		'color' : '#000'
+	});
+	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>');
+	help1.add(4, 'Main Menu', 'intro');
+	help1.add(4, 'Next Page', 'help2');
+
+	var help2 = new SceneContent();
+	help2.add(1.4, 'Controls', null, {
+		'color' : '#000'
+	});
+	help2.add(3, 'Player 1'+
+	'                    '+
+	'Player 2', null, {
+		'color' : '#000',
+		'white-space': 'pre'
+	});
+	help2.add(5, 'Movement controls<br/><img src="textures/W.png" width="5%"/>'+ 
+	'                                                                          '+
+	'<img src="textures/up.png" width="5%"/><br/>'+
+	'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/>' +
+	'                                                         ' +
+	'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/> <br/>'+
+	'Drop bomb<br/>'+
+	'<img src="textures/shift.png" width="11%"/>' +
+	'                                                               '+
+	'<img src="textures/spacebar.png" width="11%"/>', null, {
+		'color' : '#000',
+		'white-space': 'pre'
+	});
+	help2.add(4, 'Main Menu', 'intro');
+
+	var gameOver = new SceneContent();
+	gameOver.add(1.4, 'Game Over', null, {
+		'color' : '#000'
+	});
+	gameOver.add(1.3, function() {
+		return (player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS';
+	});
+	gameOver.add(4, 'Main Menu', 'intro');
+
+	sceneHandler.add('intro', intro);
+	sceneHandler.add('select-level', selectLevel);
+	sceneHandler.add('play', function (map) {
+		map = map || 'maps/classic.txt';
+		$.get(map, play_scene);
+	});
+	sceneHandler.add('help1', help1);
+	sceneHandler.add('help2', help2);
+	sceneHandler.add('gameOver', gameOver, function() {
+		game_alive = false;
+		$('#score').remove();
+		$('#timer').remove();
+		background_sound.pause();
+		console.log('ss');
+	});
+	sceneHandler.add('online-lobby', onlineLobby);
+
+	sceneHandler.change('intro');
 }
 
-function help_scene_page_2() {
-		var help_scene_page_2 = $('<div>').css({
-			'background-image' : 'url(textures/diaglog-box.png)',
-			'background-size' : '100% 100%',
-			'font-family' : "'Holtwood One SC', serif",
-			'position' : 'absolute',
-			'top' : 0,
-			'left' : 0,
-			'z-index' : 101,
-			'text-align' : 'center',
-			'width' : '100%',
-			'height' : '100%'
-		});
-
-		var control_header = $('<h1>')
-			.html('Controls')
-			.css({
-				 'width' : '100%',
-				 'margin' : 0,
-				 'padding' : 0
-
-			});
-		
-		var description = $('<h1>').html('Player 1'+
-			'                    '+
-			'Player 2')
-			.css({
-				'white-space': 'pre'
-			});
-
-		var controllers = $('<h1>').html('Movement controls<br/><img src="textures/W.png" width="5%"/>'+ 
-			'                                                                          '+
-			'<img src="textures/up.png" width="5%"/><br/>'+
-			'<img src="textures/A.png" width="5%"/><img src="textures/S.png" width="5%"/><img src="textures/D.png" width="5%"/>' +
-			'                                                         ' +
-			'<img src="textures/left.png" width="5%"/><img src="textures/down.png" width="5%"/><img src="textures/right.png" width="5%"/> <br/>'+
-			'Drop bomb<br/>'+
-			'<img src="textures/shift.png" width="11%"/>' +
-			'                                                               '+
-			'<img src="textures/spacebar.png" width="11%"/>')
-			.css({
-				'white-space' : 'pre',
-				'margin' : 0,
-				'padding' : 0
-			});
-
-		var main_menu = $('<h1>')
-			.html('<br/>Main Menu')
-			.css({
-				'width' : '100%',
-				'padding' : 0,
-				'margin' : 0,
-				'cursor' : 'pointer'
-			});
-			
-			var help_scene_page_2_inner = $('<div>').css({
-			'margin' : '0 auto'
-		});
-
-
-
-	    $(main_menu).click(function() {
-			
-			help_scene_page_2.remove();
-		});
-			
-		$(main_menu).mouseover(function() {
-			$(this).css({
-				'color' : '#FFF'
-			});
-		});
-
-		$(main_menu).mouseout(function() {
-			$(this).css({
-				'color' : '#000'
-			});
-		});
-
-
-
-		help_scene_page_2_inner.append(control_header);
-		help_scene_page_2_inner.append(description);
-		help_scene_page_2_inner.append(controllers);
-		help_scene_page_2_inner.append(main_menu);
-
-
-	
-		help_scene_page_2.append(help_scene_page_2_inner);
-		container.append( help_scene_page_2 );
-
-		// Fix aspect ratio
-		var fixAspectRatio = function() {
-			if (help_scene_page_2.width() / help_scene_page_2.height() > 1.8) {
-				help_scene_page_2_inner.width(help_scene_page_2.height() * 1.8);
-			}
-		};
-		fixAspectRatio();
-		$(window).resize(fixAspectRatio);
-
-		// Size of the Text
-		$(control_header).fitText(1.9);
-		$(description).fitText(3.0);
-		$(controllers).fitText(6.0);
-		$(main_menu).fitText(4.0);
-}
-
-
-function play_scene() {
+function play_scene(raw_map) {
 	game_alive = true;
 	scene = new THREE.Scene();
 
@@ -470,17 +443,45 @@ function play_scene() {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	background_sound = loadAudio('sound/battle4.ogg');
+	background_sound = loadAudio('sound/battle4.ogg', background_sound);
 
 	$('body').css({
 		'background-image' : 'url(textures/paper-dialog.png)',
 		'background-size' : '50% 50%'
 	});
 	fightTime = new TimeClass();
-	init();
+	init(raw_map);
 	animate();
 	score_bar();
+}
+
+function reset_play_scene(raw_map) {
+	scene.remove(player1.sprite);
+	scene.remove(player2.sprite);
 	
+	// required to update scene
+	renderer.render( scene, camera );
+
+	scene = new THREE.Scene();
+
+	load_background("textures/paper-dialog.png");
+
+	player1.collision = new THREE.CollisionSystem();
+	player2.collision = new THREE.CollisionSystem();
+
+	player1.setScene(scene);
+	player2.setScene(scene);
+
+	tileSystem.loadMap(raw_map);
+	tileSystem.setScene(scene);
+
+	player1.setPosition( tileSystem.getPosition(1,1).addSelf(new THREE.Vector3(0, 40, 0)) );
+	player2.setPosition( tileSystem.getPosition(13,11).addSelf(new THREE.Vector3(0, 40, 0)) );
+
+	scene.add( bombs );
+
+	background_sound = loadAudio('sound/battle4.ogg', background_sound);
+	fightTime = new TimeClass();
 
 }
 
@@ -546,94 +547,6 @@ function score_bar(){
 	
 }
 
-function gameover_scene() {
-	game_alive = false;
-	$('#score').remove();
-	$('#timer').remove();
-	background_sound.pause();
-
-	var gameover_scene = $('<div>').css({
-		'background-image' : 'url(textures/diaglog-box.png)',
-		'background-size' : '100% 100%',
-		'font-family' : "'Holtwood One SC', serif",
-		'position' : 'absolute',
-		'top' : 0,
-		'left' : 0,
-		'z-index' : 101,
-		'text-align' : 'center',
-		'width' : '100%',
-		'height' : '100%'
-	});
-
-	var gameover_header = $('<h1>')
-		.html('Game Over')
-		.css({
-			'width' : '100%',
-			'padding' : 0,
-			'margin' : 0
-		});
-
-	var winner = $('<h1>')
-		.html((player1.lifes == player2.lifes) ? 'Draw' : (player1.lifes > player2.lifes) ? 'Player 1 WINS' : 'Player 2 WINS')
-		.css({
-			'color' : '#fff',
-			'width' : '100%'
-		});
-
-	var main_menu = $('<h1>')
-		.html('Main Menu')
-		.css({
-			'width' : '100%',
-			'cursor' : 'pointer',
-			'padding' : 0,
-			'margin' : 0
-		});
-
-	// Return to main menu
-	$(main_menu).click(function() {
-		gameover_scene.remove();
-		intro_scene();
-	});	
-
-	$(main_menu).mouseover(function() {
-		$(this).css({
-			'color' : '#FFF'
-		});
-	});
-
-	$(main_menu).mouseout(function() {
-		$(this).css({
-			'color' : '#000'
-		});
-	});
-
-	var gameover_scene_inner = $('<div>').css({
-		'margin' : '0 auto'
-	});
-
-	gameover_scene_inner.append(gameover_header);
-	gameover_scene_inner.append(winner);
-	gameover_scene_inner.append(main_menu);
-
-	gameover_scene.append(gameover_scene_inner);
-
-	container.append( gameover_scene );
-
-
-	// Fix aspect ratio
-	var fixAspectRatio = function() {
-		if (gameover_scene.width() / gameover_scene.height() > 1.8) {
-			gameover_scene_inner.width(gameover_scene.height() * 1.8);
-		}
-	};
-	fixAspectRatio();
-	$(window).resize(fixAspectRatio);
-
-	// Size of the text.
-	$(gameover_header).fitText(1.4);
-	$(main_menu).fitText(4.0);
-	$(winner).fitText( 1.3 );
-}
 
 
 /*
@@ -655,21 +568,20 @@ function loadAudio(uri, audio)
     return audio;
 }
 
-function init() {
-	var amount = 15*13;
-	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
-	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
-	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
-	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
-
+function load_background(bg) {
 	var bg = new THREE.Sprite({ 
-		map: THREE.ImageUtils.loadTexture( "textures/paper-dialog.png" ),
+		map: THREE.ImageUtils.loadTexture( bg ),
 		useScreenCoordinates: false 
 	});
 	bg.position.z = -250;
 	bg.scale.x *= 4;
 	bg.scale.y *= 2;
 	scene.add( bg );
+}
+
+function init(raw_map) {
+
+	load_background("textures/paper-dialog.png");
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
@@ -704,7 +616,7 @@ function init() {
 	tileSystem = new TileSystem( -800, -400 );
 	tileSystem.addPlayer(player1);
 	tileSystem.addPlayer(player2);
-	tileSystem.loadMap();
+	tileSystem.loadMap(raw_map);
 	tileSystem.setScene(scene);
 
 	player1.setTileSystem(tileSystem);
@@ -813,8 +725,6 @@ function render() {
 	if (fightTime.elapse(0,180-4)) {
 		if (parseInt(localStorage.getItem('sound_on'))) {
 			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
-			
-		console.log(background_sound.volume);
 		}
 	}
 
@@ -822,33 +732,7 @@ function render() {
 	fightTime.elapse(1,180, function() { 
 		console.log('Time over');
 
-		gameover_scene();
-
-		/*var time = $('<div>')
-			.css({
-			'width' : '100%',
-			'position' : 'absolute',
-			'top' : 0,
-			'text-align' : 'center',
-			'z-index' : 1003
-			});
-
-		var timeOver = $('<h1>')
-			.html('Time over!')
-			.css({
-				'color' : '#DB2F2F'
-			});
-
-		var time_inner = $('<div>')
-			.css({
-				'margin' : '0 auto'	
-			});
-
-
-			container.append( time );
-			time.append(time_inner);
-			time_inner.append( timeOver );*/
-
+		sceneHandler.change('gameOver');
 	});
 	$('#time-left').text(180 - fightTime.getElapse().toFixed());
 
@@ -908,16 +792,13 @@ function render() {
 	// Garbage Collector
 	tileSystem.handleBomb();
 	tileSystem.gc();
-
+	if (!game_alive) return;
 	renderer.render( scene, camera );
 
 }
 
 function log( text ) {
-
-	var e = document.getElementById("log");
-	e.innerHTML = text + "<br/>" + e.innerHTML;
-
+	console.warn( 'BombCarrier: ' + text );
 }
 
 function onDocumentMouseMove( event ) {
@@ -945,6 +826,10 @@ function onKeyDown(a) {
 
     }
 
+    if (remote) {
+    	socket.emit('key', remote.id, a, true);
+    }
+
 }
 function onKeyUp(a) {
     a = a.keyCode;
@@ -959,4 +844,55 @@ function onKeyUp(a) {
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = false;
     }
+
+    if (remote) {
+    	socket.emit('key', remote.id, a, false);
+
+    	/* // Not finish
+    	var screenshot = resizeDataUrlImage(renderer.domElement.toDataURL("image/png"), 100, 100);
+    	socket.emit('screenshot', remote.id, screenshot);
+    	*/
+    }
 }
+
+function resizeDataUrlImage(dataUrl, width, height) {
+	var canvas = document.createElement('canvas');
+	var img = new Image();
+	img.src = dataUrl;
+
+	canvas.width = width;
+	canvas.height = height;
+
+	var ctx = canvas.getContext('2d');
+	ctx.drawImage(img, 0, 0, width, height);
+
+	return canvas.toDataURL('image/png');
+}
+
+function download_level( name, text ) {
+	window.URL = window.URL || window.webkitURL;
+	window.BlobBuilder = window.BlobBuilder || 
+						 window.WebKitBlobBuilder ||
+                   		 window.MozBlobBuilder;
+
+    var bb = new BlobBuilder();
+    bb.append( text+"" );
+
+    var a = $('<a>').attr({
+	    'download' : name + '.txt',
+	    'href' : window.URL.createObjectURL(bb.getBlob('text/plain'))
+	});
+	a.prop('draggable', true);
+
+	a.data('downloadurl', ['text/plain', a.attr('download'), a.attr('href')].join(':'));
+	/*
+	a.click(function() {
+		setTimeout(function() {
+		    window.URL.revokeObjectURL( a.attr('href') );
+		    a.remove();
+		}, 1500);
+	});*/
+	return a;
+}
+
+

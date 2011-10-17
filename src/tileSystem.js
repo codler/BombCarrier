@@ -41,10 +41,25 @@ TileSystem.prototype.tileInfo = {
 	6 : {
 		'name'		 : 'bomb',
 		'destroyable': true
+	},
+	7 : {
+		'name'		 : 'upgrade-life',
+		'destroyable': true
+	},
+	8 : {
+		'name'		 : 'upgrade-power',
+		'destroyable': true
+	},
+	9 : {
+		'name'		 : 'upgrade-bomb',
+		'destroyable': true
 	}
 };
 
-TileSystem.prototype.loadMap = function() {
+/*
+l : string
+*/
+TileSystem.prototype.loadMap = function(l) {
 
 	var times = function (s, i) {
 		return (new Array(i+1)).join(s);
@@ -55,38 +70,9 @@ TileSystem.prototype.loadMap = function() {
 		return t;
 	};
 
-	var l = [];
-	l.push( times('2 ', 15).trim() );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('3 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('3 1 ', 6) ).concat('3 2') );
-	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('4 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('5 1 ', 6) ).concat('5 2') );
-	l.push( '2 '.concat( times('5 ', 13) ).concat(2) );
-	l.push( '2 '.concat( times('0 1 ', 6) ).concat('0 2') );
-	l.push( '2 '.concat( times('0 ', 13) ).concat(2) );
-	l.push( times('2 ', 15).trim() );
-	l = l.join('\n');
+	this.tiles = new THREE.Object3D();
 
-
-	l = l.split('\n').reverse().map(function(x) { return x.split(' ')});
-	/*
-	var l = [];
-	l.push( repeat(3, 15) );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( [3,0,1,0,1,0,1,0,1,0,1,0,1,0,3] );
-	l.push( [3].concat( repeat(0, 13) ).concat(3) );
-	l.push( repeat(3, 15) );
-*/
+	l = l.replace(/[\n\r\t]/g,'').split(',').reverse().map(function(x) { return x.split(' ')});
 
 	var level = l;
 
@@ -103,6 +89,8 @@ TileSystem.prototype.loadMap = function() {
 		}
 	}
 
+	var geometry = new THREE.CubeGeometry(120, 60, 100, 1, 1, 1);
+
 	for (var x = 0; x < this.sizeWidth; x++) {
 		for (var y = 0; y < this.sizeHeight; y++) {
 			// Times 2 means one TileSizeY equals 2z
@@ -111,7 +99,7 @@ TileSystem.prototype.loadMap = function() {
 			var tileTexture = this.tileInfo[ tileType ].name;
 
 			var sprite = new THREE.Sprite( { 
-				map: texture[tileTexture], 
+				map: loaded_texture[tileTexture], 
 				useScreenCoordinates: false 
 			} );
 
@@ -124,7 +112,7 @@ TileSystem.prototype.loadMap = function() {
 				
 				// Collision area
 				sprite.boundingMesh = new THREE.Mesh(
-					new THREE.CubeGeometry(120, 60, 100, 1, 1, 1) 
+					geometry
 					//,new THREE.MeshLambertMaterial( { color: 0xffccff } )
 				);
 
@@ -163,11 +151,36 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	force = force || false;
 	var t =  texture[ this.tileInfo[ tileType ].name ];
 	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
+
+	// Need refactor
+
+
 	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		// TODO : Replace this. This is a temporary fix to "remove" object.
 		this.level[tileY][tileX].sprite.boundingMesh.position.z -= 10000;
 		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 0;
+		return true;
+	}
+
+	
+	if (force || (tileType == 7 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 7;
+		return true;
+	}
+	if (force || (tileType == 8 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 8;
+		return true;
+	}
+	if (force || (tileType == 9 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
+		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map.needsUpdate = true;
+		this.level[tileY][tileX].type = 9;
 		return true;
 	}
 	return false;

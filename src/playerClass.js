@@ -12,6 +12,8 @@ var PlayerClass = function( texture, position ) {
 	this.height  = 100;
 	this.alive   = true;
 	this.lifes   = 3;
+	this.maxBombs = 1;
+	this.firePower = 2;
 	this.id      = Math.random();
 
 	this.sprite = new THREE.Sprite( { 
@@ -210,7 +212,23 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	var ray = new THREE.Ray( position, direction );
 	var c = this.collision.rayCastNearest(ray);
 	if (c && c.distance < 40 - 5) {
-		callback(side);
+		var tilePos = this.tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
+		var tileType = this.tileSystem.level[tilePos.y][tilePos.x].type;
+
+		if ($.inArray(tileType, [7, 8, 9]) != -1) {
+			if (tileType == 7) {
+				this.lifes++;
+			} else if (tileType == 8) {
+				this.firePower++;
+			} else if (tileType == 9) {
+				this.maxBombs++;
+			}
+			this.tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
+		} else {
+			callback(side);
+		}
+
+
 	}
 };
 
@@ -221,7 +239,7 @@ PlayerClass.prototype.handleBomb = function() {
 			availableBombs--;
 		}
 	}
-	if (this.keyPressed.bomb && availableBombs < 2) {
+	if (this.keyPressed.bomb && availableBombs < this.maxBombs) {
 		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -20, -0.25) );
 		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
 		console.log([tilePos.x,tilePos.y]);
@@ -233,7 +251,7 @@ PlayerClass.prototype.handleBomb = function() {
 		) {
 			pos = this.tileSystem.getPosition(tilePos.x, tilePos.y, pos.z);
 	    	
-	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ) );
+	    	var bomb = new BombClass(tilePos, pos.addSelf( new THREE.Vector3(0, 10, 0) ), null, this.firePower );
 
 	    	var c = new THREE.CollisionSystem();
 	    	c.merge(this.collision);
@@ -277,6 +295,7 @@ PlayerClass.prototype.die = function() {
 			}
 		});
 		this.lifes--;
+		$.get('maps/classic.txt', reset_play_scene);
 		return;
 	}
 
@@ -284,5 +303,5 @@ PlayerClass.prototype.die = function() {
 	this.scene.remove( this.sprite );
 	this.alive = false;
 
-	gameover_scene();	
+	sceneHandler.change('gameOver');	
 };

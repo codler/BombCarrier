@@ -16,7 +16,10 @@ var loaded = 0,
 		,'src/playerClass.js'
 		,'src/timeClass.js'
 		,'src/bombClass.js'
+		,'src/sceneClass.js'
 		,'src/tileSystem.js'
+
+		,'http://zencodez.net:8080/socket.io/socket.io.js'
 	],
 	preload_images = [
 		// Hotkeys
@@ -44,6 +47,9 @@ var loaded = 0,
 		,'Gem Blue.png'
 		,'Gem Green.png'
 		,'Gem Orange.png'
+		,'Heart.png'
+		,'Rock.png'
+		,'Star.png'
 		,'Stone Block Tall.png'
 		,'Water Block.png'
 		
@@ -90,7 +96,7 @@ yepnope({
 		jQuery(function ($) {
 			$('#first').remove();
 			init_core();
-			intro_scene();
+			init_scene();
 		});
 	}
 });
