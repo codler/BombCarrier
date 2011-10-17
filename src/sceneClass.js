@@ -54,7 +54,10 @@ SceneClass.prototype.change = function(name, params) {
 	}
 
 	// scene does not exist
-	if (!this.scenes.hasOwnProperty(name)) return;
+	if (!this.scenes.hasOwnProperty(name)) {
+		log('Scene \'' + name + '\' was not found');
+		return;
+	}
 
 	// remove old scene
 	this.htmlSceneInner.empty();

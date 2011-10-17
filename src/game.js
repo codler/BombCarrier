@@ -197,7 +197,7 @@ function init_scene() {
 		'color' : '#000',
 		'line-height' : 1
 	});
-	intro.add(1.3, 'Play', 'play', {
+	intro.add(1.3, 'Play', 'select-level', {
 		'margin' : '0.2em 0'
 	});
 	intro.add(4, 'Play online', 'online-lobby');
@@ -228,6 +228,51 @@ function init_scene() {
 		}
 	});
 	intro.add(4, 'How to play', 'help1');
+
+	var selectLevel = new SceneContent();
+	selectLevel.add(1.4, 'Select level', function() {
+		if ($('#levels').length) return;
+
+		var play = function() {
+			
+			sceneHandler.change('play', $(this).data('play'));
+		};
+
+		var save = function(name, map) {
+			var $this = this;
+			$.get(map, function(data) {
+				var a = download_level(name, data);
+				a.text('save');
+				a.bind('dragstart', function(e) {
+					e.originalEvent.dataTransfer.setData('DownloadURL', a.data('downloadurl'));
+				});
+				$($this).after(a);
+			});	
+		};
+		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="30%"/><br/>Classic</div>')
+			.css({
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat'
+			})
+			.one('click', play);
+		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="30%"/><br/>Spiral</div>')
+			.css({
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat'
+			})
+			.one('click', play);
+		var levels = $('<div id="levels"/>').append(level1).append(level2);
+		
+		save.call(level1, 'classic', 'maps/classic.txt');
+		save.call(level2, 'spiral', 'maps/spiral.txt');
+
+		$(this).after(levels);
+	}, {
+		'color' : '#000'
+	});
+
 
 	var onlineLobby = new SceneContent();
 	onlineLobby.add(1.4, 'Play online - Lobby', null, {
@@ -371,6 +416,7 @@ function init_scene() {
 	gameOver.add(4, 'Main Menu', 'intro');
 
 	sceneHandler.add('intro', intro);
+	sceneHandler.add('select-level', selectLevel);
 	sceneHandler.add('play', function (map) {
 		map = map || 'maps/classic.txt';
 		$.get(map, play_scene);
@@ -534,11 +580,6 @@ function load_background(bg) {
 }
 
 function init(raw_map) {
-	var amount = 15*13;
-	var mapA   = THREE.ImageUtils.loadTexture( "textures/Dirt Block.png" );
-	var mapB   = THREE.ImageUtils.loadTexture( "textures/Stone Block Tall.png" );
-	var mapC   = THREE.ImageUtils.loadTexture( "textures/Water Block.png" );
-	var char1  = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 	load_background("textures/paper-dialog.png");
 
@@ -757,10 +798,7 @@ function render() {
 }
 
 function log( text ) {
-
-	var e = document.getElementById("log");
-	e.innerHTML = text + "<br/>" + e.innerHTML;
-
+	console.warn( 'BombCarrier: ' + text );
 }
 
 function onDocumentMouseMove( event ) {
@@ -830,3 +868,31 @@ function resizeDataUrlImage(dataUrl, width, height) {
 
 	return canvas.toDataURL('image/png');
 }
+
+function download_level( name, text ) {
+	window.URL = window.URL || window.webkitURL;
+	window.BlobBuilder = window.BlobBuilder || 
+						 window.WebKitBlobBuilder ||
+                   		 window.MozBlobBuilder;
+
+    var bb = new BlobBuilder();
+    bb.append( text+"" );
+
+    var a = $('<a>').attr({
+	    'download' : name + '.txt',
+	    'href' : window.URL.createObjectURL(bb.getBlob('text/plain'))
+	});
+	a.prop('draggable', true);
+
+	a.data('downloadurl', ['text/plain', a.attr('download'), a.attr('href')].join(':'));
+	/*
+	a.click(function() {
+		setTimeout(function() {
+		    window.URL.revokeObjectURL( a.attr('href') );
+		    a.remove();
+		}, 1500);
+	});*/
+	return a;
+}
+
+
