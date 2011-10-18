@@ -15,6 +15,7 @@ var PlayerClass = function( texture, position ) {
 	this.maxBombs = 1;
 	this.firePower = 2;
 	this.id      = Math.random();
+	this.defaultTexture = _GAME_.texture.get('char-1');
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
@@ -43,9 +44,6 @@ var PlayerClass = function( texture, position ) {
 	this.sprite.boundingMesh.playerClass = this;
 };
 //PlayerClass.prototype.constructor = PlayerClass;
-
-// Variable
-PlayerClass.prototype.defaultTexture = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
 
 /*
 texture : texture

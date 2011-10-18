@@ -18,6 +18,7 @@ var loaded = 0,
 		,'src/bombClass.js'
 		,'src/sceneClass.js'
 		,'src/tileSystem.js'
+		,'src/textureClass.js'
 
 		,'http://zencodez.net:8080/socket.io/socket.io.js'
 	],
@@ -71,7 +72,7 @@ var loaded = 0,
 
 // Preload images
 for(var image in preload_images) {
-	document.createElement('img').src = 'textures/' + preload_images[image];
+	document.createElement('img').src = 'textures/' + preload_images[image] + (( DEBUG ) ? rId : '');
 }
 
 // Preload sounds
@@ -95,6 +96,7 @@ yepnope({
 
 		jQuery(function ($) {
 			$('#first').remove();
+			init_game();
 			init_core();
 			init_scene();
 		});

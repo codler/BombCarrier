@@ -1,4 +1,5 @@
 
+var _GAME_ = _GAME_ || {};
 
 // == Begin Constants ==
 var SCREEN_WIDTH  = window.innerWidth;
@@ -30,7 +31,8 @@ var tileSystem;
 
 var background_sound;
 
-var texture = {
+var textures = {
+	'bg'           : 'textures/paper-dialog.png',
 	'map-a'        : 'textures/Dirt Block.png',
 	'map-b'        : 'textures/Stone Block Tall.png',
 	'map-c'        : 'textures/Water Block.png',
@@ -47,8 +49,6 @@ var texture = {
 	'upgrade-bomb' : 'textures/Rock.png'
 };
 
-var loaded_texture = {};
-
 var game_alive = false;
 
 var sceneHandler;
@@ -56,6 +56,10 @@ var sceneHandler;
 var socket;
 var remote = 0;
 
+function init_game() {
+	_GAME_.texture = new TextureClass();
+	
+}
 
 // Initialize core - canvas, camera, scene, debuginfo
 function init_core() {
@@ -179,14 +183,12 @@ function init_core() {
 	stats.domElement.style.zIndex = 1000;
 	container.append( stats.domElement );
 
-	preload_texture();
+	_GAME_.texture.preload(textures);
 }
 
-function preload_texture() {
-	for(var t in texture) {
-		loaded_texture[t] = THREE.ImageUtils.loadTexture(texture[t]);
-	}
-}
+
+
+
 
 function init_scene() {
 	var intro = new SceneContent();
@@ -464,7 +466,7 @@ function reset_play_scene(raw_map) {
 
 	scene = new THREE.Scene();
 
-	load_background("textures/paper-dialog.png");
+	load_background();
 
 	player1.collision = new THREE.CollisionSystem();
 	player2.collision = new THREE.CollisionSystem();
@@ -569,8 +571,9 @@ function loadAudio(uri, audio)
 }
 
 function load_background(bg) {
+	bg = bg || 'bg';
 	var bg = new THREE.Sprite({ 
-		map: THREE.ImageUtils.loadTexture( bg ),
+		map: _GAME_.texture.get( bg ),
 		useScreenCoordinates: false 
 	});
 	bg.position.z = -250;
@@ -581,7 +584,7 @@ function load_background(bg) {
 
 function init(raw_map) {
 
-	load_background("textures/paper-dialog.png");
+	load_background();
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */

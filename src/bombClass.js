@@ -7,7 +7,7 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.position  = tilePosition;
 	this.firePower = firePower || 2;
 
-	this.sprite = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.bomb ), useScreenCoordinates: false } );
+	this.sprite = new THREE.Sprite( { map: _GAME_.texture.get('bomb'), useScreenCoordinates: false } );
 	this.sprite.map.needsUpdate = true;
 
 	this.sprite.position = position;
@@ -88,18 +88,18 @@ BombClass.prototype.explode = function () {
 	if (this.hasExploded) return;
 	this.hasExploded = true;
 
-	this.sprite.map = THREE.ImageUtils.loadTexture( texture.explosion3 );
+	this.sprite.map = _GAME_.texture.get('explosion3');
 	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);
 	this.sprite.position.y += 30;
 
-	this.sprite2 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	this.sprite2 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 	this.sprite2.map.needsUpdate = true;
 	this.sprite2.position = this.sprite.position;
 	this.sprite2.scale = this.sprite.scale;
 	this.animate.add( this.sprite2 );
 
 	// Right2
-	/*this.sprite7 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+	/*this.sprite7 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 	this.sprite7.map.needsUpdate = true;
 	this.sprite7.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width*2,-30,0));
 	this.sprite7.scale.y /= 2;
@@ -115,7 +115,7 @@ BombClass.prototype.explode = function () {
 	distance = this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower, done);
 	if (distance > tileSystem.tileSize.height) {
 		// up
-		this.sprite5 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite5 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 		this.sprite5.map.needsUpdate = true;
 		this.sprite5.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 + tileSystem.tileSize.height,0));
 		this.sprite5.scale.y /= 2;
@@ -125,7 +125,7 @@ BombClass.prototype.explode = function () {
 	distance = this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower, done);
 	if (distance > tileSystem.tileSize.height) {
 		// down
-		this.sprite6 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite6 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 		this.sprite6.map.needsUpdate = true;
 		this.sprite6.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 - tileSystem.tileSize.height,2));
 		this.sprite6.scale.y /= 2;
@@ -136,7 +136,7 @@ BombClass.prototype.explode = function () {
 	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower, done);
 	if (distance > tileSystem.tileSize.width) {
 		// Left
-		this.sprite4 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite4 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 		this.sprite4.map.needsUpdate = true;
 		this.sprite4.position = this.sprite.position.clone().addSelf(new THREE.Vector3(-tileSystem.tileSize.width,-30,0));
 		this.sprite4.scale.y /= 2;
@@ -147,7 +147,7 @@ BombClass.prototype.explode = function () {
 	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower, done);
 	if (distance > tileSystem.tileSize.width) {
 		// Right
-		this.sprite3 = new THREE.Sprite( { map: THREE.ImageUtils.loadTexture( texture.explosion2 ), useScreenCoordinates: false } );
+		this.sprite3 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
 		this.sprite3.map.needsUpdate = true;
 		this.sprite3.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width,-30,0));
 		this.sprite3.scale.y /= 2;

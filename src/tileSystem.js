@@ -99,7 +99,7 @@ TileSystem.prototype.loadMap = function(l) {
 			var tileTexture = this.tileInfo[ tileType ].name;
 
 			var sprite = new THREE.Sprite( { 
-				map: loaded_texture[tileTexture], 
+				map: _GAME_.texture.get( tileTexture ), 
 				useScreenCoordinates: false 
 			} );
 
@@ -149,7 +149,7 @@ TileSystem.prototype.loadMap = function(l) {
 
 TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	force = force || false;
-	var t =  texture[ this.tileInfo[ tileType ].name ];
+	var t = this.tileInfo[ tileType ].name;
 	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
 
 	// Need refactor
@@ -158,7 +158,7 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	if (force || (tileType == 0 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		// TODO : Replace this. This is a temporary fix to "remove" object.
 		this.level[tileY][tileX].sprite.boundingMesh.position.z -= 10000;
-		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map = _GAME_.texture.get( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		this.level[tileY][tileX].type = 0;
 		return true;
@@ -166,19 +166,19 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 
 	
 	if (force || (tileType == 7 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
-		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map = _GAME_.texture.get( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		this.level[tileY][tileX].type = 7;
 		return true;
 	}
 	if (force || (tileType == 8 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
-		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map = _GAME_.texture.get( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		this.level[tileY][tileX].type = 8;
 		return true;
 	}
 	if (force || (tileType == 9 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
-		this.level[tileY][tileX].sprite.map = THREE.ImageUtils.loadTexture( t );
+		this.level[tileY][tileX].sprite.map = _GAME_.texture.get( t );
 		this.level[tileY][tileX].sprite.map.needsUpdate = true;
 		this.level[tileY][tileX].type = 9;
 		return true;
