@@ -729,6 +729,12 @@ function render() {
 		if (parseInt(localStorage.getItem('sound_on'))) {
 			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
 		}
+
+		//var angle = Math.min(Math.PI * 2, Math.max(0,(18-fightTime.getElapse()) / (4 / (Math.PI * 2)) ));
+
+		var angle = (fightTime.getElapse('ms') / Math.PI * 2) % (Math.PI * 2);
+		tileSystem.tiles.position.x = tileSystem.x + (tileSystem.sizeWidth-1) * tileSystem.tileSize.width / 2 + Math.cos(angle)*3;
+		tileSystem.tiles.position.y = tileSystem.y + (tileSystem.sizeHeight+0.5) * tileSystem.tileSize.height / 2 + Math.sin(angle)*3;
 	}
 
 	// switch to game over scene
