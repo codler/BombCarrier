@@ -4,6 +4,7 @@ var TileSystem = function(x, y) {
 	this.x       = x;
 	this.y       = y;
 	this.tiles   = new THREE.Object3D();
+	this.grid   = new THREE.Object3D();
 	this.players = [];
 	this.bombs   = [];
 };
@@ -88,6 +89,31 @@ TileSystem.prototype.loadMap = function(l) {
 			};
 		}
 	}
+
+	// grid
+	/*
+	var g = new THREE.Geometry();
+	g.vertices.push( new THREE.Vertex( new THREE.Vector3( -1000, 0, 0 ) ) );
+	g.vertices.push( new THREE.Vertex( new THREE.Vector3( 1000, 0, 0 ) ) );
+
+	for ( var i = 0; i <= this.sizeWidth; i ++ ) {
+		if (i <= this.sizeHeight) {
+			var line = new THREE.Line( g, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
+			//line.position.x = this.x;
+			line.position.y = ( i * this.tileSize.height ) + this.y;
+			this.grid.add( line );
+			
+		}
+
+		var line = new THREE.Line( g, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
+		line.position.x = ( i * this.tileSize.width ) + this.x;
+		line.position.y = this.y;
+		line.rotation.z = 90 * Math.PI / 180;
+		this.grid.add( line );
+
+	}*/
+
+
 
 	var geometry = new THREE.CubeGeometry(120, 60, 100, 1, 1, 1);
 
@@ -196,6 +222,7 @@ TileSystem.prototype.addPlayer = function(player) {
 TileSystem.prototype.setScene = function(scene) {
 	this.scene = scene;
 	this.scene.add(this.tiles);
+	this.scene.add(this.grid);
 };
 
 TileSystem.prototype.getPosition = function(tileX, tileY, z) {

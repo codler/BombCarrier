@@ -83,7 +83,7 @@ function init_core() {
 
 	// renderer
 	renderer = new THREE.WebGLRenderer();
-	renderer.setClearColorHex( 0x000000, 1 );
+	//renderer.setClearColorHex( 0x000000, 1 );
 	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
 	container.append( renderer.domElement );
