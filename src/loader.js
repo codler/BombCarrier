@@ -70,9 +70,11 @@ var loaded = 0,
 		'battle4.ogg'
 	];
 
+var loaded_images = {};
 // Preload images
 for(var image in preload_images) {
-	document.createElement('img').src = 'textures/' + preload_images[image] + (( DEBUG ) ? rId : '');
+	loaded_images[preload_images[image]] = document.createElement('img');
+	loaded_images[preload_images[image]].src = 'textures/' + preload_images[image] + (( DEBUG ) ? rId : '');
 }
 
 // Preload sounds

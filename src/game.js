@@ -123,8 +123,10 @@ function init_core() {
 			'top' : 0,
 			'z-index' : 1001
 		});
-		//	container.append( debugElement );
-
+		if (location.hash == '#debug') {
+			container.append( debugElement );
+			
+		}
 	}
 
 	// Sound on/off
@@ -724,10 +726,12 @@ function render() {
 	time += 0.02;
 	*/
 
+	var gameTime = 180;
+
 	// lower sound at end game
-	if (fightTime.elapse(0,180-4)) {
+	if (fightTime.elapse(0,gameTime-4)) {
 		if (parseInt(localStorage.getItem('sound_on'))) {
-			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
+			background_sound.volume = Math.min(1, Math.max(0,(gameTime-fightTime.getElapse()) / (4 / 0.5)));
 		}
 
 		//var angle = Math.min(Math.PI * 2, Math.max(0,(18-fightTime.getElapse()) / (4 / (Math.PI * 2)) ));
@@ -738,12 +742,12 @@ function render() {
 	}
 
 	// switch to game over scene
-	fightTime.elapse(1,180, function() { 
+	fightTime.elapse(1,gameTime, function() { 
 		console.log('Time over');
 
 		sceneHandler.change('gameOver');
 	});
-	$('#time-left').text(180 - fightTime.getElapse().toFixed());
+	$('#time-left').text(gameTime - fightTime.getElapse().toFixed());
 
 	if (DEBUG) {
 		var s = [
