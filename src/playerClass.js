@@ -219,7 +219,7 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 			} else if (tileType == 8) {
 				this.firePower++;
 			} else if (tileType == 9) {
-				this.maxBombs = Math.min(5, this.maxBombs++);
+				this.maxBombs = Math.min(5, ++this.maxBombs);
 			}
 			this.tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
 		} else {

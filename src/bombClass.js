@@ -3,6 +3,7 @@ timeAlive : Seconds
 */
 var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.animate   = new THREE.Object3D();
+	this.fireAnimate = new THREE.Object3D();
 	this.timeAlive = timeAlive || 5;
 	this.position  = tilePosition;
 	this.firePower = firePower || 2;
@@ -26,11 +27,13 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.animate.add( this.sprite );
 	this.animate.add( this.sprite.boundingMesh );
 
+	this.animate.add( this.fireAnimate );
 
 	this.hasExploded = false;
 	
 	this.time = new TimeClass();
 	this.sprite.boundingMesh.bombClass = this;
+
 };
 
 /*
@@ -113,46 +116,55 @@ BombClass.prototype.explode = function () {
 	var distance = 0;
 	// up
 	distance = this.checkCollision(new THREE.Vector3(0,1,0), tileSystem.tileSize.height * this.firePower, done);
-	if (distance > tileSystem.tileSize.height) {
-		// up
-		this.sprite5 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
-		this.sprite5.map.needsUpdate = true;
-		this.sprite5.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 + tileSystem.tileSize.height,0));
-		this.sprite5.scale.y /= 2;
-		this.animate.add( this.sprite5 );
+	if (distance === false || distance > tileSystem.tileSize.height) {
+		var dTile = (distance === false) ? this.firePower : Math.floor(distance / tileSystem.tileSize.height);
+		for(var i = 1, j = dTile; i <= j; i++) {
+			var sprite = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
+			sprite.map.needsUpdate = true;
+			sprite.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 + i * tileSystem.tileSize.height,0));
+			sprite.scale.y /= 2;
+			this.fireAnimate.add( sprite );
+		}
 	}
+
 	// down
 	distance = this.checkCollision(new THREE.Vector3(0,-1,0), tileSystem.tileSize.height * this.firePower, done);
-	if (distance > tileSystem.tileSize.height) {
-		// down
-		this.sprite6 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
-		this.sprite6.map.needsUpdate = true;
-		this.sprite6.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 - tileSystem.tileSize.height,2));
-		this.sprite6.scale.y /= 2;
-		this.sprite6.rotation = Math.PI;
-		this.animate.add( this.sprite6 );
-	}
-	// left
-	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower, done);
-	if (distance > tileSystem.tileSize.width) {
-		// Left
-		this.sprite4 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
-		this.sprite4.map.needsUpdate = true;
-		this.sprite4.position = this.sprite.position.clone().addSelf(new THREE.Vector3(-tileSystem.tileSize.width,-30,0));
-		this.sprite4.scale.y /= 2;
-		this.sprite4.rotation = Math.PI/2;
-		this.animate.add( this.sprite4 );
+	if (distance === false || distance > tileSystem.tileSize.height) {
+		var dTile = (distance === false) ? this.firePower : Math.floor(distance / tileSystem.tileSize.height);
+		for(var i = 1, j = dTile; i <= j; i++) {
+			var sprite = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
+			sprite.map.needsUpdate = true;
+			sprite.position = this.sprite.position.clone().addSelf(new THREE.Vector3(0,-30 - i * tileSystem.tileSize.height,2*i));
+			sprite.scale.y /= 2;
+			sprite.rotation = Math.PI;
+			this.fireAnimate.add( sprite );
+		}
 	}
 	// right
-	this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower, done);
-	if (distance > tileSystem.tileSize.width) {
-		// Right
-		this.sprite3 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
-		this.sprite3.map.needsUpdate = true;
-		this.sprite3.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width,-30,0));
-		this.sprite3.scale.y /= 2;
-		this.sprite3.rotation = -Math.PI/2;
-		this.animate.add( this.sprite3 );
+	distance = this.checkCollision(new THREE.Vector3(1,0,0), tileSystem.tileSize.width * this.firePower, done);
+	if (distance === false || distance > tileSystem.tileSize.width) {
+		var dTile = (distance === false) ? this.firePower : Math.floor(distance / tileSystem.tileSize.width);
+		for(var i = 1, j = dTile; i <= j; i++) {
+			var sprite = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
+			sprite.map.needsUpdate = true;
+			sprite.position = this.sprite.position.clone().addSelf(new THREE.Vector3(i*tileSystem.tileSize.width,-30,0));
+			sprite.scale.y /= 2;
+			sprite.rotation = -Math.PI/2;
+			this.fireAnimate.add( sprite );
+		}
+	}
+	// left
+	distance = this.checkCollision(new THREE.Vector3(-1,0,0), tileSystem.tileSize.width * this.firePower, done);
+	if (distance === false || distance > tileSystem.tileSize.width) {
+		var dTile = (distance === false) ? this.firePower : Math.floor(distance / tileSystem.tileSize.width);
+		for(var i = 1, j = dTile; i <= j; i++) {
+			var sprite = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
+			sprite.map.needsUpdate = true;
+			sprite.position = this.sprite.position.clone().addSelf(new THREE.Vector3(-i*tileSystem.tileSize.width,-30,0));
+			sprite.scale.y /= 2;
+			sprite.rotation = Math.PI/2;
+			this.fireAnimate.add( sprite );
+		}		
 	}
 	
 	this.timeAlive = this.time.getElapse() + 2;
@@ -171,8 +183,12 @@ BombClass.prototype.update = function () {
 		if (this.sprite4) this.sprite4.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 		if (this.sprite5) this.sprite5.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 		if (this.sprite6) this.sprite6.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		//this.sprite7.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		if (this.sprite7) this.sprite7.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 
+		var fires = this.fireAnimate.children;
+		for(var i = 0; i < fires.length; i++) {
+			fires[i].opacity = 1 - ( this.time.getElapse() / this.timeAlive );
+		}
 	}
 };
 
