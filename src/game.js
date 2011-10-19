@@ -423,6 +423,22 @@ function init_scene() {
 		'white-space': 'pre'
 	});
 	help2.add(4, 'Main Menu', 'intro');
+	help2.add(4, 'Next Page','help3');
+
+	var help3 = new SceneContent();
+
+	help3.add(1.4, 'Power Ups',null, {
+		'color' : '#000'
+	});
+
+	help3.add(6, '<img src="textures/Star.png" width="5%" />  Will increase your firepower, and making your bombs <br/>able to reach further when exploading. <br/> <br/>' +
+	'<img src="textures/Rock.png" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
+		'color' : '#000',
+		'white-space' : 'pre'
+
+	});
+
+	help3.add(4,"Main Menu",'intro');
 
 	var gameOver = new SceneContent();
 	gameOver.add(1.4, 'Game Over', null, {
@@ -441,6 +457,7 @@ function init_scene() {
 	});
 	sceneHandler.add('help1', help1);
 	sceneHandler.add('help2', help2);
+	sceneHandler.add('help3', help3);
 	sceneHandler.add('gameOver', gameOver, function() {
 		game_alive = false;
 		$('#score').remove();
