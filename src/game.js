@@ -574,10 +574,15 @@ function loadAudio(uri, audio)
 
 function load_background(bg) {
 	bg = bg || 'bg';
+	/*
 	var bg = new THREE.Sprite({ 
 		map: _GAME_.texture.get( bg ),
 		useScreenCoordinates: false 
-	});
+	});*/
+	// change 1010, 820
+	var bg = new THREE.Mesh( new THREE.PlaneGeometry( 1010, 820 ), new THREE.MeshBasicMaterial( { 
+					map: _GAME_.texture.get( bg ),
+					color: 0xffffff } ) );
 	bg.position.z = -250;
 	bg.scale.x *= 4;
 	bg.scale.y *= 2;
