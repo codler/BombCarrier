@@ -101,14 +101,6 @@ BombClass.prototype.explode = function () {
 	this.sprite2.scale = this.sprite.scale;
 	this.animate.add( this.sprite2 );
 
-	// Right2
-	/*this.sprite7 = new THREE.Sprite( { map: _GAME_.texture.get('explosion2'), useScreenCoordinates: false } );
-	this.sprite7.map.needsUpdate = true;
-	this.sprite7.position = this.sprite.position.clone().addSelf(new THREE.Vector3(tileSystem.tileSize.width*2,-30,0));
-	this.sprite7.scale.y /= 2;
-	this.sprite7.rotation = -Math.PI/2;
-	this.animate.add( this.sprite7 );*/
-
 	// collision with tile
 	var done = {
 		'player' : false
@@ -179,11 +171,6 @@ BombClass.prototype.update = function () {
 
 		if (this.sprite) this.sprite.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 		if (this.sprite2) this.sprite2.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		if (this.sprite3) this.sprite3.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		if (this.sprite4) this.sprite4.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		if (this.sprite5) this.sprite5.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		if (this.sprite6) this.sprite6.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
-		if (this.sprite7) this.sprite7.opacity = 1 - ( this.time.getElapse() / this.timeAlive );
 
 		var fires = this.fireAnimate.children;
 		for(var i = 0; i < fires.length; i++) {

@@ -33,6 +33,7 @@ var background_sound;
 
 var textures = {
 	'bg'           : 'textures/paper-dialog.png',
+	'bg2'          : 'textures/diaglog-box.png',
 	'map-a'        : 'textures/Dirt Block.png',
 	'map-b'        : 'textures/Stone Block Tall.png',
 	'map-c'        : 'textures/Water Block.png',
@@ -58,7 +59,15 @@ var remote = 0;
 
 function init_game() {
 	_GAME_.texture = new TextureClass();
-	
+	_GAME_.branch_3D = false;
+
+	if (_GAME_.branch_3D) {
+		loaded_images['a'] = document.createElement('img');
+		loaded_images['b'] = document.createElement('img');
+
+		loaded_images['a'].src = 'test/top.png';
+		loaded_images['b'].src = 'test/Gem Green.png';
+	}
 }
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -76,6 +85,11 @@ function init_core() {
 		10000 							// Far
 	);
 	camera.position.z = 1000;
+	if (_GAME_.branch_3D) {
+		camera.position.y = -600;
+		camera.position.z = 600;
+	}
+	camera.lookAt( new THREE.Vector3(0,0,0) );
 
 	loader = new THREE.Loader( true );
 
@@ -432,7 +446,6 @@ function init_scene() {
 		$('#score').remove();
 		$('#timer').remove();
 		background_sound.pause();
-		console.log('ss');
 	});
 	sceneHandler.add('online-lobby', onlineLobby);
 
@@ -712,7 +725,9 @@ function animate() {
 
 
 function render() {
-
+	if (_GAME_.branch_3D) {
+		player1.sprite.lookAt(camera.position);
+	}
 	/*
 	for ( var c = 0; c < group.children.length; c++ ) {
 
@@ -812,7 +827,6 @@ function render() {
 	tileSystem.gc();
 	if (!game_alive) return;
 	renderer.render( scene, camera );
-
 }
 
 function log( text ) {
@@ -862,7 +876,8 @@ function onKeyUp(a) {
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = false;
     }
-
+	
+	//window.open( renderer.domElement.toDataURL('image/png'), 'mywindow' );
     if (remote) {
     	socket.emit('key', remote.id, a, false);
 

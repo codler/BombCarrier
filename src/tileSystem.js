@@ -113,7 +113,48 @@ TileSystem.prototype.loadMap = function(l) {
 
 	}*/
 
+	if (_GAME_.branch_3D) {
+		var materials = [];
+		materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials.push( [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) ] );
+		materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/top.png' ) } ) ] );
+		materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/top.png' ) } ) ] );
 
+		var materials2 = [];
+		materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front2.png' ) } ) ] );
+		materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front2.png' ) } ) ] );
+		materials2.push( [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) ] );
+		materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front2.png' ) } ) ] );
+		materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/top2.png' ) } ) ] );
+		materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/top2.png' ) } ) ] );
+
+		var canvas = document.createElement("canvas"); 
+		canvas.width = loaded_images['a'].width; 
+		canvas.height = loaded_images['a'].height;
+	 	var ctx = canvas.getContext("2d");
+
+	 	//ctx.fillStyle = 'rgb( 200, 200, 200 )';
+		//ctx.fillRect( 0, 0, canvas.width, canvas.height );
+
+	 	ctx.drawImage(loaded_images['a'], 0, 0);
+	 	//ctx.drawImage(loaded_images['b'], 0, -10);
+	 	
+	 	ctx.drawImage(loaded_images['Gem Green.png'], 0, -10, loaded_images['Gem Green.png'].width, loaded_images['Gem Green.png'].height - 40);
+
+	 	var t = new THREE.Texture( canvas );
+	 	var m = new THREE.MeshBasicMaterial( { map: t, transparent: true } );
+	 	t.needsUpdate = true;
+
+		var materials3 = [];
+		materials3.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials3.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials3.push( [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) ] );
+		materials3.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'test/front.png' ) } ) ] );
+		materials3.push( [ m ] );
+		materials3.push( [ m ] );	
+	}
 
 	var geometry = new THREE.CubeGeometry(120, 60, 100, 1, 1, 1);
 
@@ -167,7 +208,39 @@ TileSystem.prototype.loadMap = function(l) {
 
 			this.level[y][x].sprite = sprite;
 
-			this.tiles.add( sprite );
+			if (!_GAME_.branch_3D) {
+				this.tiles.add( sprite );
+			} else {
+				if (tileType == 0) {
+					var cube = new THREE.Mesh( new THREE.CubeGeometry( this.tileSize.width, this.tileSize.height, 39, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+					cube.position.set(
+						x * this.tileSize.width + this.x,
+						y * this.tileSize.height + this.y,
+						-39 - 8
+					);
+					this.tiles.add( cube );
+					
+				} else if(tileType == 1) {
+					var cube = new THREE.Mesh( new THREE.CubeGeometry( this.tileSize.width, this.tileSize.height, 78, 1, 1, 1, materials2 ), new THREE.MeshFaceMaterial() );
+					cube.position.set(
+						x * this.tileSize.width + this.x,
+						y * this.tileSize.height + this.y,
+						-39 - 8 + 39 / 2
+					);
+					this.tiles.add( cube );
+					
+				} else if(tileType == 4) {
+					var geo = new THREE.CubeGeometry( this.tileSize.width, this.tileSize.height, 39, 1, 1, 1, materials3 );
+					var cube = new THREE.Mesh( geo , new THREE.MeshFaceMaterial() );
+					cube.position.set(
+						x * this.tileSize.width + this.x,
+						y * this.tileSize.height + this.y,
+						-39 - 8
+					);
+					this.tiles.add( cube );
+					
+				}
+			}
 		}
 	}
 

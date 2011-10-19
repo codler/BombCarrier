@@ -22,7 +22,14 @@ var PlayerClass = function( texture, position ) {
 		useScreenCoordinates: false 
 	} );
 
-
+	if (_GAME_.branch_3D) {
+		this.sprite = new THREE.Mesh( new THREE.PlaneGeometry( 101, 82 ), new THREE.MeshBasicMaterial( { 
+						map: THREE.ImageUtils.loadTexture('textures/Character Princess Girl.png'),
+						color: 0xffffff,
+						transparent: true } ) );
+		this.sprite.rotation.x = 90 * ( Math.PI / 180 );
+	}
+	
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
 		new THREE.CubeGeometry(40, 40, 100, 1, 1, 1) 

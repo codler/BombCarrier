@@ -54,8 +54,9 @@
 				container.appendChild( info );
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-				camera.position.y = -150;
-				camera.position.z = 500;
+				camera.position.y = -700;
+				camera.position.z = 300;
+				camera.lookAt(new THREE.Vector3(0,0,0));
 
 				scene = new THREE.Scene();
 
@@ -96,17 +97,18 @@
 				//cube2.rotation.x = -0.5;
 				group.add( cube2 );
 
-				// left
+				// left down
 				var cube3 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 39, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
 				cube3.position.x -= 101;
+				cube3.position.y -= 82;
 				//cube3.rotation.x = -0.5;
 				group.add( cube3 );
 
-				// left up
+				// left
 				var cube4 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 78, 1, 1, 1, materials2 ), new THREE.MeshFaceMaterial() );
 				cube4.position.z += 39 / 2;
 				cube4.position.x -= 101;
-				cube4.position.y += 82;
+				//cube4.position.y += 82;
 				//cube4.rotation.x = -0.5;
 				group.add( cube4 );
 
@@ -123,23 +125,29 @@
 					,useScreenCoordinates: false 
 				} );
 
-				sprite.position = new THREE.Vector3(101,0,78);
-
+				sprite.position = new THREE.Vector3(-101,-82,78);
+				sprite.scale.y = 1.5;
+				//scene.add( sprite );
 				group.add( sprite );
 
 
+				group.position.x -= 100;
+				group.position.y -= 300;
 
-
-
-				group.rotation.x = -0.5;
 				scene.add( group );
 
 				// Plane
 
-				plane = new THREE.Mesh( new THREE.PlaneGeometry( 200, 200 ), new THREE.MeshBasicMaterial( { color: 0xe0e0e0 } ) );
-				plane.rotation.x = - 90 * ( Math.PI / 180 );
+				plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshBasicMaterial( { 
+					map: THREE.ImageUtils.loadTexture('../textures/Character Princess Girl.png'),
+					color: 0xffffff } ) );
+				plane.rotation.x = 90 * ( Math.PI / 180 ) / 2;
+
 				plane.overdraw = true;
-				scene.add( plane );
+				//plane.position.y += 300;
+				//plane.position.z += 300;
+				group.add( plane );
+				//scene.add( plane );
 
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -229,7 +237,7 @@
 			function render() {
 
 				plane.rotation.z = group.rotation.z += ( targetRotation - group.rotation.y ) * 0.05;
-				sprite.rotation = -group.rotation.y;
+				//sprite.rotation = -group.rotation.y;
 
 				renderer.render( scene, camera );
 
