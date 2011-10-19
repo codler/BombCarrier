@@ -513,7 +513,7 @@ function score_bar(){
 
 
 	var players = $('<h1>')
-		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">0</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">0</span> ')
+		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">' + (player1.lifes+1) + '</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">' + (player2.lifes+1) + '</span> ')
 		.css({
 			'white-space' : 'pre',
 			'margin' : 0,
