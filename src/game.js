@@ -460,7 +460,7 @@ function play_scene(raw_map) {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	background_sound = loadAudio('sound/battle4.ogg', background_sound);
+	background_sound = loadAudio('battle4', background_sound);
 
 	$('body').css({
 		'background-image' : 'url(textures/paper-dialog.png)',
@@ -483,6 +483,9 @@ function reset_play_scene(raw_map) {
 
 	load_background();
 
+	player1.reset();
+	player2.reset();
+
 	player1.collision = new THREE.CollisionSystem();
 	player2.collision = new THREE.CollisionSystem();
 
@@ -497,7 +500,7 @@ function reset_play_scene(raw_map) {
 
 	scene.add( bombs );
 
-	background_sound = loadAudio('sound/battle4.ogg', background_sound);
+	background_sound = loadAudio('battle4', background_sound);
 	fightTime = new TimeClass();
 
 }
@@ -570,7 +573,7 @@ function score_bar(){
 audio : Audio tag - DOM element
 Return DOM element
 */
-function loadAudio(uri, audio)
+function loadAudio( name, audio )
 {
     //audio = audio || new Audio();
 
@@ -578,7 +581,7 @@ function loadAudio(uri, audio)
     	'preload':'auto'
     }).appendTo('body')[0];
 
-    audio.src = uri;
+    audio.src = 'sound/' + name + sound_file_suffix;
     audio.volume = parseInt(localStorage.getItem('sound_on')) / 2;
     audio.play();
 

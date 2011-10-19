@@ -29,7 +29,7 @@ var PlayerClass = function( texture, position ) {
 						transparent: true } ) );
 		this.sprite.rotation.x = 90 * ( Math.PI / 180 );
 	}
-	
+
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
 		new THREE.CubeGeometry(40, 40, 100, 1, 1, 1) 
@@ -51,6 +51,12 @@ var PlayerClass = function( texture, position ) {
 	this.sprite.boundingMesh.playerClass = this;
 };
 //PlayerClass.prototype.constructor = PlayerClass;
+
+PlayerClass.prototype.reset = function() {
+	// reset upgrades
+	this.maxBombs = this.initMaxBombs;
+	this.firePower = this.initFirePower;
+};
 
 /*
 texture : texture
@@ -217,6 +223,10 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	var ray = new THREE.Ray( position, direction );
 	var c = this.collision.rayCastNearest(ray);
 	if (c && c.distance < 40 - 5) {
+		if (c.mesh.gameType == 'bomb') {
+			if (c.mesh.bombClass.steppable) return;
+		}
+
 		var tilePos = this.tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 		var tileType = this.tileSystem.level[tilePos.y][tilePos.x].type;
 
@@ -265,6 +275,9 @@ PlayerClass.prototype.handleBomb = function() {
 
 			var $this = this;
 	    
+	    	// add bomb collision to player
+	    	this.addCollision( bomb.sprite );
+
 			this.tileSystem.bombs.forEach(function (b) {
 			 	b.addCollision( bomb.sprite );
 			 	bomb.addCollision( b.sprite );
@@ -272,6 +285,9 @@ PlayerClass.prototype.handleBomb = function() {
 
 			for (player in this.players) {
 				bomb.addCollision( this.players[player].sprite );
+
+				this.players[player].addCollision( bomb.sprite );
+
 			}
 
 			bomb.addCollision( this.sprite );
@@ -300,9 +316,6 @@ PlayerClass.prototype.die = function() {
 				return false;
 			}
 		});
-		// reset upgrades
-		this.maxBombs = this.initMaxBombs;
-		this.firePower = this.initFirePower;
 
 		this.lifes--;
 		$.get('maps/classic.txt', reset_play_scene);

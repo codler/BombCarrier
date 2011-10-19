@@ -7,6 +7,7 @@ var BombClass = function(tilePosition, position, timeAlive, firePower) {
 	this.timeAlive = timeAlive || 5;
 	this.position  = tilePosition;
 	this.firePower = firePower || 2;
+	this.steppable  = true;
 
 	this.sprite = new THREE.Sprite( { map: _GAME_.texture.get('bomb'), useScreenCoordinates: false } );
 	this.sprite.map.needsUpdate = true;
