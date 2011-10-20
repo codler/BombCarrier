@@ -279,11 +279,15 @@ function init_scene() {
 					e.originalEvent.dataTransfer.setData('DownloadURL', a.data('downloadurl'));
 				});
 				a.css({
-					'display' : 'inline-block',
-					'-moz-transform' : 'rotate(90deg)',
-					'-webkit-transform' : 'rotate(-90deg)'
+					'display' : 'block'
+					//'-moz-transform' : 'rotate(90deg)',
+					//'-webkit-transform' : 'rotate(-90deg)'
 				});
-				$($this).before(a);
+
+				a.click(function(e) {
+					e.stopPropagation();// e.preventDefault();
+				});
+				$($this).append(a);
 			});	
 		};
 		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="70%"/><br/>Classic</div>')
@@ -292,6 +296,7 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
+				'vertical-align' : 'top',
 				'width' : '40%'
 			})
 			.one('click', play);
@@ -301,6 +306,7 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
+				'vertical-align' : 'top',
 				'width' : '40%'
 
 			})
@@ -311,6 +317,7 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
+				'vertical-align' : 'top',
 				'width' : '40%'
 			})
 			.one('click', play);
@@ -321,14 +328,16 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
+				'vertical-align' : 'top',
 				'width' : '40%'
 			})
 			.one('click', play);
 		var levels = $('<div id="levels"/>').append(level1).append(level2).append(level3).append(level4);
 		
-	/*	save.call(level1, 'classic', 'maps/classic.txt');
+		save.call(level1, 'classic', 'maps/classic.txt');
 		save.call(level2, 'spiral', 'maps/spiral.txt');
-		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');*/
+		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
+		save.call(level4, 'house', 'maps/house.txt');
 		
 		$(this).after(levels);
 	}, {
