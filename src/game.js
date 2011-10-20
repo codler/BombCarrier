@@ -301,7 +301,8 @@ function init_scene() {
 
 	var onlineLobby = new SceneContent();
 	onlineLobby.add(1.4, 'Play online - Lobby', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px lightgreen'
 	});
 
 	
@@ -400,15 +401,19 @@ function init_scene() {
 
 	var help1 = new SceneContent();
 	help1.add(1.4, 'How to play', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
 	});
-	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>');
+	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>', null, {
+		'text-shadow' : '0 0 5px #333'
+	});
 	help1.add(4, 'Main Menu', 'intro');
 	help1.add(4, 'Next Page', 'help2');
 
 	var help2 = new SceneContent();
 	help2.add(1.4, 'Controls', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
 	});
 	help2.add(3, 'Player 1'+
 	'                    '+
@@ -435,14 +440,13 @@ function init_scene() {
 	var help3 = new SceneContent();
 
 	help3.add(1.4, 'Power Ups',null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
 	});
 
-	help3.add(6, '<img src="textures/Star.png" width="5%" />  Will increase your firepower, and making your bombs <br/>able to reach further when exploading. <br/> <br/>' +
+	help3.add(5, '<img src="textures/Star.png" width="5%" />  Will increase your firepower, and making your bombs <br/>able to reach further when exploading. <br/> <br/>' +
 	'<img src="textures/Rock.png" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
-		'color' : '#000',
-		'white-space' : 'pre'
-
+		'text-shadow' : '0 0 5px #333'
 	});
 
 	help3.add(4,"Main Menu",'intro');
