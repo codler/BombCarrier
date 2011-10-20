@@ -200,7 +200,8 @@ TileSystem.prototype.loadMap = function(l) {
 			if (tileType != 0)  {
 				
 				z++; // IMPORTANT, do not move or remove!
-				
+			
+			}
 				// Collision area
 				sprite.boundingMesh = new THREE.Mesh(
 					geometry
@@ -222,6 +223,8 @@ TileSystem.prototype.loadMap = function(l) {
 
 				this.tiles.add( sprite.boundingMesh );
 
+			if (tileType == 0)  {
+				sprite.boundingMesh.position.z -= 10000;
 			}
 
 			sprite.position.set(
@@ -287,6 +290,7 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 		return true;
 	}
 
+
 	
 	if (force || (tileType == 7 && this.tileInfo[ this.level[tileY][tileX].type ].destroyable)) {
 		this.level[tileY][tileX].sprite.map = _GAME_.texture.get( t );
@@ -306,6 +310,7 @@ TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 		this.level[tileY][tileX].type = 9;
 		return true;
 	}
+
 	return false;
 };
 
@@ -348,9 +353,29 @@ TileSystem.prototype.handleBomb = function() {
 		
 		// Remove bomb from scene
 		if ( bomb.expired() ) {
+			// TODO remove properly
+			bomb.sprite.boundingMesh.position.z -= 10000;
 			$this.scene.remove( bomb.animate );	
 			
 		}
+
+		// bomb position
+		var bTilePos = $this.getTilePosition(bomb.sprite.position.x, bomb.sprite.position.y);
+
+		var steppable = false;
+		for(var player in $this.players) {
+			// player position
+			var pos = $this.players[player].sprite.position.clone().addSelf( new THREE.Vector3(0, -20, -0.25) );
+			var pTilePos = $this.getTilePosition(pos.x + $this.tileSize.width / 2, pos.y + 10);
+
+			if (bTilePos.x == pTilePos.x && bTilePos.y == pTilePos.y) {
+				console.log(bomb.steppable);
+				steppable = true;
+				break;
+			}
+		}
+			bomb.steppable = steppable;
+		
 	});
 };
 

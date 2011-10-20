@@ -76,21 +76,23 @@ var loaded = 0,
 		,'button-off.png'
 	],
 	preload_sounds = [
-		'battle4.ogg'
+		'battle4'
 	];
 
-var loaded_images = {};
 // Preload images
+var loaded_images = {};
 for(var image in preload_images) {
 	loaded_images[preload_images[image]] = document.createElement('img');
 	loaded_images[preload_images[image]].src = 'textures/' + preload_images[image] + (( DEBUG ) ? rId : '');
 }
 
 // Preload sounds
+var loaded_sounds = {};
+var sound_file_suffix = (document.createElement('audio').canPlayType('audio/ogg; codecs="vorbis"')) ? '.ogg' : '.m4a'
 for(var sound in preload_sounds) {
-	var audio = document.createElement('audio');
-	audio.src = 'sound/' + preload_sounds[sound];
-	audio.preload = 'auto';
+	loaded_sounds[preload_sounds[sound]] = document.createElement('audio');
+	loaded_sounds[preload_sounds[sound]].src = 'sound/' + preload_sounds[sound] + sound_file_suffix;
+	loaded_sounds[preload_sounds[sound]].preload = 'auto';
 }
 
 // Load all js files
