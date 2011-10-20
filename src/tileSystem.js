@@ -197,7 +197,7 @@ TileSystem.prototype.loadMap = function(l) {
 			
 
 			// Collision on tileType 1,2
-			if (tileType != 0)  {
+			if (tileType != 0 || tileType != 10)  {
 				
 				z++; // IMPORTANT, do not move or remove!
 			
@@ -223,7 +223,7 @@ TileSystem.prototype.loadMap = function(l) {
 
 				this.tiles.add( sprite.boundingMesh );
 
-			if (tileType == 0)  {
+			if (tileType == 0 || tileType == 10)  {
 				sprite.boundingMesh.position.z -= 10000;
 			}
 

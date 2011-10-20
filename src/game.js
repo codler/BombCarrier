@@ -215,11 +215,12 @@ function init_core() {
 function init_scene() {
 	var intro = new SceneContent();
 	intro.add(0.6, 'B<img src="textures/logoBomb.png" style="width:12%;"/>mb', null, {
-		'line-height' : 1
+		'line-height' : 1,
+		'text-shadow' : '0 0 10px #303'
 	});
 	intro.add(0.9, 'Carrier', null, {
-		'color' : '#000',
-		'line-height' : 1
+		'line-height' : 1,
+		'text-shadow' : '0 0 10px #303'
 	});
 	intro.add(1.3, 'Play', 'select-level', {
 		'margin' : '0.2em 0'
