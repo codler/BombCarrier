@@ -62,6 +62,14 @@ var loaded = 0,
 		,'Grass Green.png'
 		,'Grass Blue.png'
 		,'Grass Orange.png' 
+		,'Wood Green.png'
+		,'Wood Blue.png'
+		,'Wood Orange.png'
+		,'Wall Block Tall.png'
+		,'Wood Block.png'
+		,'Window Tall.png'
+		,'Door Tall Closed.png'
+		,'Window-Block.png'
 		
 		// Characters
 		,'Character Horn Girl.png'

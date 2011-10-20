@@ -53,7 +53,14 @@ var textures = {
 	'grass'		   : 'textures/Grass Block.png',
 	'blue-grass'   : 'textures/Grass Blue.png',
 	'green-grass'  : 'textures/Grass Green.png',
-	'orange-grass' : 'textures/Grass Orange.png'
+	'orange-grass' : 'textures/Grass Orange.png',
+	'blue-wood'	   : 'textures/Wood Blue.png',
+	'green-wood'   : 'textures/Wood Green.png',
+	'orange-wood'  : 'textures/Wood Orange.png',
+	'wood'		   : 'textures/Wood Block.png',
+	'wall'		   : 'textures/Wall Block Tall.png',
+	'window'	   : 'textures/Window-Block.png',
+	'door'		   : 'textures/Door Tall Closed.png'
 };
 
 var game_alive = false;
@@ -274,25 +281,50 @@ function init_scene() {
 				$($this).after(a);
 			});	
 		};
-		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="30%"/><br/>Classic</div>')
+		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="70%"/><br/>Classic</div>')
 			.css({
 				'background-image' : 'url("textures/ajax-loader.gif")',
 				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat'
+				'background-repeat' : 'no-repeat',
+				'display' : 'inline-block',
+				'width' : '49%'
 			})
 			.one('click', play);
-		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="30%"/><br/>Spiral</div>')
+		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>Spiral</div>')
 			.css({
 				'background-image' : 'url("textures/ajax-loader.gif")',
 				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat'
-			})
-			.one('click', play);
-		var levels = $('<div id="levels"/>').append(level1).append(level2);
-		
-		save.call(level1, 'classic', 'maps/classic.txt');
-		save.call(level2, 'spiral', 'maps/spiral.txt');
+				'background-repeat' : 'no-repeat',
+				'display' : 'inline-block',
+				'width' : '49%'
 
+			})
+			.one('click', play);
+		var level3 = $('<div tag="a" data-play="maps/GrassyKnoll.txt"><img src="textures/preview_GrassyKnoll.png" width="70%"/><br/>GrassyKnoll</div>')
+			.css({
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat',
+				'display' : 'inline-block',
+				'width' : '49%'
+			})
+			.one('click', play);
+		
+		var level4 = $('<div tag="a" data-play="maps/GrassKnoll.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>GrassyKnoll</div>')
+			.css({
+				'background-image' : 'url("textures/ajax-loader.gif")',
+				'background-position' : 'center center',
+				'background-repeat' : 'no-repeat',
+				'display' : 'inline-block',
+				'width' : '49%'
+			})
+			.one('click', play);
+		var levels = $('<div id="levels"/>').append(level1).append(level2).append(level3).append(level4);
+		
+		/*save.call(level1, 'classic', 'maps/classic.txt');
+		save.call(level2, 'spiral', 'maps/spiral.txt');
+		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
+		*/
 		$(this).after(levels);
 	}, {
 		'color' : '#000'

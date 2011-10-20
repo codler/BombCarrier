@@ -78,6 +78,34 @@ TileSystem.prototype.tileInfo = {
 	15 : {
 		'name'		 : 'orange-grass',
 		'destroyable': true
+	},
+	16 : {
+		'name'		 : 'blue-wood',
+		'destroyable': true
+	},
+	17 :{
+		'name'		 : 'green-wood',
+		'destroyable': true
+	},
+	18 :{
+		'name'		 : 'orange-wood',
+		'destroyable': true
+	},
+	19 :{
+		'name' 		 : 'wood',
+		'destroyable': false
+	},
+	20 : {
+		'name'		 : 'wall',
+		'destroyable': false
+	},
+	21 :{
+		'name' 		 : 'window',
+		'destroyable': false
+	},
+	22 :{
+		'name'		 : 'door',
+		'destroyable': false
 	}
 };
 
@@ -197,7 +225,7 @@ TileSystem.prototype.loadMap = function(l) {
 			
 
 			// Collision on tileType 1,2
-			if (tileType != 0 || tileType != 10)  {
+			if (tileType != 0 || tileType != 10 || tileType != 19)  {
 				
 				z++; // IMPORTANT, do not move or remove!
 			
@@ -223,7 +251,7 @@ TileSystem.prototype.loadMap = function(l) {
 
 				this.tiles.add( sprite.boundingMesh );
 
-			if (tileType == 0 || tileType == 10)  {
+			if (tileType == 0 || tileType == 10 || tileType == 19)  {
 				sprite.boundingMesh.position.z -= 10000;
 			}
 
