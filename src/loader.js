@@ -53,6 +53,15 @@ var loaded = 0,
 		,'Star.png'
 		,'Stone Block Tall.png'
 		,'Water Block.png'
+		,'Grass Block.png'
+		,'Tree Short.png'
+		,'Tree Tall.png'
+		,'Wall Block Tall.png'
+		,'Wall Block.png'
+		,'Wood Block.png'
+		,'Grass Green.png'
+		,'Grass Blue.png'
+		,'Grass Orange.png' 
 		
 		// Characters
 		,'Character Horn Girl.png'

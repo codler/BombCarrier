@@ -54,6 +54,30 @@ TileSystem.prototype.tileInfo = {
 	9 : {
 		'name'		 : 'upgrade-bomb',
 		'destroyable': true
+	},
+	10 : {
+		'name'		 : 'grass',
+		'destroyable': false
+	},
+	11 : {
+		'name'		 : 'tree-big',
+		'destroyable': false
+	},
+	12 : {
+		'name'		 : 'tree-small',
+		'destroyable': false
+	},
+	13 : {
+		'name' 		 : 'blue-grass',
+		'destroyable': true
+	},
+	14 : {
+		'name'		 : 'green-grass',
+		'destroyable': true
+	},
+	15 : {
+		'name'		 : 'orange-grass',
+		'destroyable': true
 	}
 };
 

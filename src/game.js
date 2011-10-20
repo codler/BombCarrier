@@ -47,7 +47,13 @@ var textures = {
 	'explosion3'   : 'textures/explosion3.png',
 	'upgrade-life' : 'textures/Heart.png',
 	'upgrade-power': 'textures/Star.png',
-	'upgrade-bomb' : 'textures/Rock.png'
+	'upgrade-bomb' : 'textures/Rock.png',
+	'tree-small'   : 'textures/Tree Short.png',
+	'tree-big'     : 'textures/Tree Tall.png',
+	'grass'		   : 'textures/Grass Block.png',
+	'blue-grass'   : 'textures/Grass Blue.png',
+	'green-grass'  : 'textures/Grass Green.png',
+	'orange-grass' : 'textures/Grass Orange.png'
 };
 
 var game_alive = false;
