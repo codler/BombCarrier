@@ -91,6 +91,7 @@ BombClass.prototype.checkCollision = function (direction, distance, done) {
 BombClass.prototype.explode = function () {
 	if (this.hasExploded) return;
 	this.hasExploded = true;
+	this.steppable = true;
 
 	this.sprite.map = _GAME_.texture.get('explosion3');
 	this.sprite.scale = new THREE.Vector3(1.3,1.3,1);

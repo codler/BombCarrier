@@ -318,7 +318,8 @@ PlayerClass.prototype.die = function() {
 		});
 
 		this.lifes--;
-		$.get('maps/classic.txt', reset_play_scene);
+		reset_play_scene(this.tileSystem.rawLevel);
+		//$.get('maps/classic.txt', reset_play_scene);
 		return;
 	}
 
