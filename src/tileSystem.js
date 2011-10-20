@@ -7,6 +7,7 @@ var TileSystem = function(x, y) {
 	this.grid   = new THREE.Object3D();
 	this.players = [];
 	this.bombs   = [];
+	this.rawLevel = '';
 };
 
 TileSystem.prototype.tileSize = {
@@ -85,7 +86,8 @@ TileSystem.prototype.tileInfo = {
 l : string
 */
 TileSystem.prototype.loadMap = function(l) {
-
+	this.rawLevel = l;
+	
 	var times = function (s, i) {
 		return (new Array(i+1)).join(s);
 	};
@@ -374,7 +376,10 @@ TileSystem.prototype.handleBomb = function() {
 				break;
 			}
 		}
+
+		if (!bomb.exploded()) {
 			bomb.steppable = steppable;
+		}
 		
 	});
 };

@@ -271,6 +271,11 @@ function init_scene() {
 				a.bind('dragstart', function(e) {
 					e.originalEvent.dataTransfer.setData('DownloadURL', a.data('downloadurl'));
 				});
+				a.css({
+					'display' : 'inline-block',
+					'-moz-transform' : 'rotate(90deg)',
+					'-webkit-transform' : 'rotate(-90deg)'
+				});
 				$($this).after(a);
 			});	
 		};
