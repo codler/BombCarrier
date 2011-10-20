@@ -283,7 +283,7 @@ function init_scene() {
 					'-moz-transform' : 'rotate(90deg)',
 					'-webkit-transform' : 'rotate(-90deg)'
 				});
-				$($this).after(a);
+				$($this).before(a);
 			});	
 		};
 		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="70%"/><br/>Classic</div>')
@@ -292,7 +292,7 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
-				'width' : '49%'
+				'width' : '40%'
 			})
 			.one('click', play);
 		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>Spiral</div>')
@@ -301,35 +301,35 @@ function init_scene() {
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
-				'width' : '49%'
+				'width' : '40%'
 
 			})
 			.one('click', play);
-		var level3 = $('<div tag="a" data-play="maps/GrassyKnoll.txt"><img src="textures/preview_GrassyKnoll.png" width="70%"/><br/>GrassyKnoll</div>')
+		var level3 = $('<div tag="a" data-play="maps/GrassyKnoll.txt"><img src="textures/preview_GrassyKnoll.png" width="70%"/><br/>Grassy Knoll</div>')
 			.css({
 				'background-image' : 'url("textures/ajax-loader.gif")',
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
-				'width' : '49%'
+				'width' : '40%'
 			})
 			.one('click', play);
 		
-		var level4 = $('<div tag="a" data-play="maps/GrassKnoll.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>GrassyKnoll</div>')
+		var level4 = $('<div tag="a" data-play="maps/house.txt"><img src="textures/preview_house.png" width="70%"/><br/>House</div>')
 			.css({
 				'background-image' : 'url("textures/ajax-loader.gif")',
 				'background-position' : 'center center',
 				'background-repeat' : 'no-repeat',
 				'display' : 'inline-block',
-				'width' : '49%'
+				'width' : '40%'
 			})
 			.one('click', play);
 		var levels = $('<div id="levels"/>').append(level1).append(level2).append(level3).append(level4);
 		
-		/*save.call(level1, 'classic', 'maps/classic.txt');
+	/*	save.call(level1, 'classic', 'maps/classic.txt');
 		save.call(level2, 'spiral', 'maps/spiral.txt');
-		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
-		*/
+		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');*/
+		
 		$(this).after(levels);
 	}, {
 		'color' : '#000'
