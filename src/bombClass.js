@@ -66,7 +66,6 @@ BombClass.prototype.checkCollision = function (direction, distance, done) {
 			}
 		} else if(c.mesh.gameType == 'player') {
 			if (!done.player) {
-				console.log('kill');
 				c.mesh.playerClass.die();
 				done.player = true;
 			}

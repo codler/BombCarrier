@@ -8,17 +8,14 @@ var loaded = 0,
 		,'libs/jquery-1.6.4.min.js'
 		,'libs/jquery.fittext.js'
 
-		// Load fonts
-		,'fonts/helvetiker_regular.typeface.js'
-
 		// Load game
 		,'src/game.js'
-		,'src/playerClass.js'
-		,'src/timeClass.js'
 		,'src/bombClass.js'
+		,'src/playerClass.js'
 		,'src/sceneClass.js'
-		,'src/tileSystem.js'
 		,'src/textureClass.js'
+		,'src/tileSystem.js'
+		,'src/timeClass.js'
 
 		,'http://zencodez.net:8080/socket.io/socket.io.js'
 	],
@@ -35,41 +32,40 @@ var loaded = 0,
 		,'W.png'
 
 		// Backgrounds
-		,'diaglog-box.png'
-		,'paper-dialog.png'
+		,'bg-blue.png'
+		,'bg-paper.png'
+		,'bg-yellow.png'
 
 		// Effects
-		,'Explosion.png'
 		,'explosion2.png'
 		,'explosion3.png'
 
 		// Tiles
 		,'Dirt Block.png'
+		,'Door Tall Closed.png'
 		,'Gem Blue.png'
 		,'Gem Green.png'
 		,'Gem Orange.png'
+		,'Grass Block.png'
+		,'Grass Blue.png'
+		,'Grass Green.png'
+		,'Grass Orange.png' 
 		,'Heart.png'
 		,'Rock.png'
 		,'Star.png'
 		,'Stone Block Tall.png'
-		,'Water Block.png'
-		,'Grass Block.png'
 		,'Tree Short.png'
 		,'Tree Tall.png'
 		,'Wall Block Tall.png'
 		,'Wall Block.png'
-		,'Wood Block.png'
-		,'Grass Green.png'
-		,'Grass Blue.png'
-		,'Grass Orange.png' 
-		,'Wood Green.png'
-		,'Wood Blue.png'
-		,'Wood Orange.png'
+		,'Water Block.png'
 		,'Wall Block Tall.png'
 		,'Wood Block.png'
+		,'Wood Blue.png'
+		,'Wood Green.png'
+		,'Wood Orange.png'
+		,'Window Block.png'
 		,'Window Tall.png'
-		,'Door Tall Closed.png'
-		,'Window-Block.png'
 		
 		// Characters
 		,'Character Horn Girl.png'
@@ -81,7 +77,6 @@ var loaded = 0,
 		,'bomb.png'
 		,'logoBomb.png'
 
-		,'button-off.png'
 	],
 	preload_sounds = [
 		'battle4'

@@ -1,16 +1,14 @@
 
-var _GAME_ = _GAME_ || {};
-
 window.URL = window.URL || window.webkitURL;
 window.BlobBuilder = window.BlobBuilder || 
 					 window.WebKitBlobBuilder ||
                		 window.MozBlobBuilder;
 
-// == Begin Constants ==
+var _GAME_ = _GAME_ || {};
+
 var SCREEN_WIDTH  = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 
-// == End Constants ==
 var container, stats;
 
 var camera, scene, renderer;
@@ -37,35 +35,35 @@ var tileSystem;
 var background_sound;
 
 var textures = {
-	'bg'           : 'textures/paper-dialog.png',
-	'bg2'          : 'textures/diaglog-box.png',
-	'map-a'        : 'textures/Dirt Block.png',
-	'map-b'        : 'textures/Stone Block Tall.png',
-	'map-c'        : 'textures/Water Block.png',
-	'blue-block'   : 'textures/Gem Blue.png',
-	'green-block'  : 'textures/Gem Green.png',
-	'yellow-block' : 'textures/Gem Orange.png',
-	'char-1'       : 'textures/Character Princess Girl.png',
-	'bomb'         : 'textures/bomb.png',
-	'explosion'    : 'textures/Explosion.png',
-	'explosion2'   : 'textures/explosion2.png',
-	'explosion3'   : 'textures/explosion3.png',
-	'upgrade-life' : 'textures/Heart.png',
-	'upgrade-power': 'textures/Star.png',
-	'upgrade-bomb' : 'textures/Rock.png',
-	'tree-small'   : 'textures/Tree Short.png',
-	'tree-big'     : 'textures/Tree Tall.png',
-	'grass'		   : 'textures/Grass Block.png',
-	'blue-grass'   : 'textures/Grass Blue.png',
-	'green-grass'  : 'textures/Grass Green.png',
-	'orange-grass' : 'textures/Grass Orange.png',
-	'blue-wood'	   : 'textures/Wood Blue.png',
-	'green-wood'   : 'textures/Wood Green.png',
-	'orange-wood'  : 'textures/Wood Orange.png',
-	'wood'		   : 'textures/Wood Block.png',
-	'wall'		   : 'textures/Wall Block Tall.png',
-	'window'	   : 'textures/Window-Block.png',
-	'door'		   : 'textures/Door Tall Closed.png'
+	'bg-paper'     : 'bg-paper.png',
+	'bg-blue'      : 'bg-blue.png',
+	'bg-yellow'    : 'bg-yellow.png',
+	'map-a'        : 'Dirt Block.png',
+	'map-b'        : 'Stone Block Tall.png',
+	'map-c'        : 'Water Block.png',
+	'blue-block'   : 'Gem Blue.png',
+	'green-block'  : 'Gem Green.png',
+	'yellow-block' : 'Gem Orange.png',
+	'char-1'       : 'Character Princess Girl.png',
+	'bomb'         : 'bomb.png',
+	'explosion2'   : 'explosion2.png',
+	'explosion3'   : 'explosion3.png',
+	'upgrade-life' : 'Heart.png',
+	'upgrade-power': 'Star.png',
+	'upgrade-bomb' : 'Rock.png',
+	'tree-small'   : 'Tree Short.png',
+	'tree-big'     : 'Tree Tall.png',
+	'grass'		   : 'Grass Block.png',
+	'blue-grass'   : 'Grass Blue.png',
+	'green-grass'  : 'Grass Green.png',
+	'orange-grass' : 'Grass Orange.png',
+	'blue-wood'	   : 'Wood Blue.png',
+	'green-wood'   : 'Wood Green.png',
+	'orange-wood'  : 'Wood Orange.png',
+	'wood'		   : 'Wood Block.png',
+	'wall'		   : 'Wall Block Tall.png',
+	'window'	   : 'Window Block.png',
+	'door'		   : 'Door Tall Closed.png'
 };
 
 var game_alive = false;
@@ -86,6 +84,8 @@ function init_game() {
 		loaded_images['a'].src = 'test/top.png';
 		loaded_images['b'].src = 'test/Gem Green.png';
 	}
+
+	_GAME_.texture.preload(textures);
 }
 
 // Initialize core - canvas, camera, scene, debuginfo
@@ -219,8 +219,6 @@ function init_core() {
 	stats.domElement.style.top = '0px';
 	stats.domElement.style.zIndex = 1000;
 	container.append( stats.domElement );
-
-	_GAME_.texture.preload(textures);
 }
 
 
@@ -268,9 +266,6 @@ function init_scene() {
 			reader.readAsText(files[0]);
 		});
 		input.click();
-		if (navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1 || $.browser.msie) {
-			input.change();
-		}
 	});
 	intro.add(4, 'How to play', 'help1');
 
@@ -283,9 +278,9 @@ function init_scene() {
 			sceneHandler.change('play', $(this).data('play'));
 		};
 
-		var save = function(name, map) {
+		var save = function( name ) {
 			var $this = this;
-			$.get(map, function(data) {
+			$.get('maps/' + name + '.txt', function(data) {
 				var a = download_level(name, data);
 				a.text('save');
 				a.bind('dragstart', function(e) {
@@ -293,65 +288,46 @@ function init_scene() {
 				});
 				a.css({
 					'display' : 'block'
-					//'-moz-transform' : 'rotate(90deg)',
-					//'-webkit-transform' : 'rotate(-90deg)'
 				});
 
 				a.click(function(e) {
-					e.stopPropagation();// e.preventDefault();
+					e.stopPropagation();
 				});
 				$($this).append(a);
 			});	
 		};
+		var css = {
+			'background-image' : 'url("textures/ajax-loader.gif")',
+			'background-position' : 'center center',
+			'background-repeat' : 'no-repeat',
+			'display' : 'inline-block',
+			'vertical-align' : 'top',
+			'width' : '40%'
+		};
 		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="70%"/><br/>Classic</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat',
-				'display' : 'inline-block',
-				'vertical-align' : 'top',
-				'width' : '40%'
-			})
+			.css(css)
 			.one('click', play);
 		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>Spiral</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat',
-				'display' : 'inline-block',
-				'vertical-align' : 'top',
-				'width' : '40%'
-
-			})
+			.css(css)
 			.one('click', play);
 		var level3 = $('<div tag="a" data-play="maps/GrassyKnoll.txt"><img src="textures/preview_GrassyKnoll.png" width="70%"/><br/>Grassy Knoll</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat',
-				'display' : 'inline-block',
-				'vertical-align' : 'top',
-				'width' : '40%'
-			})
+			.css(css)
 			.one('click', play);
 		
 		var level4 = $('<div tag="a" data-play="maps/house.txt"><img src="textures/preview_house.png" width="70%"/><br/>House</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat',
-				'display' : 'inline-block',
-				'vertical-align' : 'top',
-				'width' : '40%'
-			})
+			.css(css)
 			.one('click', play);
-		var levels = $('<div id="levels"/>').append(level1).append(level2).append(level3).append(level4);
+		var levels = $('<div id="levels"/>')
+			.append(level1)
+			.append(level2)
+			.append(level3)
+			.append(level4);
 		
 		if (window.BlobBuilder) {
-			save.call(level1, 'classic', 'maps/classic.txt');
-			save.call(level2, 'spiral', 'maps/spiral.txt');
-			save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
-			save.call(level4, 'house', 'maps/house.txt');
+			save.call(level1, 'classic');
+			save.call(level2, 'spiral');
+			save.call(level3, 'GrassyKnoll');
+			save.call(level4, 'house');
 		} 
 		
 		
@@ -366,8 +342,6 @@ function init_scene() {
 		'color' : '#000',
 		'text-shadow' : '0px 0px 7px lightgreen'
 	});
-
-	
 
 	onlineLobby.add(4, 'Connect', function () {
 		var $this = this;
@@ -413,7 +387,7 @@ function init_scene() {
 				}
 
 			}
-			console.log(users);
+			//console.log(users);
 		});
 
 		socket.on('play', function (clientId, playingWith) {
@@ -506,8 +480,8 @@ function init_scene() {
 		'text-shadow' : '0px 0px 7px yellow'
 	});
 
-	help3.add(5, '<img src="textures/Star.png" width="5%" />  Will increase your firepower and will make your bombs <br/>able to reach further when exploading. <br/> <br/>' +
-	'<img src="textures/Rock.png" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
+	help3.add(5, '<img src="' + _GAME_.texture.url('upgrade-power') + '" width="5%" />  Will increase your firepower and will make your bombs <br/>able to reach further when exploading. <br/> <br/>' +
+	'<img src="' + _GAME_.texture.url('upgrade-bomb') + '" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
 		'text-shadow' : '0 0 5px #333'
 	});
 
@@ -553,8 +527,9 @@ function play_scene(raw_map) {
 	background_sound = loadAudio('battle4', background_sound);
 
 	$('body').css({
-		'background-image' : 'url(textures/paper-dialog.png)',
-		'background-size' : '50% 50%'
+		'background-image' : 'url(' + _GAME_.texture.url('bg-paper') + ')',
+		'background-position' : 'center center',
+		'background-size' : '200% 200%'
 	});
 	fightTime = new TimeClass();
 	init(raw_map);
@@ -606,17 +581,15 @@ function score_bar(){
 			'z-index' : 1001
 		});
 
-
 	var bar = $('<div id="score"></div>')
 		.css({
-			'background-image' : 'url(textures/button-off.png)',
+			'background-image' : 'url(' + _GAME_.texture.url('bg-yellow') + ')',
 			'background-size' : '100% 100%',
 			'width' : '20%',
 			'margin' : '0 auto',		
 			'padding' : 0
 
 		});
-
 
 	var players = $('<h1>')
 		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">' + (player1.lifes+1) + '</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">' + (player2.lifes+1) + '</span> ')
@@ -629,7 +602,7 @@ function score_bar(){
 	var bar2 = $('<div id="timer"></div>')
 		.html('Time left: <span id="time-left"></span>')
 		.css({
-			'background-image' : 'url(textures/button-off.png)',
+			'background-image' : 'url(' + _GAME_.texture.url('bg-yellow') + ')',
 			'background-size' : '100% 100%',
 			'width' : '20%',
 			'margin' : '0 auto',		
@@ -665,8 +638,6 @@ Return DOM element
 */
 function loadAudio( name, audio )
 {
-    //audio = audio || new Audio();
-
     audio = audio || $('<audio>', {
     	'preload':'auto'
     }).appendTo('body')[0];
@@ -679,12 +650,8 @@ function loadAudio( name, audio )
 }
 
 function load_background(bg) {
-	bg = bg || 'bg';
-	/*
-	var bg = new THREE.Sprite({ 
-		map: _GAME_.texture.get( bg ),
-		useScreenCoordinates: false 
-	});*/
+	bg = bg || 'bg-paper';
+
 	// change 1010, 820
 	var bg = new THREE.Mesh( new THREE.PlaneGeometry( 1010, 820 ), new THREE.MeshBasicMaterial( { 
 					map: _GAME_.texture.get( bg ),
@@ -750,61 +717,7 @@ function init(raw_map) {
 	bombs = new THREE.Object3D();
 	scene.add( bombs );
 
-
-
-	// Inline text
-	/*var text3d = new THREE.TextGeometry( 'testar text', {
-
-					size: 80,
-					height: 20,
-					curveSegments: 2,
-					font: "helvetiker"
-
-				});
-
-				text3d.computeBoundingBox();
-				var centerOffset = -0.5 * ( text3d.boundingBox.x[ 1 ] - text3d.boundingBox.x[ 0 ] );
-
-                var textMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: false } );
-                text = new THREE.Mesh( text3d, textMaterial );
-
-                text.doubleSided = false;
-
-                text.position.set( 0, 100, 0 );
-
-				text.overdraw = true;
-
-				parent = new THREE.Object3D();
-                parent.addChild( text );
-
-				scene.addObject( parent );*/
-
-
-	//THREE.Collisions.colliders.push(spriteChar2);
-
-	// add 2d-sprites
-	/*
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 100, 100, 0 );
-	sprite.opacity = 0.25;
-	scene.addChild( sprite );
-
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 150, 150, 2 );
-	sprite.opacity = 0.5;
-	scene.addChild( sprite );
-
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 200, 200, 3 );
-	sprite.opacity = 1;
-	scene.addChild( sprite );
-	*/
-
-	
-
 }
-
-
 
 function animate() {
 	if (!game_alive) return;
@@ -816,28 +729,10 @@ function animate() {
 
 }
 
-
 function render() {
 	if (_GAME_.branch_3D) {
 		player1.sprite.lookAt(camera.position);
 	}
-	/*
-	for ( var c = 0; c < group.children.length; c++ ) {
-
-		var sprite = group.children[ c ];
-		var scale = Math.sin( time + sprite.position.x * 0.01 ) * 0.3 + 1.0;
-
-		sprite.rotation += 0.1 * ( c / group.children.length );
-		sprite.scale.set( scale, scale, 1.0 );
-		sprite.opacity = Math.sin( time + sprite.position.x * 0.01 ) * 0.4 + 0.6;
-	}
-
-	group.rotation.x = time * 0.5;
-	group.rotation.y = time * 0.75;
-	group.rotation.z = time * 1.0;
-
-	time += 0.02;
-	*/
 
 	var gameTime = 180;
 
@@ -847,17 +742,13 @@ function render() {
 			background_sound.volume = Math.min(1, Math.max(0,(gameTime-fightTime.getElapse()) / (4 / 0.5)));
 		}
 
-		//var angle = Math.min(Math.PI * 2, Math.max(0,(18-fightTime.getElapse()) / (4 / (Math.PI * 2)) ));
-
 		var angle = (fightTime.getElapse('ms') / Math.PI * 2) % (Math.PI * 2);
 		tileSystem.tiles.position.x = tileSystem.x + (tileSystem.sizeWidth-1) * tileSystem.tileSize.width / 2 + Math.cos(angle)*3;
 		tileSystem.tiles.position.y = tileSystem.y + (tileSystem.sizeHeight+0.5) * tileSystem.tileSize.height / 2 + Math.sin(angle)*3;
 	}
 
 	// switch to game over scene
-	fightTime.elapse(1,gameTime, function() { 
-		console.log('Time over');
-
+	fightTime.elapse(1,gameTime, function() {
 		sceneHandler.change('gameOver');
 	});
 	$('#time-left').text(gameTime - fightTime.getElapse().toFixed());
@@ -888,9 +779,6 @@ function render() {
 
 		debugElement.html (s.join('<br/>'));
 	}	
-
-	//player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
-	//player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 
 	if ( ! oldTime ) oldTime = new Date().getTime();
 
@@ -936,19 +824,12 @@ function onDocumentMouseMove( event ) {
 
 function onKeyDown(a) {
     var a = a.keyCode;
-    /*
-    if (a in keyMap) {
-    	keyPressed[keyMap[a]] = true;
-    }*/
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = true;
-
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
-
-
     }
 
     if (remote) {
@@ -958,10 +839,6 @@ function onKeyDown(a) {
 }
 function onKeyUp(a) {
     a = a.keyCode;
-    /*
-    if (a in keyMap) {
-    	keyPressed[keyMap[a]] = false;
-    }*/
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = false;
@@ -999,8 +876,6 @@ function download_level( name, text ) {
 	// Currently safari doesnt support
 	if (!window.BlobBuilder) return $('<a>');
 
-
-
     var bb = new BlobBuilder();
     bb.append( text+"" );
 
@@ -1020,5 +895,3 @@ function download_level( name, text ) {
 	});*/
 	return a;
 }
-
-

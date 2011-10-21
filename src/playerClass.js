@@ -24,7 +24,7 @@ var PlayerClass = function( texture, position ) {
 
 	if (_GAME_.branch_3D) {
 		this.sprite = new THREE.Mesh( new THREE.PlaneGeometry( 101, 82 ), new THREE.MeshBasicMaterial( { 
-						map: THREE.ImageUtils.loadTexture('textures/Character Princess Girl.png'),
+						map: _GAME_.texture.get('char-1'),
 						color: 0xffffff,
 						transparent: true } ) );
 		this.sprite.rotation.x = 90 * ( Math.PI / 180 );
@@ -50,7 +50,6 @@ var PlayerClass = function( texture, position ) {
 	
 	this.sprite.boundingMesh.playerClass = this;
 };
-//PlayerClass.prototype.constructor = PlayerClass;
 
 PlayerClass.prototype.reset = function() {
 	// reset upgrades
@@ -257,7 +256,7 @@ PlayerClass.prototype.handleBomb = function() {
 	if (this.keyPressed.bomb && availableBombs < this.maxBombs) {
 		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -20, -0.25) );
 		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
-		console.log([tilePos.x,tilePos.y]);
+		//console.log([tilePos.x,tilePos.y]);
 
 		// Check bomb isnt on same tile
 		if (this.tileSystem.bombs.every(function (bomb) {
@@ -311,7 +310,6 @@ PlayerClass.prototype.die = function() {
 	if (this.lifes) {
 		$('.player-score').each(function (i,e) {
 			if ($(e).data('id') == $this.id) {
-				//$(e).text(parseInt($(e).text())+1);
 				$(e).text($this.lifes);
 				return false;
 			}
@@ -319,7 +317,6 @@ PlayerClass.prototype.die = function() {
 
 		this.lifes--;
 		reset_play_scene(this.tileSystem.rawLevel);
-		//$.get('maps/classic.txt', reset_play_scene);
 		return;
 	}
 

@@ -1,5 +1,6 @@
 var SceneClass = function () {
 	var $this = this;
+	this.defaultBackground = _GAME_.texture.url('bg-blue');
 	// Stores all sceneContent
 	this.scenes = {};
 
@@ -31,8 +32,6 @@ var SceneClass = function () {
 	fixAspectRatio();
 	$(window).resize(fixAspectRatio);
 };
-
-SceneClass.prototype.defaultBackground = 'textures/diaglog-box.png';
 
 SceneClass.prototype.add = function(name, sceneContent, callback) {
 	this.scenes[name] = {

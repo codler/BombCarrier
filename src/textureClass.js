@@ -1,6 +1,7 @@
-var TextureClass = function() {
+var TextureClass = function( path ) {
 	this.loaded = {};
-	this.loadedSrc = {};
+	this.URLs = {};
+	this.path = path || 'textures/';
 }
 
 TextureClass.prototype.preload = function( sources ) {
@@ -18,19 +19,20 @@ TextureClass.prototype.get = function( name ) {
 	return this.loaded[name];
 }
 
-TextureClass.prototype.getSrc = function( name ) {
-	if (!(name in this.loaded)) {
+TextureClass.prototype.url = function( name ) {
+	if (!(name in this.URLs)) {
 		log('Texture \'' + name + '\' was not found');
 		return;
 	}
-	return this.loadedSrc[name];
+	return this.path + this.URLs[name];
 }
 
 TextureClass.prototype.set = function( name, src ) {
 	if (name in this.loaded) {
 		log('Texture \'' + name + '\' was overridden');
 	}
-	return this.loaded[name] = this.loadedSrc[name] = THREE.ImageUtils.loadTexture(src + (( DEBUG ) ? rId : ''));
+	this.URLs[name] = src;
+	return this.loaded[name] = THREE.ImageUtils.loadTexture(this.path + src + (( DEBUG ) ? rId : ''));
 }
 
 TextureClass.prototype.has = function( name ) {

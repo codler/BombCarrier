@@ -306,7 +306,7 @@ TileSystem.prototype.loadMap = function(l) {
 TileSystem.prototype.changeTile = function( tileX, tileY, tileType, force) {
 	force = force || false;
 	var t = this.tileInfo[ tileType ].name;
-	console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
+	//console.log(this.tileInfo[ this.level[tileY][tileX].type ].name);
 
 	// Need refactor
 
@@ -417,6 +417,4 @@ TileSystem.prototype.gc = function() {
 	this.bombs = this.bombs.filter(function (bomb) {
 		return !bomb.expired();
 	});
-	//index = array.indexOf(item);
-	//array.splice(index, 1);
 };
