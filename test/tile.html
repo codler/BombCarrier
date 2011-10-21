@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>tile</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="../libs/Three.js"></script>
+
+		<script src="../libs/RequestAnimationFrame.js"></script>
+		<script src="../libs/Stats.js"></script>
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, renderer;
+
+			var cube, plane, group, sprite;
+
+			var targetRotation = 0;
+			var targetRotationOnMouseDown = 0;
+
+			var mouseX = 0;
+			var mouseXOnMouseDown = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '10px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = 'Drag to spin the cube';
+				container.appendChild( info );
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera.position.y = -700;
+				camera.position.z = 300;
+				camera.lookAt(new THREE.Vector3(0,0,0));
+
+				scene = new THREE.Scene();
+
+				// Cube
+
+				var materials = [];
+
+				materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front.png' ) } ) ] );
+				materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front.png' ) } ) ] );
+				materials.push( [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) ] );
+				materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front.png' ) } ) ] );
+				materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'top.png' ) } ) ] );
+				materials.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'top.png' ) } ) ] );
+				
+
+				var materials2 = [];
+
+				materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front2.png' ) } ) ] );
+				materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front2.png' ) } ) ] );
+				materials2.push( [ new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) ] );
+				materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'front2.png' ) } ) ] );
+				materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'top2.png' ) } ) ] );
+				materials2.push( [ new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'top2.png' ) } ) ] );
+
+				// middle
+				cube = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 39, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+				//cube.position.y = 150;
+				//cube.rotation.x = -0.5;
+				cube.overdraw = true;
+
+				group = new THREE.Object3D();
+
+				group.add( cube );
+
+				// right
+				var cube2 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 39, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+				cube2.position.x += 101;
+				//cube2.rotation.x = -0.5;
+				group.add( cube2 );
+
+				// left down
+				var cube3 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 39, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+				cube3.position.x -= 101;
+				cube3.position.y -= 82;
+				//cube3.rotation.x = -0.5;
+				group.add( cube3 );
+
+				// left
+				var cube4 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 78, 1, 1, 1, materials2 ), new THREE.MeshFaceMaterial() );
+				cube4.position.z += 39 / 2;
+				cube4.position.x -= 101;
+				//cube4.position.y += 82;
+				//cube4.rotation.x = -0.5;
+				group.add( cube4 );
+
+				// right down
+				var cube5 = new THREE.Mesh( new THREE.CubeGeometry( 101, 82, 78, 1, 1, 1, materials2 ), new THREE.MeshFaceMaterial() );
+				cube5.position.z += 39 / 2;
+				cube5.position.x += 101;
+				cube5.position.y -= 82;
+				group.add( cube5 );
+
+
+				sprite = new THREE.Sprite( { 
+					map: '../textures/Character Princess Girl.png'
+					,useScreenCoordinates: false 
+				} );
+
+				sprite.position = new THREE.Vector3(-101,-82,78);
+				sprite.scale.y = 1.5;
+				//scene.add( sprite );
+				group.add( sprite );
+
+
+				group.position.x -= 100;
+				group.position.y -= 300;
+
+				scene.add( group );
+
+				// Plane
+
+				plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshBasicMaterial( { 
+					map: THREE.ImageUtils.loadTexture('../textures/Character Princess Girl.png'),
+					color: 0xffffff } ) );
+				plane.rotation.x = 90 * ( Math.PI / 180 ) / 2;
+
+				plane.overdraw = true;
+				//plane.position.y += 300;
+				//plane.position.z += 300;
+				group.add( plane );
+				//scene.add( plane );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+			}
+
+			//
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+
+				mouseXOnMouseDown = event.clientX - windowHalfX;
+				targetRotationOnMouseDown = targetRotation;
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+
+				targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+			}
+
+			function onDocumentMouseOut( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+			}
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotationOnMouseDown = targetRotation;
+
+				}
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.05;
+
+				}
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				plane.rotation.z = group.rotation.z += ( targetRotation - group.rotation.y ) * 0.05;
+				//sprite.rotation = -group.rotation.y;
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>

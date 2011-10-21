@@ -1,10 +1,14 @@
 
+window.URL = window.URL || window.webkitURL;
+window.BlobBuilder = window.BlobBuilder || 
+					 window.WebKitBlobBuilder ||
+               		 window.MozBlobBuilder;
 
-// == Begin Constants ==
+var _GAME_ = _GAME_ || {};
+
 var SCREEN_WIDTH  = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 
-// == End Constants ==
 var container, stats;
 
 var camera, scene, renderer;
@@ -30,24 +34,37 @@ var tileSystem;
 
 var background_sound;
 
-var texture = {
-	'map-a'        : 'textures/Dirt Block.png',
-	'map-b'        : 'textures/Stone Block Tall.png',
-	'map-c'        : 'textures/Water Block.png',
-	'blue-block'   : 'textures/Gem Blue.png',
-	'green-block'  : 'textures/Gem Green.png',
-	'yellow-block' : 'textures/Gem Orange.png',
-	'char-1'       : 'textures/Character Princess Girl.png',
-	'bomb'         : 'textures/bomb.png',
-	'explosion'    : 'textures/Explosion.png',
-	'explosion2'   : 'textures/explosion2.png',
-	'explosion3'   : 'textures/explosion3.png',
-	'upgrade-life' : 'textures/Heart.png',
-	'upgrade-power': 'textures/Star.png',
-	'upgrade-bomb' : 'textures/Rock.png'
+var textures = {
+	'bg-paper'     : 'bg-paper.png',
+	'bg-blue'      : 'bg-blue.png',
+	'bg-yellow'    : 'bg-yellow.png',
+	'map-a'        : 'Dirt Block.png',
+	'map-b'        : 'Stone Block Tall.png',
+	'map-c'        : 'Water Block.png',
+	'blue-block'   : 'Gem Blue.png',
+	'green-block'  : 'Gem Green.png',
+	'yellow-block' : 'Gem Orange.png',
+	'char-1'       : 'Character Princess Girl.png',
+	'bomb'         : 'bomb.png',
+	'explosion2'   : 'explosion2.png',
+	'explosion3'   : 'explosion3.png',
+	'upgrade-life' : 'Heart.png',
+	'upgrade-power': 'Star.png',
+	'upgrade-bomb' : 'Rock.png',
+	'tree-small'   : 'Tree Short.png',
+	'tree-big'     : 'Tree Tall.png',
+	'grass'		   : 'Grass Block.png',
+	'blue-grass'   : 'Grass Blue.png',
+	'green-grass'  : 'Grass Green.png',
+	'orange-grass' : 'Grass Orange.png',
+	'blue-wood'	   : 'Wood Blue.png',
+	'green-wood'   : 'Wood Green.png',
+	'orange-wood'  : 'Wood Orange.png',
+	'wood'		   : 'Wood Block.png',
+	'wall'		   : 'Wall Block Tall.png',
+	'window'	   : 'Window Block.png',
+	'door'		   : 'Door Tall Closed.png'
 };
-
-var loaded_texture = {};
 
 var game_alive = false;
 
@@ -56,6 +73,20 @@ var sceneHandler;
 var socket;
 var remote = 0;
 
+function init_game() {
+	_GAME_.texture = new TextureClass();
+	_GAME_.branch_3D = false;
+
+	if (_GAME_.branch_3D) {
+		loaded_images['a'] = document.createElement('img');
+		loaded_images['b'] = document.createElement('img');
+
+		loaded_images['a'].src = 'test/top.png';
+		loaded_images['b'].src = 'test/Gem Green.png';
+	}
+
+	_GAME_.texture.preload(textures);
+}
 
 // Initialize core - canvas, camera, scene, debuginfo
 function init_core() {
@@ -72,6 +103,11 @@ function init_core() {
 		10000 							// Far
 	);
 	camera.position.z = 1000;
+	if (_GAME_.branch_3D) {
+		camera.position.y = -600;
+		camera.position.z = 600;
+	}
+	camera.lookAt( new THREE.Vector3(0,0,0) );
 
 	loader = new THREE.Loader( true );
 
@@ -79,7 +115,7 @@ function init_core() {
 
 	// renderer
 	renderer = new THREE.WebGLRenderer();
-	renderer.setClearColorHex( 0x000000, 1 );
+	//renderer.setClearColorHex( 0x000000, 1 );
 	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
 	container.append( renderer.domElement );
@@ -119,8 +155,10 @@ function init_core() {
 			'top' : 0,
 			'z-index' : 1001
 		});
-		//	container.append( debugElement );
-
+		if (location.hash == '#debug') {
+			container.append( debugElement );
+			
+		}
 	}
 
 	// Sound on/off
@@ -155,6 +193,9 @@ function init_core() {
 		e.stopPropagation(); e.preventDefault();
 	}).bind('drop', function(e) {
 		e.stopPropagation(); e.preventDefault();
+
+		if (!window.FileReader) return;
+
 		var files = e.originalEvent.dataTransfer.files;
 		var reader = new FileReader();
 
@@ -178,32 +219,34 @@ function init_core() {
 	stats.domElement.style.top = '0px';
 	stats.domElement.style.zIndex = 1000;
 	container.append( stats.domElement );
-
-	preload_texture();
 }
 
-function preload_texture() {
-	for(var t in texture) {
-		loaded_texture[t] = THREE.ImageUtils.loadTexture(texture[t]);
-	}
-}
+
+
+
 
 function init_scene() {
 	var intro = new SceneContent();
 	intro.add(0.6, 'B<img src="textures/logoBomb.png" style="width:12%;"/>mb', null, {
-		'line-height' : 1
+		'line-height' : 1,
+		'text-shadow' : '0 0 10px #303'
 	});
 	intro.add(0.9, 'Carrier', null, {
-		'color' : '#000',
-		'line-height' : 1
+		'line-height' : 1,
+		'text-shadow' : '0 0 10px #303'
 	});
 	intro.add(1.3, 'Play', 'select-level', {
 		'margin' : '0.2em 0'
 	});
 	intro.add(4, 'Play online', 'online-lobby');
+
 	intro.add(4, 'Load level', function () {
 		var input = $('<input type="file"/>').css('opacity', 0).appendTo('body');
 		input.change(function () {
+			if (!window.FileReader) {
+				alert('Your browser doesn\'t support this feature!');
+				return;
+			}
 			if (!this.files.length) {
 				return false;
 			}
@@ -223,9 +266,6 @@ function init_scene() {
 			reader.readAsText(files[0]);
 		});
 		input.click();
-		if (navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1 || $.browser.msie) {
-			input.change();
-		}
 	});
 	intro.add(4, 'How to play', 'help1');
 
@@ -238,36 +278,59 @@ function init_scene() {
 			sceneHandler.change('play', $(this).data('play'));
 		};
 
-		var save = function(name, map) {
+		var save = function( name ) {
 			var $this = this;
-			$.get(map, function(data) {
+			$.get('maps/' + name + '.txt', function(data) {
 				var a = download_level(name, data);
 				a.text('save');
 				a.bind('dragstart', function(e) {
 					e.originalEvent.dataTransfer.setData('DownloadURL', a.data('downloadurl'));
 				});
-				$($this).after(a);
+				a.css({
+					'display' : 'block'
+				});
+
+				a.click(function(e) {
+					e.stopPropagation();
+				});
+				$($this).append(a);
 			});	
 		};
-		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="30%"/><br/>Classic</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat'
-			})
+		var css = {
+			'background-image' : 'url("textures/ajax-loader.gif")',
+			'background-position' : 'center center',
+			'background-repeat' : 'no-repeat',
+			'display' : 'inline-block',
+			'vertical-align' : 'top',
+			'width' : '40%'
+		};
+		var level1 = $('<div tag="a" data-play="maps/classic.txt"><img src="textures/preview_classic.png" width="70%"/><br/>Classic</div>')
+			.css(css)
 			.one('click', play);
-		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="30%"/><br/>Spiral</div>')
-			.css({
-				'background-image' : 'url("textures/ajax-loader.gif")',
-				'background-position' : 'center center',
-				'background-repeat' : 'no-repeat'
-			})
+		var level2 = $('<div tag="a" data-play="maps/spiral.txt"><img src="textures/preview_spiral.png" width="70%"/><br/>Spiral</div>')
+			.css(css)
 			.one('click', play);
-		var levels = $('<div id="levels"/>').append(level1).append(level2);
+		var level3 = $('<div tag="a" data-play="maps/GrassyKnoll.txt"><img src="textures/preview_GrassyKnoll.png" width="70%"/><br/>Grassy Knoll</div>')
+			.css(css)
+			.one('click', play);
 		
-		save.call(level1, 'classic', 'maps/classic.txt');
-		save.call(level2, 'spiral', 'maps/spiral.txt');
-
+		var level4 = $('<div tag="a" data-play="maps/house.txt"><img src="textures/preview_house.png" width="70%"/><br/>House</div>')
+			.css(css)
+			.one('click', play);
+		var levels = $('<div id="levels"/>')
+			.append(level1)
+			.append(level2)
+			.append(level3)
+			.append(level4);
+		
+		if (window.BlobBuilder) {
+			save.call(level1, 'classic');
+			save.call(level2, 'spiral');
+			save.call(level3, 'GrassyKnoll');
+			save.call(level4, 'house');
+		} 
+		
+		
 		$(this).after(levels);
 	}, {
 		'color' : '#000'
@@ -276,10 +339,9 @@ function init_scene() {
 
 	var onlineLobby = new SceneContent();
 	onlineLobby.add(1.4, 'Play online - Lobby', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px lightgreen'
 	});
-
-	
 
 	onlineLobby.add(4, 'Connect', function () {
 		var $this = this;
@@ -325,7 +387,7 @@ function init_scene() {
 				}
 
 			}
-			console.log(users);
+			//console.log(users);
 		});
 
 		socket.on('play', function (clientId, playingWith) {
@@ -375,15 +437,19 @@ function init_scene() {
 
 	var help1 = new SceneContent();
 	help1.add(1.4, 'How to play', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
 	});
-	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>');
+	help1.add(5, 'BombCarrier is a classic Arcade style game. <br/>The goal of the game is to take control of one of the bombers, and successfully eliminate your opponent. <br/>To your advantage you have the ability and craftmanship to use bombs! <br/> 	But beware... So does your enemy!<br/><br/><br/><br/>', null, {
+		'text-shadow' : '0 0 5px #333'
+	});
 	help1.add(4, 'Main Menu', 'intro');
 	help1.add(4, 'Next Page', 'help2');
 
 	var help2 = new SceneContent();
 	help2.add(1.4, 'Controls', null, {
-		'color' : '#000'
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
 	});
 	help2.add(3, 'Player 1'+
 	'                    '+
@@ -405,6 +471,21 @@ function init_scene() {
 		'white-space': 'pre'
 	});
 	help2.add(4, 'Main Menu', 'intro');
+	help2.add(4, 'Next Page','help3');
+
+	var help3 = new SceneContent();
+
+	help3.add(1.4, 'Power Ups',null, {
+		'color' : '#000',
+		'text-shadow' : '0px 0px 7px yellow'
+	});
+
+	help3.add(5, '<img src="' + _GAME_.texture.url('upgrade-power') + '" width="5%" />  Will increase your firepower and will make your bombs <br/>able to reach further when exploading. <br/> <br/>' +
+	'<img src="' + _GAME_.texture.url('upgrade-bomb') + '" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
+		'text-shadow' : '0 0 5px #333'
+	});
+
+	help3.add(4,"Main Menu",'intro');
 
 	var gameOver = new SceneContent();
 	gameOver.add(1.4, 'Game Over', null, {
@@ -423,12 +504,12 @@ function init_scene() {
 	});
 	sceneHandler.add('help1', help1);
 	sceneHandler.add('help2', help2);
+	sceneHandler.add('help3', help3);
 	sceneHandler.add('gameOver', gameOver, function() {
 		game_alive = false;
 		$('#score').remove();
 		$('#timer').remove();
 		background_sound.pause();
-		console.log('ss');
 	});
 	sceneHandler.add('online-lobby', onlineLobby);
 
@@ -443,11 +524,12 @@ function play_scene(raw_map) {
 	$(document).keydown( onKeyDown );
 	$(document).keyup( onKeyUp );
 
-	background_sound = loadAudio('sound/battle4.ogg', background_sound);
+	background_sound = loadAudio('battle4', background_sound);
 
 	$('body').css({
-		'background-image' : 'url(textures/paper-dialog.png)',
-		'background-size' : '50% 50%'
+		'background-image' : 'url(' + _GAME_.texture.url('bg-paper') + ')',
+		'background-position' : 'center center',
+		'background-size' : '200% 200%'
 	});
 	fightTime = new TimeClass();
 	init(raw_map);
@@ -464,7 +546,10 @@ function reset_play_scene(raw_map) {
 
 	scene = new THREE.Scene();
 
-	load_background("textures/paper-dialog.png");
+	load_background();
+
+	player1.reset();
+	player2.reset();
 
 	player1.collision = new THREE.CollisionSystem();
 	player2.collision = new THREE.CollisionSystem();
@@ -480,7 +565,7 @@ function reset_play_scene(raw_map) {
 
 	scene.add( bombs );
 
-	background_sound = loadAudio('sound/battle4.ogg', background_sound);
+	background_sound = loadAudio('battle4', background_sound);
 	fightTime = new TimeClass();
 
 }
@@ -496,10 +581,9 @@ function score_bar(){
 			'z-index' : 1001
 		});
 
-
 	var bar = $('<div id="score"></div>')
 		.css({
-			'background-image' : 'url(textures/button-off.png)',
+			'background-image' : 'url(' + _GAME_.texture.url('bg-yellow') + ')',
 			'background-size' : '100% 100%',
 			'width' : '20%',
 			'margin' : '0 auto',		
@@ -507,9 +591,8 @@ function score_bar(){
 
 		});
 
-
 	var players = $('<h1>')
-		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">0</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">0</span> ')
+		.html(' <img src="textures/Player_1.png" width="30%"/> <span class="player-score" data-id="' + player1.id + '">' + (player1.lifes+1) + '</span>  <img src="textures/Player_2.png" width="30%" /> <span class="player-score" data-id="' + player2.id + '">' + (player2.lifes+1) + '</span> ')
 		.css({
 			'white-space' : 'pre',
 			'margin' : 0,
@@ -519,7 +602,7 @@ function score_bar(){
 	var bar2 = $('<div id="timer"></div>')
 		.html('Time left: <span id="time-left"></span>')
 		.css({
-			'background-image' : 'url(textures/button-off.png)',
+			'background-image' : 'url(' + _GAME_.texture.url('bg-yellow') + ')',
 			'background-size' : '100% 100%',
 			'width' : '20%',
 			'margin' : '0 auto',		
@@ -553,15 +636,13 @@ function score_bar(){
 audio : Audio tag - DOM element
 Return DOM element
 */
-function loadAudio(uri, audio)
+function loadAudio( name, audio )
 {
-    //audio = audio || new Audio();
-
     audio = audio || $('<audio>', {
     	'preload':'auto'
     }).appendTo('body')[0];
 
-    audio.src = uri;
+    audio.src = 'sound/' + name + sound_file_suffix;
     audio.volume = parseInt(localStorage.getItem('sound_on')) / 2;
     audio.play();
 
@@ -569,10 +650,12 @@ function loadAudio(uri, audio)
 }
 
 function load_background(bg) {
-	var bg = new THREE.Sprite({ 
-		map: THREE.ImageUtils.loadTexture( bg ),
-		useScreenCoordinates: false 
-	});
+	bg = bg || 'bg-paper';
+
+	// change 1010, 820
+	var bg = new THREE.Mesh( new THREE.PlaneGeometry( 1010, 820 ), new THREE.MeshBasicMaterial( { 
+					map: _GAME_.texture.get( bg ),
+					color: 0xffffff } ) );
 	bg.position.z = -250;
 	bg.scale.x *= 4;
 	bg.scale.y *= 2;
@@ -581,7 +664,7 @@ function load_background(bg) {
 
 function init(raw_map) {
 
-	load_background("textures/paper-dialog.png");
+	load_background();
 
 	/* === IMPORTANT === */
 	/* The execution order should be like this! */
@@ -634,61 +717,7 @@ function init(raw_map) {
 	bombs = new THREE.Object3D();
 	scene.add( bombs );
 
-
-
-	// Inline text
-	/*var text3d = new THREE.TextGeometry( 'testar text', {
-
-					size: 80,
-					height: 20,
-					curveSegments: 2,
-					font: "helvetiker"
-
-				});
-
-				text3d.computeBoundingBox();
-				var centerOffset = -0.5 * ( text3d.boundingBox.x[ 1 ] - text3d.boundingBox.x[ 0 ] );
-
-                var textMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: false } );
-                text = new THREE.Mesh( text3d, textMaterial );
-
-                text.doubleSided = false;
-
-                text.position.set( 0, 100, 0 );
-
-				text.overdraw = true;
-
-				parent = new THREE.Object3D();
-                parent.addChild( text );
-
-				scene.addObject( parent );*/
-
-
-	//THREE.Collisions.colliders.push(spriteChar2);
-
-	// add 2d-sprites
-	/*
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 100, 100, 0 );
-	sprite.opacity = 0.25;
-	scene.addChild( sprite );
-
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 150, 150, 2 );
-	sprite.opacity = 0.5;
-	scene.addChild( sprite );
-
-	sprite = new THREE.Sprite( { map: mapA, alignment:THREE.SpriteAlignment.topLeft } );
-	sprite.position.set( 200, 200, 3 );
-	sprite.opacity = 1;
-	scene.addChild( sprite );
-	*/
-
-	
-
 }
-
-
 
 function animate() {
 	if (!game_alive) return;
@@ -700,41 +729,29 @@ function animate() {
 
 }
 
-
 function render() {
-
-	/*
-	for ( var c = 0; c < group.children.length; c++ ) {
-
-		var sprite = group.children[ c ];
-		var scale = Math.sin( time + sprite.position.x * 0.01 ) * 0.3 + 1.0;
-
-		sprite.rotation += 0.1 * ( c / group.children.length );
-		sprite.scale.set( scale, scale, 1.0 );
-		sprite.opacity = Math.sin( time + sprite.position.x * 0.01 ) * 0.4 + 0.6;
+	if (_GAME_.branch_3D) {
+		player1.sprite.lookAt(camera.position);
 	}
 
-	group.rotation.x = time * 0.5;
-	group.rotation.y = time * 0.75;
-	group.rotation.z = time * 1.0;
-
-	time += 0.02;
-	*/
+	var gameTime = 180;
 
 	// lower sound at end game
-	if (fightTime.elapse(0,180-4)) {
+	if (fightTime.elapse(0,gameTime-4)) {
 		if (parseInt(localStorage.getItem('sound_on'))) {
-			background_sound.volume = Math.min(1, Math.max(0,(180-fightTime.getElapse()) / (4 / 0.5)));
+			background_sound.volume = Math.min(1, Math.max(0,(gameTime-fightTime.getElapse()) / (4 / 0.5)));
 		}
+
+		var angle = (fightTime.getElapse('ms') / Math.PI * 2) % (Math.PI * 2);
+		tileSystem.tiles.position.x = tileSystem.x + (tileSystem.sizeWidth-1) * tileSystem.tileSize.width / 2 + Math.cos(angle)*3;
+		tileSystem.tiles.position.y = tileSystem.y + (tileSystem.sizeHeight+0.5) * tileSystem.tileSize.height / 2 + Math.sin(angle)*3;
 	}
 
 	// switch to game over scene
-	fightTime.elapse(1,180, function() { 
-		console.log('Time over');
-
+	fightTime.elapse(1,gameTime, function() {
 		sceneHandler.change('gameOver');
 	});
-	$('#time-left').text(180 - fightTime.getElapse().toFixed());
+	$('#time-left').text(gameTime - fightTime.getElapse().toFixed());
 
 	if (DEBUG) {
 		var s = [
@@ -762,9 +779,6 @@ function render() {
 
 		debugElement.html (s.join('<br/>'));
 	}	
-
-	//player1.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
-	//player2.sprite.boundingMesh.materials[0].color = new THREE.Color(0xffffff);
 
 	if ( ! oldTime ) oldTime = new Date().getTime();
 
@@ -794,7 +808,6 @@ function render() {
 	tileSystem.gc();
 	if (!game_alive) return;
 	renderer.render( scene, camera );
-
 }
 
 function log( text ) {
@@ -811,19 +824,12 @@ function onDocumentMouseMove( event ) {
 
 function onKeyDown(a) {
     var a = a.keyCode;
-    /*
-    if (a in keyMap) {
-    	keyPressed[keyMap[a]] = true;
-    }*/
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = true;
-
     }
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = true;
-
-
     }
 
     if (remote) {
@@ -833,10 +839,6 @@ function onKeyDown(a) {
 }
 function onKeyUp(a) {
     a = a.keyCode;
-    /*
-    if (a in keyMap) {
-    	keyPressed[keyMap[a]] = false;
-    }*/
 
     if (a in player1.keyCode) {
     	player1.keyPressed[player1.keyCode[a]] = false;
@@ -844,7 +846,8 @@ function onKeyUp(a) {
     if (a in player2.keyCode) {
     	player2.keyPressed[player2.keyCode[a]] = false;
     }
-
+	
+	//window.open( renderer.domElement.toDataURL('image/png'), 'mywindow' );
     if (remote) {
     	socket.emit('key', remote.id, a, false);
 
@@ -870,10 +873,8 @@ function resizeDataUrlImage(dataUrl, width, height) {
 }
 
 function download_level( name, text ) {
-	window.URL = window.URL || window.webkitURL;
-	window.BlobBuilder = window.BlobBuilder || 
-						 window.WebKitBlobBuilder ||
-                   		 window.MozBlobBuilder;
+	// Currently safari doesnt support
+	if (!window.BlobBuilder) return $('<a>');
 
     var bb = new BlobBuilder();
     bb.append( text+"" );
@@ -894,5 +895,3 @@ function download_level( name, text ) {
 	});*/
 	return a;
 }
-
-

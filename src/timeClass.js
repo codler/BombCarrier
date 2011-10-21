@@ -23,9 +23,19 @@ TimeClass.prototype.elapse = function (frame, seconds, callback) {
 	return this.getFrameElapsed(frame);
 };
 
-TimeClass.prototype.getElapse = function () {
-	// Returns seconds
-	return (new Date().getTime() - this.timeAlive) / 1000;
+/*
+unit : string(s, ms)
+
+default is seconds
+*/
+TimeClass.prototype.getElapse = function ( unit ) {
+	unit = unit || 's';
+	if (unit == 's') {
+		unit = 1000;
+	} else if(unit == 'ms') {
+		unit = 1;
+	}
+	return (new Date().getTime() - this.timeAlive) / unit;
 };
 
 TimeClass.prototype.getFrameElapsed = function (frame) {

@@ -11,16 +11,24 @@ var PlayerClass = function( texture, position ) {
 	this.width   = 80;
 	this.height  = 100;
 	this.alive   = true;
-	this.lifes   = 3;
-	this.maxBombs = 1;
-	this.firePower = 2;
+	this.lifes   = 3-1;
+	this.maxBombs = this.initMaxBombs = 1;
+	this.firePower = this.initFirePower = 2;
 	this.id      = Math.random();
+	this.defaultTexture = _GAME_.texture.get('char-1');
 
 	this.sprite = new THREE.Sprite( { 
 		map: texture || this.defaultTexture,
 		useScreenCoordinates: false 
 	} );
 
+	if (_GAME_.branch_3D) {
+		this.sprite = new THREE.Mesh( new THREE.PlaneGeometry( 101, 82 ), new THREE.MeshBasicMaterial( { 
+						map: _GAME_.texture.get('char-1'),
+						color: 0xffffff,
+						transparent: true } ) );
+		this.sprite.rotation.x = 90 * ( Math.PI / 180 );
+	}
 
 	// Collision area
 	this.sprite.boundingMesh = new THREE.Mesh(
@@ -42,10 +50,12 @@ var PlayerClass = function( texture, position ) {
 	
 	this.sprite.boundingMesh.playerClass = this;
 };
-//PlayerClass.prototype.constructor = PlayerClass;
 
-// Variable
-PlayerClass.prototype.defaultTexture = THREE.ImageUtils.loadTexture( "textures/Character Princess Girl.png" );
+PlayerClass.prototype.reset = function() {
+	// reset upgrades
+	this.maxBombs = this.initMaxBombs;
+	this.firePower = this.initFirePower;
+};
 
 /*
 texture : texture
@@ -212,6 +222,10 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 	var ray = new THREE.Ray( position, direction );
 	var c = this.collision.rayCastNearest(ray);
 	if (c && c.distance < 40 - 5) {
+		if (c.mesh.gameType == 'bomb') {
+			if (c.mesh.bombClass.steppable) return;
+		}
+
 		var tilePos = this.tileSystem.getTilePosition( c.mesh.position.x, c.mesh.position.y );
 		var tileType = this.tileSystem.level[tilePos.y][tilePos.x].type;
 
@@ -221,7 +235,7 @@ PlayerClass.prototype.checkCollisionItem = function(item, callback, side) {
 			} else if (tileType == 8) {
 				this.firePower++;
 			} else if (tileType == 9) {
-				this.maxBombs++;
+				this.maxBombs = Math.min(5, ++this.maxBombs);
 			}
 			this.tileSystem.changeTile( tilePos.x, tilePos.y, 0 );
 		} else {
@@ -242,7 +256,7 @@ PlayerClass.prototype.handleBomb = function() {
 	if (this.keyPressed.bomb && availableBombs < this.maxBombs) {
 		var pos = this.sprite.position.clone().addSelf( new THREE.Vector3(0, -20, -0.25) );
 		var tilePos = this.tileSystem.getTilePosition(pos.x + this.tileSystem.tileSize.width / 2, pos.y + 10);
-		console.log([tilePos.x,tilePos.y]);
+		//console.log([tilePos.x,tilePos.y]);
 
 		// Check bomb isnt on same tile
 		if (this.tileSystem.bombs.every(function (bomb) {
@@ -260,6 +274,9 @@ PlayerClass.prototype.handleBomb = function() {
 
 			var $this = this;
 	    
+	    	// add bomb collision to player
+	    	this.addCollision( bomb.sprite );
+
 			this.tileSystem.bombs.forEach(function (b) {
 			 	b.addCollision( bomb.sprite );
 			 	bomb.addCollision( b.sprite );
@@ -267,6 +284,9 @@ PlayerClass.prototype.handleBomb = function() {
 
 			for (player in this.players) {
 				bomb.addCollision( this.players[player].sprite );
+
+				this.players[player].addCollision( bomb.sprite );
+
 			}
 
 			bomb.addCollision( this.sprite );
@@ -290,12 +310,13 @@ PlayerClass.prototype.die = function() {
 	if (this.lifes) {
 		$('.player-score').each(function (i,e) {
 			if ($(e).data('id') == $this.id) {
-				$(e).text(parseInt($(e).text())+1);
+				$(e).text($this.lifes);
 				return false;
 			}
 		});
+
 		this.lifes--;
-		$.get('maps/classic.txt', reset_play_scene);
+		reset_play_scene(this.tileSystem.rawLevel);
 		return;
 	}
 
