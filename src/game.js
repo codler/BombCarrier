@@ -1,6 +1,11 @@
 
 var _GAME_ = _GAME_ || {};
 
+window.URL = window.URL || window.webkitURL;
+window.BlobBuilder = window.BlobBuilder || 
+					 window.WebKitBlobBuilder ||
+               		 window.MozBlobBuilder;
+
 // == Begin Constants ==
 var SCREEN_WIDTH  = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
@@ -188,6 +193,9 @@ function init_core() {
 		e.stopPropagation(); e.preventDefault();
 	}).bind('drop', function(e) {
 		e.stopPropagation(); e.preventDefault();
+
+		if (!window.FileReader) return;
+
 		var files = e.originalEvent.dataTransfer.files;
 		var reader = new FileReader();
 
@@ -233,9 +241,14 @@ function init_scene() {
 		'margin' : '0.2em 0'
 	});
 	intro.add(4, 'Play online', 'online-lobby');
+
 	intro.add(4, 'Load level', function () {
 		var input = $('<input type="file"/>').css('opacity', 0).appendTo('body');
 		input.change(function () {
+			if (!window.FileReader) {
+				alert('Your browser doesn\'t support this feature!');
+				return;
+			}
 			if (!this.files.length) {
 				return false;
 			}
@@ -334,10 +347,13 @@ function init_scene() {
 			.one('click', play);
 		var levels = $('<div id="levels"/>').append(level1).append(level2).append(level3).append(level4);
 		
-		save.call(level1, 'classic', 'maps/classic.txt');
-		save.call(level2, 'spiral', 'maps/spiral.txt');
-		save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
-		save.call(level4, 'house', 'maps/house.txt');
+		if (window.BlobBuilder) {
+			save.call(level1, 'classic', 'maps/classic.txt');
+			save.call(level2, 'spiral', 'maps/spiral.txt');
+			save.call(level3, 'GrassyKnoll', 'maps/GrassyKnoll.txt');
+			save.call(level4, 'house', 'maps/house.txt');
+		} 
+		
 		
 		$(this).after(levels);
 	}, {
@@ -490,7 +506,7 @@ function init_scene() {
 		'text-shadow' : '0px 0px 7px yellow'
 	});
 
-	help3.add(5, '<img src="textures/Star.png" width="5%" />  Will increase your firepower, and making your bombs <br/>able to reach further when exploading. <br/> <br/>' +
+	help3.add(5, '<img src="textures/Star.png" width="5%" />  Will increase your firepower and will make your bombs <br/>able to reach further when exploading. <br/> <br/>' +
 	'<img src="textures/Rock.png" width="5%"/> Will increase the amount of bombs you are allowed to <br/> carry. <br/> <br/>',null, {
 		'text-shadow' : '0 0 5px #333'
 	});
@@ -980,10 +996,10 @@ function resizeDataUrlImage(dataUrl, width, height) {
 }
 
 function download_level( name, text ) {
-	window.URL = window.URL || window.webkitURL;
-	window.BlobBuilder = window.BlobBuilder || 
-						 window.WebKitBlobBuilder ||
-                   		 window.MozBlobBuilder;
+	// Currently safari doesnt support
+	if (!window.BlobBuilder) return $('<a>');
+
+
 
     var bb = new BlobBuilder();
     bb.append( text+"" );
